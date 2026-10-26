@@ -670,24 +670,28 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
       <button class="btn" type="button" id="btn-close-modal">✕</button>
     </div>
     <div style="font-size:12.5px;color:var(--mut);line-height:1.5">
-      이 웹앱이 배포된 GitHub 저장소의 <code>data.json</code> 파일에 수정 내역을 직접 저장(Commit)합니다. 한 번만 설정해 두면 회사 PC·집 PC·모바일 어디서 접속하든 동일한 일정과 매뉴얼이 유지됩니다.
+      이 웹앱이 배포된 GitHub 저장소의 데이터 파일(<code>docs/data.json</code> 등)에 수정 내역을 직접 저장(Commit)합니다. 한 번만 설정해 두면 회사 PC·집 PC·모바일 어디서 접속하든 동일한 일정과 매뉴얼이 유지됩니다.
     </div>
     <div class="form-row">
       <label>GitHub 계정/소유자명 (Owner)</label>
-      <input type="text" id="gh-owner" placeholder="예: sebang0">
+      <input type="text" id="gh-owner" placeholder="예: sebang0 (github.io 접속 시 자동 입력)">
     </div>
     <div class="form-row">
       <label>저장소 이름 (Repository)</label>
-      <input type="text" id="gh-repo" placeholder="예: co-schedule">
+      <input type="text" id="gh-repo" placeholder="예: notion (github.io 접속 시 자동 입력)">
     </div>
     <div class="form-row">
       <label>브랜치 (Branch)</label>
-      <input type="text" id="gh-branch" value="main" placeholder="main">
+      <input type="text" id="gh-branch" placeholder="비워두면 Pages 배포 브랜치 자동 감지">
+    </div>
+    <div class="form-row">
+      <label>데이터 파일 경로 (Path)</label>
+      <input type="text" id="gh-path" placeholder="비워두면 자동 감지 (예: docs/data.json)">
     </div>
     <div class="form-row">
       <label>GitHub Personal Access Token (repo 권한 체크된 토큰)</label>
       <input type="password" id="gh-token" placeholder="github_pat_xxxxxxxxxxxxxxxxxxxx">
-      <span style="font-size:11px;color:var(--mut)">※ 토큰은 api.github.com 호출에만 사용되며, 현재 브라우저 localStorage에 <b>암호화 없이</b> 보관됩니다. 공용 PC 사용 금지 · 이 저장소 1개만 선택한 Fine-grained 토큰(Contents: Read and write) 권장.</span>
+      <span style="font-size:11px;color:var(--mut)">※ 토큰은 api.github.com 호출에만 사용되며, 현재 브라우저 localStorage에 <b>암호화 없이</b> 보관됩니다. 공용 PC 사용 금지 · 이 저장소 1개만 선택한 Fine-grained 토큰(Contents: Read and write · Pages: Read-only) 권장.</span>
     </div>
     <div class="form-row">
       <label>GitHub API 사용량 (시간당 한도)</label>
@@ -802,12 +806,20 @@ function loadState() {
   return normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
 }
 
+/* GitHub 설정 기본값: <owner>.github.io/<repo>/ 로 접속하면 owner·repo 자동 채움 */
+function defaultGhConfig() {
+  const host = location.hostname || "";
+  const owner = host.endsWith(".github.io") ? host.replace(".github.io", "") : "";
+  const repo = owner ? (location.pathname.split("/").filter(Boolean)[0] || "") : "";
+  return { owner, repo, branch: "", path: "", token: "" };
+}
 function loadGhConfig() {
+  const def = defaultGhConfig();
   try {
     const raw = localStorage.getItem(GH_CFG_KEY);
-    return raw ? JSON.parse(raw) : { owner: "", repo: "", branch: "main", token: "" };
+    return raw ? { ...def, ...JSON.parse(raw) } : def;
   } catch (e) {
-    return { owner: "", repo: "", branch: "main", token: "" };
+    return def;
   }
 }
 
@@ -903,6 +915,27 @@ async function checkGhUsage() {
   }
 }
 
+/* 저장 대상 브랜치·경로 결정
+   - 사용자가 비워두면 GET /repos/{owner}/{repo}/pages 의 source(branch, path)로 자동 감지
+   - Pages 폴더가 /docs 이면 docs/data.json, 루트면 data.json */
+async function resolveGhTarget() {
+  let branch = ghConfig.branch, path = ghConfig.path;
+  if (!branch || !path) {
+    const res = await ghFetch(`https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/pages`, { headers: ghHeaders(false) });
+    if (res.ok) {
+      const src = (await res.json()).source || {};
+      if (!branch) branch = src.branch;
+      if (!path) path = (src.path && src.path !== "/" ? src.path.replace(/^\//, "") + "/" : "") + "data.json";
+    } else {
+      throw new Error(`Pages 배포 설정 자동 감지 실패(${res.status}). 설정창에 브랜치와 데이터 파일 경로를 직접 입력하거나 토큰에 Pages: Read 권한을 추가해 주세요.`);
+    }
+  }
+  return { branch, path };
+}
+function contentsUrl(path) {
+  return `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 async function pushToGitHub() {
   if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token) {
     document.getElementById("gh-modal").classList.add("open");
@@ -912,12 +945,13 @@ async function pushToGitHub() {
   el.textContent = "⏳ GitHub에 저장 중...";
   el.classList.add("syncing");
 
-  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/data.json`;
-
   try {
+    const { branch, path } = await resolveGhTarget();
+    const apiUrl = contentsUrl(path);
+
     // 1. 기존 data.json의 sha 조회 (덮어쓰기 커밋에 필요)
     let sha;
-    const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(ghConfig.branch)}`, { headers: ghHeaders(false) });
+    const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: ghHeaders(false) });
     if (getRes.ok) sha = (await getRes.json()).sha;
 
     // 2. 저장 시각 갱신 후 PUT 커밋
@@ -925,7 +959,7 @@ async function pushToGitHub() {
     const body = {
       message: `Update schedule & manual data (${new Date().toISOString().slice(0,16)})`,
       content: utf8ToBase64(JSON.stringify(state, null, 2)),
-      branch: ghConfig.branch
+      branch
     };
     if (sha) body.sha = sha;
 
@@ -947,8 +981,9 @@ async function pullFromGitHub() {
     alert("GitHub 계정명과 저장소 이름을 먼저 입력해 주세요.");
     return;
   }
-  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/data.json?ref=${encodeURIComponent(ghConfig.branch)}`;
   try {
+    const { branch, path } = await resolveGhTarget();
+    const apiUrl = `${contentsUrl(path)}?ref=${encodeURIComponent(branch)}`;
     const res = await ghFetch(apiUrl, { headers: ghHeaders(false) });
     if (!res.ok) throw new Error("파일을 찾을 수 없거나 접근 권한이 없습니다. (" + res.status + ")");
     const data = await res.json();
@@ -1478,7 +1513,8 @@ function readGhForm() {
   ghConfig = {
     owner:  document.getElementById("gh-owner").value.trim(),
     repo:   document.getElementById("gh-repo").value.trim(),
-    branch: document.getElementById("gh-branch").value.trim() || "main",
+    branch: document.getElementById("gh-branch").value.trim(),
+    path:   document.getElementById("gh-path").value.trim(),
     token:  document.getElementById("gh-token").value.trim()
   };
   try { localStorage.setItem(GH_CFG_KEY, JSON.stringify(ghConfig)); } catch (e) { /* 무시 */ }
@@ -1488,7 +1524,8 @@ function readGhForm() {
 document.getElementById("btn-gh-modal").addEventListener("click", () => {
   document.getElementById("gh-owner").value  = ghConfig.owner || "";
   document.getElementById("gh-repo").value   = ghConfig.repo || "";
-  document.getElementById("gh-branch").value = ghConfig.branch || "main";
+  document.getElementById("gh-branch").value = ghConfig.branch || "";
+  document.getElementById("gh-path").value   = ghConfig.path || "";
   document.getElementById("gh-token").value  = ghConfig.token || "";
   document.getElementById("gh-modal").classList.add("open");
 });
