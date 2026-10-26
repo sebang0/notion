@@ -1,0 +1,1556 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>손익·원가 일정 관리 & 업무 매뉴얼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --line: #dfe2e7;
+  --line-soft: #eef0f3;
+  --fg: #1d2128;
+  --mut: #5d6572;
+
+  --c-ext: #6b7280;
+  --c-ext-bg: #f3f4f6;
+  --c-ext-bd: #d1d5db;
+
+  --c-perf: #2563eb;
+  --c-perf-prep: #dbeafe;
+  --c-perf-bd: #93c5fd;
+  --c-perf-bg: #eff6ff;
+
+  --c-std: #0d9488;
+  --c-std-prep: #ccfbf1;
+  --c-std-bd: #5eead4;
+  --c-std-bg: #f0fdfa;
+
+  --c-meet: #7c3aed;
+  --c-meet-prep: #ede9fe;
+  --c-meet-bd: #c4b5fd;
+  --c-meet-bg: #f5f3ff;
+
+  --c-spot: #d97706;
+  --c-spot-bg: #fffbeb;
+  --c-spot-bd: #fde68a;
+
+  --c-qtr: #0284c7;
+  --c-qtr-bg: #f0f9ff;
+  --c-qtr-bd: #bae6fd;
+
+  --c-yr: #4f46e5;
+  --c-yr-bg: #eef2ff;
+  --c-yr-bd: #c7d2fe;
+
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 13.5px; line-height: 1.5;
+}
+.wrap {
+  max-width: 1440px; margin: 0 auto;
+  padding: 22px 20px 60px;
+  display: grid; gap: 18px;
+}
+
+/* 상단 헤더 & 네비게이션 탭 */
+.top-header {
+  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+}
+.lbl {
+  font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mut); font-weight: 600;
+}
+h1 { font-size: 23px; margin: 2px 0 0; font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 15.5px; margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+.header-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.save-indicator {
+  font-size: 12px; font-weight: 600; color: var(--c-std);
+  background: var(--c-std-bg); border: 1px solid var(--c-std-bd);
+  padding: 4px 10px; border-radius: 999px;
+}
+.save-indicator.syncing {
+  color: var(--c-spot); background: var(--c-spot-bg); border-color: var(--c-spot-bd);
+}
+
+.nav-tabs {
+  display: flex; gap: 8px; border-bottom: 2px solid var(--line); padding-bottom: 0;
+}
+.tab-btn {
+  padding: 11px 22px; font: inherit; font-size: 14px; font-weight: 700;
+  border: 1px solid transparent; border-bottom: none;
+  border-radius: 8px 8px 0 0; background: transparent; color: var(--mut);
+  cursor: pointer; transition: all .12s; margin-bottom: -2px;
+}
+.tab-btn:hover { color: var(--fg); background: #eceff3; }
+.tab-btn.active {
+  background: var(--panel); color: var(--c-perf);
+  border-color: var(--line); border-bottom: 2px solid var(--panel);
+}
+
+.view-sec { display: none; gap: 18px; }
+.view-sec.active { display: grid; }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.head-bar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* 버튼 & 인풋 공통 */
+.btn {
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all .12s; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--c-perf); border-color: var(--c-perf); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-dark { background: #1f2937; border-color: #1f2937; color: #fff; }
+.btn-dark:hover { background: #111827; }
+.btn-amber { background: var(--c-spot); border-color: var(--c-spot); color: #fff; }
+.btn-amber:hover { background: #b45309; }
+.btn-danger { color: #dc2626; border-color: #fecaca; background: #fef2f2; padding: 3px 8px; font-size: 11.5px; }
+.btn-danger:hover { background: #fee2e2; }
+
+input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="month"], select {
+  font: inherit; font-size: 12.5px; padding: 6px 9px;
+  border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--fg);
+}
+input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1px; }
+
+.chip {
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 12px; font-weight: 500;
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+
+/* 배지 */
+.badge {
+  display: inline-block; border-radius: 5px; padding: 2px 7px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.bg-ext  { background: var(--c-ext-bg);  color: #374151;      border: 1px solid var(--c-ext-bd); }
+.bg-perf { background: var(--c-perf-bg); color: var(--c-perf); border: 1px solid var(--c-perf-bd); }
+.bg-std  { background: var(--c-std-bg);  color: var(--c-std);  border: 1px solid var(--c-std-bd); }
+.bg-meet { background: var(--c-meet-bg); color: var(--c-meet); border: 1px solid var(--c-meet-bd); }
+.bg-spot { background: var(--c-spot-bg); color: var(--c-spot); border: 1px solid var(--c-spot-bd); }
+.bg-qtr  { background: var(--c-qtr-bg);  color: var(--c-qtr);  border: 1px solid var(--c-qtr-bd); }
+.bg-yr   { background: var(--c-yr-bg);   color: var(--c-yr);   border: 1px solid var(--c-yr-bd); }
+
+/* ━━━━ [탭 1] 한국 실사 캘린더 레이아웃 ━━━━ */
+.cal-toolbar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+}
+.ym-nav { display: flex; align-items: center; gap: 8px; }
+.ym-title { font-size: 19px; font-weight: 700; min-width: 130px; text-align: center; font-family: var(--f-mono); }
+
+.cal-kpis {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+}
+.cal-kpi-pill {
+  background: #f8fafc; border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 12px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+}
+.prog-bar-wrap {
+  width: 110px; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
+}
+.prog-bar-fill { height: 100%; background: var(--c-std); transition: width .2s; }
+
+.cal-layout {
+  display: grid; grid-template-columns: 1.75fr 1fr; gap: 18px; align-items: start;
+}
+@media (max-width: 1100px) {
+  .cal-layout { grid-template-columns: 1fr; }
+}
+
+/* 한국 달력 7열 그리드 */
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: 1px solid var(--line); border-left: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden;
+}
+.cal-th {
+  background: #f8fafc; font-weight: 700; font-size: 12px; text-align: center;
+  padding: 8px 4px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.cal-cell {
+  min-height: 126px; padding: 6px;
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: #fff; display: flex; flex-direction: column; gap: 4px;
+  transition: background .1s;
+}
+.cal-cell:hover { background: #fcfcfd; }
+.cal-cell.other-month { background: #f8fafc; opacity: 0.42; pointer-events: none; }
+.cal-cell.hol-bg { background: #fffafa; }
+.cal-cell.today-ring { box-shadow: inset 0 0 0 2px var(--c-perf); }
+
+.c-top {
+  display: flex; justify-content: space-between; align-items: center; gap: 2px; margin-bottom: 2px;
+}
+.c-day { font-family: var(--f-mono); font-weight: 700; font-size: 13px; }
+.c-badges { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+.bd-pill {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 600;
+  background: #eef2ff; color: #3730a3; padding: 0 5px; border-radius: 99px; border: 1px solid #c7d2fe;
+}
+.hol-pill {
+  font-size: 10px; color: #dc2626; font-weight: 600; background: #fef2f2;
+  padding: 0 4px; border-radius: 4px;
+}
+
+.c-ev-list { display: flex; flex-direction: column; gap: 3px; }
+.c-ev {
+  font-size: 11px; padding: 2px 5px; border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 4px;
+  transition: opacity .12s, transform .08s;
+}
+.c-ev:hover { opacity: 0.88; }
+.c-ev.done { text-decoration: line-through; opacity: 0.45; }
+
+/* 달력 이벤트 배지 스타일 */
+.ev-ms-perf { background: var(--c-perf); color: #fff; font-weight: 700; }
+.ev-prep-perf { background: var(--c-perf-bg); color: #1d4ed8; border: 1px solid var(--c-perf-bd); }
+.ev-ms-std { background: var(--c-std); color: #fff; font-weight: 700; }
+.ev-prep-std { background: var(--c-std-bg); color: #0f766e; border: 1px solid var(--c-std-bd); }
+.ev-ms-meet { background: var(--c-meet); color: #fff; font-weight: 700; }
+.ev-prep-meet { background: var(--c-meet-bg); color: #6d28d9; border: 1px solid var(--c-meet-bd); }
+.ev-ext { background: #f3f4f6; color: #4b5563; border: 1px dashed #9ca3af; }
+.ev-spot { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-weight: 700; }
+
+/* 우측 체크리스트 사이드바 */
+.chk-list {
+  display: flex; flex-direction: column; max-height: 430px; overflow-y: auto;
+  border: 1px solid var(--line-soft); border-radius: 8px;
+}
+.chk-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px;
+}
+.chk-row:hover { background: #f8fafc; }
+.chk-row.done .chk-title { text-decoration: line-through; color: var(--mut); }
+.chk-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; cursor: pointer; }
+.chk-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chk-meta { font-family: var(--f-mono); font-size: 11px; color: var(--mut); white-space: nowrap; }
+
+/* ━━━━ [탭 2] 24영업일 간트 타임라인 & 매뉴얼 에디터 ━━━━ */
+.kpis {
+  display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 14px;
+}
+@media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px 18px; display: flex; flex-direction: column; gap: 4px;
+  border-left: 4px solid var(--line);
+}
+.kpi.k-perf { border-left-color: var(--c-perf); }
+.kpi.k-std  { border-left-color: var(--c-std); }
+.kpi.k-meet { border-left-color: var(--c-meet); }
+.kpi.k-spot { border-left-color: var(--c-spot); }
+.kpi .top { display: flex; justify-content: space-between; align-items: baseline; }
+.kpi .n { font-family: var(--f-mono); font-size: 25px; font-weight: 600; }
+.kpi .l { font-size: 13.5px; font-weight: 700; color: var(--fg); }
+.kpi .sub { font-size: 12px; color: var(--mut); }
+
+.tl-wrap { overflow-x: auto; padding-bottom: 6px; }
+.tlg {
+  display: grid;
+  grid-template-columns: 82px 210px repeat(24, minmax(34px, 1fr));
+  min-width: 1120px; font-size: 12.5px; align-items: center;
+}
+.tlg .th-cat, .tlg .th-nm, .tlg .day {
+  font-size: 11.5px; font-weight: 600; color: var(--mut);
+  border-bottom: 2px solid var(--line); padding: 8px 2px; background: #fafbfc; white-space: nowrap;
+}
+.tlg .th-cat { padding-left: 8px; }
+.tlg .th-nm  { padding-left: 6px; }
+.tlg .day {
+  font-family: var(--f-mono); text-align: center; border-left: 1px solid var(--line-soft);
+  font-variant-numeric: tabular-nums;
+}
+.tlg .day.w-sep, .tlg .grid-bg.w-sep { border-left: 1.5px solid #cbd5e1; }
+.tlg .day.fin-zone { background: #f3f4f6; color: #4b5563; }
+
+.tlg .grp-hdr {
+  grid-column: 1 / -1; font-size: 12px; font-weight: 700;
+  padding: 7px 10px; margin-top: 6px; border-radius: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.grp-ext  { background: var(--c-ext-bg);  color: #374151;      border: 1px solid var(--c-ext-bd); }
+.grp-perf { background: var(--c-perf-bg); color: var(--c-perf); border: 1px solid var(--c-perf-bd); }
+.grp-std  { background: var(--c-std-bg);  color: var(--c-std);  border: 1px solid var(--c-std-bd); }
+.grp-meet { background: var(--c-meet-bg); color: var(--c-meet); border: 1px solid var(--c-meet-bd); }
+
+.tlg .cell-cat { padding: 8px 6px 8px 8px; font-size: 11.5px; font-weight: 600; border-bottom: 1px solid var(--line-soft); }
+.tlg .cell-nm {
+  padding: 8px 10px 8px 6px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tlg .grid-bg { height: 100%; border-left: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.tlg .grid-bg.fin-bg { background: rgba(243, 244, 246, 0.45); }
+
+.bar-wrap { position: relative; height: 24px; display: flex; align-items: center; z-index: 2; padding: 0 2px; }
+.bar {
+  width: 100%; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-body); font-size: 10.5px; font-weight: 600; color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08); white-space: nowrap; overflow: hidden;
+}
+.b-ext {
+  background: repeating-linear-gradient(-45deg, #e5e7eb, #e5e7eb 6px, #d1d5db 6px, #d1d5db 12px);
+  color: #374151; border: 1px solid #9ca3af; box-shadow: none; font-weight: 700;
+}
+.b-perf { background: var(--c-perf); }
+.b-std  { background: var(--c-std); }
+.b-meet { background: var(--c-meet); }
+
+.b-prep-perf {
+  background: repeating-linear-gradient(-45deg, #eff6ff, #eff6ff 5px, #dbeafe 5px, #dbeafe 10px);
+  border: 1px solid var(--c-perf-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-prep-std {
+  background: repeating-linear-gradient(-45deg, #f0fdfa, #f0fdfa 5px, #ccfbf1 5px, #ccfbf1 10px);
+  border: 1px solid var(--c-std-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-prep-meet {
+  background: repeating-linear-gradient(-45deg, #f5f3ff, #f5f3ff 5px, #ede9fe 5px, #ede9fe 10px);
+  border: 1px solid var(--c-meet-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-milestone-perf { background: var(--c-perf); color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+.b-milestone-std  { background: var(--c-std);  color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+.b-milestone-meet { background: var(--c-meet); color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 14px 22px; font-size: 12px; color: var(--mut);
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft);
+}
+.sw { display: inline-block; width: 14px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+.sw-hatch { background: repeating-linear-gradient(-45deg, #e5e7eb, #e5e7eb 3px, #9ca3af 3px, #9ca3af 6px); border: 1px solid #6b7280; }
+.sw-prep  { background: repeating-linear-gradient(-45deg, #eff6ff, #eff6ff 3px, #93c5fd 3px, #93c5fd 6px); border: 1px solid #3b82f6; }
+.sw-solid { background: var(--c-perf); }
+
+/* SPOT / 분기 / 연간 카드 (편집 가능) */
+.card-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 14px; }
+.info-card {
+  border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px;
+  background: #fafbfc; display: flex; flex-direction: column; gap: 6px;
+}
+.info-card.spot-card { background: #fffdf9; border-color: #fde68a; border-left: 4px solid var(--c-spot); }
+.info-card.qtr-card  { background: #f8fdff; border-color: #bae6fd; border-left: 4px solid var(--c-qtr); }
+.info-card.yr-card   { background: #f8faff; border-color: #c7d2fe; border-left: 4px solid var(--c-yr); }
+.ic-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ic-title { font-size: 14px; font-weight: 700; color: var(--fg); }
+.ic-desc { font-size: 12.5px; color: #374151; line-height: 1.5; }
+.editable-box[contenteditable="true"]:hover {
+  outline: 1px dashed #94a3b8; border-radius: 4px; background: rgba(255,255,255,0.7);
+}
+.editable-box[contenteditable="true"]:focus {
+  outline: 2px solid var(--c-perf); border-radius: 4px; background: #fff;
+}
+
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
+
+/* 매뉴얼 편집 테이블 */
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 880px; font-size: 12.5px; }
+th {
+  text-align: left; font-weight: 600; color: var(--mut); font-size: 11.5px;
+  border-bottom: 2px solid var(--line); padding: 8px 8px; background: #fafbfc; white-space: nowrap;
+}
+td { border-bottom: 1px solid var(--line); padding: 6px 8px; vertical-align: middle; }
+td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
+
+/* GitHub 클라우드 동기화 모달 */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
+  display: none; align-items: center; justify-content: center; z-index: 9999; padding: 16px;
+}
+.modal-backdrop.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 12px; max-width: 520px; width: 100%;
+  padding: 22px 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.form-row { display: flex; flex-direction: column; gap: 4px; }
+.form-row label { font-size: 12px; font-weight: 700; color: #374151; }
+
+/* 지연·오늘·말일조정 표시 */
+.late-pill {
+  font-size: 10.5px; font-weight: 700; color: #fff; background: #dc2626;
+  padding: 0 6px; border-radius: 99px; white-space: nowrap;
+}
+.today-pill {
+  font-size: 10.5px; font-weight: 700; color: #fff; background: var(--c-perf);
+  padding: 0 6px; border-radius: 99px; white-space: nowrap;
+}
+.adj-pill {
+  font-size: 10px; font-weight: 600; color: #92400e; background: #fef3c7;
+  padding: 0 5px; border-radius: 4px; white-space: nowrap;
+}
+.chk-row.late { background: #fef2f2; }
+.c-ev.late { outline: 2px solid #dc2626; outline-offset: -1px; }
+.warn-box {
+  font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 6px; padding: 6px 10px; margin-bottom: 10px;
+}
+.api-usage {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--mut);
+  background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
+}
+
+/* 모바일 대응 (폰 폭) — grid 자식의 최소폭 자동 확장 방지 */
+.wrap > *, .view-sec > *, .cal-layout > *, .two-col > *, .panel { min-width: 0; }
+.ym-nav { flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi { padding: 10px 12px; }
+  .chk-row { flex-wrap: wrap; }
+  .chk-meta, .chk-title { white-space: normal; }
+  .chk-left { flex-wrap: wrap; }
+  .cal-kpi-pill { flex-wrap: wrap; }
+  .wrap { padding: 14px 12px 40px; }
+  h1 { font-size: 18px; }
+  .nav-tabs { overflow-x: auto; }
+  .tab-btn { padding: 9px 12px; font-size: 12.5px; white-space: nowrap; }
+  .cal-cell { min-height: 72px; padding: 3px; }
+  .c-ev { font-size: 9.5px; padding: 1px 3px; }
+  .bd-pill, .hol-pill { font-size: 8.5px; white-space: nowrap; }
+  .bd-sfx { display: none; }
+  .two-col { grid-template-columns: 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- 상단 타이틀 & GitHub 클라우드 동기화 도구 -->
+  <div class="top-header">
+    <div>
+      <div class="lbl">전략기획팀 · 관리회계(손익·원가) · SAP CO</div>
+      <h1>손익·원가 월간 실사 캘린더 & 표준 업무 매뉴얼</h1>
+    </div>
+    <div class="header-actions">
+      <span class="save-indicator" id="save-msg">✓ 로컬 자동 저장됨</span>
+      <button class="btn btn-dark" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
+      <button class="btn" type="button" id="btn-gh-push" style="display:none" title="현재 변경사항을 GitHub data.json에 즉시 커밋합니다">⬆️ GitHub에 즉시 저장</button>
+      <button class="btn" type="button" id="btn-export" title="매뉴얼과 월별 체크 내역을 JSON 파일로 백업합니다">💾 백업</button>
+      <label class="btn" style="cursor:pointer" title="백업한 JSON 파일을 불러옵니다">
+        📂 불러오기
+        <input type="file" id="in-import" accept=".json" style="display:none">
+      </label>
+      <button class="btn btn-danger" type="button" id="btn-reset" title="초기 기본값으로 리셋합니다">초기화</button>
+    </div>
+  </div>
+
+  <!-- 메인 탭 네비게이션 -->
+  <nav class="nav-tabs" aria-label="메인 메뉴">
+    <button class="tab-btn active" type="button" data-tab="view-cal">📅 1. 월간 실사 캘린더 & 일정 관리 (한국 달력 기준)</button>
+    <button class="tab-btn" type="button" data-tab="view-man">📘 2. 표준 업무 매뉴얼 & 편집기 (1~24 영업일 기준)</button>
+  </nav>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       [탭 1] 한국 실사 달력 & 그달의 일정 관리
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div id="view-cal" class="view-sec active">
+    <section class="panel" style="padding: 14px 20px;">
+      <div class="cal-toolbar">
+        <div class="ym-nav">
+          <button class="btn" type="button" id="btn-prev-m">◀ 이전 달</button>
+          <span class="ym-title" id="ym-label">2026년 10월</span>
+          <button class="btn" type="button" id="btn-next-m">다음 달 ▶</button>
+          <input type="month" id="in-ym-picker" value="2026-10" style="margin-left:6px">
+        </div>
+
+        <div class="cal-kpis" id="cal-kpi-area"></div>
+      </div>
+    </section>
+
+    <div class="cal-layout">
+      <!-- 한국 달력 패널 -->
+      <section class="panel">
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2>한국 실사 캘린더 (대한민국 공휴일·대체공휴일 자동 반영)</h2>
+            <div style="font-size:12px;color:var(--mut);margin-top:2px">
+              평일 우측 상단의 <b>[N영업일]</b> 배지를 기준으로 매뉴얼의 영업일 업무가 그달의 실제 날짜에 자동 배치됩니다. (항목 클릭 시 완료/취소선 토글)
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:4px">
+              <input type="checkbox" id="chk-show-span" checked> 진행 기간(빗금 업무) 모든 영업일에 표시
+            </label>
+          </div>
+        </div>
+
+        <div class="warn-box" id="cal-warn" style="display:none"></div>
+        <div class="cal-grid" id="kr-cal-grid"></div>
+      </section>
+
+      <!-- 우측: 이달의 체크리스트 & SPOT/추가 업무 등록 -->
+      <div style="display:grid;gap:18px">
+        <section class="panel">
+          <div class="head-bar" style="margin-bottom:8px">
+            <div>
+              <h2>✅ 이달의 정례 업무 체크리스트</h2>
+              <div style="font-size:11.5px;color:var(--mut)">영업일 기준 일정이 이번 달 실제 한국 달력 날짜로 자동 변환된 목록입니다.</div>
+            </div>
+          </div>
+          <div class="chk-list" id="list-reg-tasks"></div>
+        </section>
+
+        <section class="panel">
+          <div class="head-bar" style="margin-bottom:8px">
+            <div>
+              <h2>➕ 이달의 추가 / SPOT 업무 관리</h2>
+              <div style="font-size:11.5px;color:var(--mut)">이번 달에 수시로 발생한 수지분석, CO 점검, 대관청 회신 등을 날짜별로 추가하세요.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            <input type="date" id="in-spot-date" style="width:132px">
+            <select id="in-spot-cat" style="width:92px">
+              <option value="SPOT">SPOT</option>
+              <option value="실적">실적</option>
+              <option value="표준원가">표준원가</option>
+              <option value="회의체">회의체</option>
+              <option value="분기">분기</option>
+              <option value="연간">연간</option>
+            </select>
+            <input type="text" id="in-spot-name" placeholder="추가할 업무명 입력 (예: 유일중공업 수지분석 v2)" style="flex:1;min-width:160px">
+            <button class="btn btn-amber" type="button" id="btn-add-spot">+ 등록</button>
+          </div>
+
+          <div class="chk-list" id="list-spot-tasks" style="max-height:240px"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       [탭 2] 표준 업무 매뉴얼 & 편집기 (1~24 영업일 기준)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div id="view-man" class="view-sec">
+    <section class="kpis" aria-label="카테고리별 요약">
+      <div class="kpi k-perf">
+        <div class="top"><span class="l">실적 (월간)</span><span class="n" id="kpi-cnt-perf" style="color:var(--c-perf)">9</span></div>
+        <div class="sub">본사비 · 1/2차 추정 · 마감 · 분석 · 예산 · 동종업계</div>
+      </div>
+      <div class="kpi k-std">
+        <div class="top"><span class="l">표준원가 (월간)</span><span class="n" id="kpi-cnt-std" style="color:var(--c-std)">3</span></div>
+        <div class="sub">하불 기안 회람 · 플랫폼 수집 접수 · 절감성과 보고</div>
+      </div>
+      <div class="kpi k-meet">
+        <div class="top"><span class="l">회의체 (월간)</span><span class="n" id="kpi-cnt-meet" style="color:var(--c-meet)">2</span></div>
+        <div class="sub">지사장 화상회의 (6~10일) · 본사 팀장회의 (12~16일)</div>
+      </div>
+      <div class="kpi k-spot">
+        <div class="top"><span class="l">SPOT (상시·수시)</span><span class="n" id="kpi-cnt-spot" style="color:var(--c-spot)">3</span></div>
+        <div class="sub">수지분석 손익 검토 · SAP CO 관리/개선 · 대관청 회신</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head-bar">
+        <div>
+          <h2>1. 월간 정례 업무 표준 타임라인 (1 ~ 24 영업일)</h2>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px">
+            하단 [5. 매뉴얼 편집기]에서 영업일이나 완료 액션을 수정하면 이 차트와 1번 탭의 한국 실사 캘린더에 즉시 반영됩니다.
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:12px;color:var(--mut);font-weight:600">정렬:</span>
+          <button class="chip" type="button" data-gmode="cat" aria-pressed="true">카테고리별 묶음</button>
+          <button class="chip" type="button" data-gmode="time" aria-pressed="false">영업일순(흐름순)</button>
+        </div>
+      </div>
+
+      <div class="tl-wrap">
+        <div class="tlg" id="gantt"></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="sw sw-solid"></i><b>진한 단색 (텍스트 없음)</b> — 해당 영업일 동안 직접 산출·마감 수행</span>
+        <span><i class="sw sw-prep"></i><b>연한 빗금 + 우측 완료 액션(보고·결재·확인·회의)</b> — 앞단 요청·접수·취합 진행 후 마지막 날 완료</span>
+        <span><i class="sw sw-hatch"></i><b>회색 빗금 (1~5영업일)</b> — 재무 마감 (재무회계팀 주관 선행 일정)</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head-bar" style="margin-bottom:10px">
+        <div>
+          <h2>2. SPOT 업무 매뉴얼 (클릭하여 텍스트 직접 수정 가능)</h2>
+          <div style="font-size:12px;color:var(--mut)">제목이나 설명을 마우스로 클릭해 바로 수정하시면 자동 저장됩니다.</div>
+        </div>
+        <button class="btn" type="button" onclick="addGuideCard('spot')">+ SPOT 항목 추가</button>
+      </div>
+      <div class="card-grid-3" id="grid-spot-guide"></div>
+    </section>
+
+    <div class="two-col">
+      <section class="panel">
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2>3. 분기 업무 (Quarterly)</h2>
+            <div style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+          </div>
+          <button class="btn" type="button" onclick="addGuideCard('qtr')">+ 분기 업무 추가</button>
+        </div>
+        <div style="display:grid;gap:10px" id="grid-qtr-guide"></div>
+      </section>
+
+      <section class="panel">
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2>4. 연간 업무 (Annual)</h2>
+            <div style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+          </div>
+          <button class="btn" type="button" onclick="addGuideCard('yr')">+ 연간 업무 추가</button>
+        </div>
+        <div style="display:grid;gap:10px" id="grid-yr-guide"></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="head-bar">
+        <div>
+          <h2>5. 월간 정례 업무 매뉴얼 편집기 (직접 수정 · 추가 · 삭제)</h2>
+          <div style="font-size:12px;color:var(--mut)">
+            여기서 업무명, 시작/종료 영업일(1~24), 진행 형태, 완료 액션(보고·결재·확인·회의)을 수정하면 위 간트 차트와 캘린더에 즉시 반영됩니다.
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button" id="btn-add-manual">+ 새 정례 업무 추가</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:110px">카테고리</th>
+              <th style="width:200px">업무명</th>
+              <th style="width:85px">시작 영업일</th>
+              <th style="width:85px">종료 영업일</th>
+              <th style="width:175px">진행 형태</th>
+              <th style="width:105px">완료 액션 라벨</th>
+              <th>주요 내용 및 산출물 설명</th>
+              <th style="width:60px">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="tb-manual-editor"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ━━━━ GitHub 클라우드 연동 설정 모달 ━━━━ -->
+<div class="modal-backdrop" id="gh-modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:17px">☁️ GitHub 저장소 실시간 데이터 동기화 설정</h2>
+      <button class="btn" type="button" id="btn-close-modal">✕</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--mut);line-height:1.5">
+      이 웹앱이 배포된 GitHub 저장소의 <code>data.json</code> 파일에 수정 내역을 직접 저장(Commit)합니다. 한 번만 설정해 두면 회사 PC·집 PC·모바일 어디서 접속하든 동일한 일정과 매뉴얼이 유지됩니다.
+    </div>
+    <div class="form-row">
+      <label>GitHub 계정/소유자명 (Owner)</label>
+      <input type="text" id="gh-owner" placeholder="예: sebang0">
+    </div>
+    <div class="form-row">
+      <label>저장소 이름 (Repository)</label>
+      <input type="text" id="gh-repo" placeholder="예: co-schedule">
+    </div>
+    <div class="form-row">
+      <label>브랜치 (Branch)</label>
+      <input type="text" id="gh-branch" value="main" placeholder="main">
+    </div>
+    <div class="form-row">
+      <label>GitHub Personal Access Token (repo 권한 체크된 토큰)</label>
+      <input type="password" id="gh-token" placeholder="github_pat_xxxxxxxxxxxxxxxxxxxx">
+      <span style="font-size:11px;color:var(--mut)">※ 토큰은 api.github.com 호출에만 사용되며, 현재 브라우저 localStorage에 <b>암호화 없이</b> 보관됩니다. 공용 PC 사용 금지 · 이 저장소 1개만 선택한 Fine-grained 토큰(Contents: Read and write) 권장.</span>
+    </div>
+    <div class="form-row">
+      <label>GitHub API 사용량 (시간당 한도)</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="api-usage" id="gh-usage">미조회</span>
+        <button class="btn" type="button" id="btn-gh-usage">🔄 사용량 조회</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" type="button" id="btn-gh-pull">⬇️ GitHub에서 최신 데이터 가져오기</button>
+      <button class="btn btn-primary" type="button" id="btn-gh-save-cfg">설정 저장 & 연동</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   [0] 상수 정의
+   - STORAGE_KEY : 브라우저 localStorage에 매뉴얼·월별 체크 내역 저장 키
+   - GH_CFG_KEY  : GitHub 동기화 설정(owner/repo/branch/token) 저장 키
+   - MAX_BD      : 매뉴얼 기준 최대 영업일 (1~24)
+   ══════════════════════════════════════════════════════════════════════ */
+const STORAGE_KEY = "SEBANG_CO_CYCLE_APP_V1";
+const GH_CFG_KEY  = "SEBANG_CO_GH_CONFIG_V1";
+const MAX_BD = 24;
+
+/* ══════════════════════════════════════════════════════════════════════
+   [1] 대한민국 공휴일·대체공휴일 사전 (2025 ~ 2028)
+   - 근로자의날(5/1)은 민간기업 유급휴일이므로 영업일에서 제외
+   - 선거일·임시공휴일은 정부 발표 시 이 표에 직접 추가
+   - 표에 없는 연도는 화면 상단에 경고 표시 (주말만 제외하고 계산)
+   ══════════════════════════════════════════════════════════════════════ */
+const KR_HOLIDAYS = {
+  "2025-01-01": "신정", "2025-01-27": "임시공휴일", "2025-01-28": "설날연휴", "2025-01-29": "설날", "2025-01-30": "설날연휴",
+  "2025-03-01": "삼일절", "2025-03-03": "대체공휴일", "2025-05-01": "근로자의날", "2025-05-05": "어린이날·부처님오신날", "2025-05-06": "대체공휴일",
+  "2025-06-03": "대통령선거", "2025-06-06": "현충일", "2025-08-15": "광복절", "2025-10-03": "개천절", "2025-10-05": "추석연휴", "2025-10-06": "추석",
+  "2025-10-07": "추석연휴", "2025-10-08": "대체공휴일", "2025-10-09": "한글날", "2025-12-25": "성탄절",
+  "2026-01-01": "신정", "2026-02-16": "설날연휴", "2026-02-17": "설날", "2026-02-18": "설날연휴",
+  "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "근로자의날", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일",
+  "2026-06-03": "지방선거", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-08-17": "대체공휴일",
+  "2026-09-24": "추석연휴", "2026-09-25": "추석", "2026-09-26": "추석연휴",
+  "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
+  "2027-01-01": "신정", "2027-02-06": "설날연휴", "2027-02-07": "설날", "2027-02-08": "설날연휴", "2027-02-09": "대체공휴일",
+  "2027-03-01": "삼일절", "2027-05-01": "근로자의날", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일",
+  "2027-08-15": "광복절", "2027-08-16": "대체공휴일", "2027-09-14": "추석연휴", "2027-09-15": "추석", "2027-09-16": "추석연휴",
+  "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날", "2027-10-11": "대체공휴일", "2027-12-25": "성탄절", "2027-12-27": "대체공휴일",
+  "2028-01-01": "신정", "2028-01-25": "설날연휴", "2028-01-26": "설날", "2028-01-27": "설날연휴",
+  "2028-03-01": "삼일절", "2028-04-12": "국회의원선거", "2028-05-01": "근로자의날", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일",
+  "2028-08-15": "광복절", "2028-10-02": "추석연휴", "2028-10-03": "추석·개천절", "2028-10-04": "추석연휴", "2028-10-05": "대체공휴일",
+  "2028-10-09": "한글날", "2028-12-25": "성탄절"
+};
+const HOLIDAY_YEARS = [2025, 2026, 2027, 2028];
+
+const DEFAULT_STATE = {"tasks": [{"id": "T01", "cat": "선행", "name": "재무 마감", "start": 1, "end": 5, "mode": "ext", "endLabel": "", "desc": "재무회계팀 전표 마감 (당팀 직접 수행 업무 아님 · 수기마감 및 관리손익 마감의 선행 일정)"}, {"id": "T02", "cat": "실적", "name": "예상 본사비 산출", "start": 2, "end": 3, "mode": "work", "endLabel": "", "desc": "본사비 총액 − 임대수익 대체분 산출 및 지사 공지 (1차 추정실적 작성 기준값 제공)"}, {"id": "T03", "cat": "실적", "name": "1차 추정실적 취합", "start": 4, "end": 8, "mode": "prep_rep", "endLabel": "보고", "desc": "12개 지사 추정실적 요청·회신 대기 및 오류 수정(4~7영업일) 후 8영업일 최종 보고"}, {"id": "T04", "cat": "실적", "name": "수기마감", "start": 6, "end": 6, "mode": "work", "endLabel": "", "desc": "재무 마감 직후 수기tool · GR55 · 선미청구 반영하여 지사별 잠정 손익 산출 및 공지"}, {"id": "T05", "cat": "실적", "name": "추가예산 기안서 접수", "start": 6, "end": 11, "mode": "prep_rep", "endLabel": "결재", "desc": "지사별 추가예산·증액 신청 기안서 접수(6~10영업일) 및 11영업일 결재·SAP KSBP 예산 반영"}, {"id": "T06", "cat": "실적", "name": "관리손익 마감", "start": 7, "end": 8, "mode": "work", "endLabel": "", "desc": "SAP CO 배부 실행(CCA→PA→TD→본사비→판관비, KSU5/KEU5) · 미지정 원가요소 정리 · 마감 공지"}, {"id": "T07", "cat": "실적", "name": "월 실적분석 보고", "start": 9, "end": 11, "mode": "prep_rep", "endLabel": "보고", "desc": "관리손익 마감 데이터 기반 목표比·전월比·주요 발생비용 분석(9~10영업일) 후 11영업일 보고"}, {"id": "T08", "cat": "실적", "name": "원가절감 현황 취합", "start": 9, "end": 11, "mode": "prep_rep", "endLabel": "보고", "desc": "전사 지사별 원가절감 목표달성 현황 회신 취합·인정성 검증(9~10영업일) 후 11영업일 보고"}, {"id": "T09", "cat": "실적", "name": "동종업계 실적 교환", "start": 12, "end": 12, "mode": "work", "endLabel": "", "desc": "KE30 실적 집계 송부 및 동종사(KCTC·동방·동원·세방) 실적 비교표 작성"}, {"id": "T10", "cat": "실적", "name": "2차 추정실적 취합", "start": 20, "end": 22, "mode": "prep_rep", "endLabel": "보고", "desc": "월말 지사별 2차 추정실적 회신 취합(20~21영업일) 및 22영업일 보고"}, {"id": "T11", "cat": "표준원가", "name": "벌크운송 하불 기안 회람", "start": 1, "end": 3, "mode": "prep_rep", "endLabel": "확인", "desc": "계약관리팀 하불 계약 기안서 회람 접수 및 3영업일 견적단가 vs 표준원가 적정성 확인"}, {"id": "T12", "cat": "표준원가", "name": "운송 플랫폼 수집 접수", "start": 1, "end": 3, "mode": "prep_rep", "endLabel": "확인", "desc": "외부 운송플랫폼 시장단가 수집 데이터 접수 및 3영업일 원가수집 합본 확인"}, {"id": "T13", "cat": "표준원가", "name": "표준원가 절감성과", "start": 9, "end": 11, "mode": "prep_rep", "endLabel": "보고", "desc": "RFX 낙찰단가 vs 표준원가 요율ID 매칭 및 절감액 산출(9~10영업일) 후 11영업일 보고"}, {"id": "T14", "cat": "회의체", "name": "지사장 화상회의", "start": 6, "end": 10, "mode": "prep_rep", "endLabel": "회의", "desc": "12개 지사 회의자료 회신 요청·취합(6~9영업일) 및 10영업일 지사장 화상회의 진행"}, {"id": "T15", "cat": "회의체", "name": "본사 팀장회의", "start": 12, "end": 16, "mode": "prep_rep", "endLabel": "회의", "desc": "본사 부서별 발표자료(1조/2조) 취합·주요 업무보고 작성(12~15영업일) 및 16영업일 회의 진행"}], "guides": {"spot": [{"id": "S1", "title": "① 수지분석 손익 검토", "badge": "수시 · 영업 요청 시", "desc": "영업팀에서 작성한 수지분석 자료에 대하여 신규/갱신 화주 수주 적정성 판단을 위한 검토자료 작성 및 원가 산정 기준 검증"}, {"id": "S2", "title": "② SAP CO 관리 / 개선", "badge": "상시 · 기준정보/제도", "desc": "배부 사이클 관리, 배부 기준값 관리, 코스트센터(CC) 신설·변경·폐지 관리, 배부 현실화, 투자오더 관리"}, {"id": "S3", "title": "③ 대관청 실적 회신", "badge": "수시 · 기관 요청 시", "desc": "국가데이터처, 한국은행 등에서 요청하는 운수업·서비스업·기업경기 관련 실적 자료를 추출·회신하는 업무"}], "qtr": [{"id": "Q1", "title": "한국은행 운수업 GDP 편제자료 제출", "badge": "분기 익월 초", "desc": "분기별 KE30 손익 실적을 기반으로 한국은행 국민계정(GDP) 운수업 편제용 분기 조사표 작성 및 회신"}, {"id": "Q2", "title": "관리예산 분기 운영 · 이관 품의 및 통제 점검", "badge": "분기 단위", "desc": "분기별 관리예산(접대비·복리후생비 등) 편성·이관 품의 및 원가요소별 예산통제 운영 점검"}, {"id": "Q3", "title": "분기 누적 실적 · 계획 대비 차이 요인 분석", "badge": "분기 마감 후", "desc": "분기 누적 기준 경영계획 대비 매출·매출원가·판관비·본사비 달성률 및 주요 변동 요인 점검"}], "yr": [{"id": "Y1", "title": "차년도 경영계획 수립 및 전사 취합·보완", "badge": "매년 9 ~ 10월", "desc": "전사 지사·본사 부서별 매출계획, 원가·본사비계획, 투자계획, 인건비·인원수 계획 양식 배포·취합 및 보완요청"}, {"id": "Y2", "title": "당해연도 연간 추정실적 산출 및 경영계획 근거 마련", "badge": "매년 9 ~ 10월", "desc": "당해연도 누적 실적 + 잔여월 추정을 결합한 연간 전망치 산출 및 차년도 계획 수립 근거자료 확정"}, {"id": "Y3", "title": "연간 배부기준 재정비 및 계획 배부(SAP CO) 반영", "badge": "매년 10 ~ 12월", "desc": "차년도 코스트센터·배부 사이클(KSU3/KSUB/KEUB) 기준 재정비 품의 및 확정 경영계획 버전 계획 배부 실행"}]}, "monthlyLogs": {"2026-10": {"doneRegIds": ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09", "T11", "T12", "T13", "T14", "T15"], "spotTasks": [{"id": "SP1", "date": "2026-10-21", "cat": "SPOT", "name": "유일중공업 OSS BLOCK 수지분석 v2 검토", "done": true}, {"id": "SP2", "date": "2026-10-22", "cat": "SPOT", "name": "원가요소 신규채번(성과급·도급용역비) 및 To-Be COA 검토", "done": false}, {"id": "SP3", "date": "2026-10-26", "cat": "연간", "name": "FY27 경영계획 원가·본사비 보완요청(65건) 회신 점검", "done": false}]}}};
+
+const CAT_KEY = { "선행": "ext", "실적": "perf", "표준원가": "std", "회의체": "meet", "SPOT": "spot", "분기": "qtr", "연간": "yr" };
+const CAT_ORDER = ["선행", "실적", "표준원가", "회의체"];
+const CAT_META = {
+  "선행":     { key: "ext",  label: "선행 일정 (재무회계팀 주관 — 관리손익 마감 전제조건)" },
+  "실적":     { key: "perf", label: "실적 (본사비 · 1/2차 추정 · 수기/관리마감 · 실적분석 · 원가절감 · 추가예산 · 동종업계)" },
+  "표준원가": { key: "std",  label: "표준원가 (벌크운송 하불 기안 회람 · 운송 플랫폼 수집 접수 · 절감성과 보고)" },
+  "회의체":   { key: "meet", label: "회의체 (지사장 화상회의 · 본사 팀장회의)" }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   [2] 공통 유틸
+   - esc()      : 사용자 입력값을 HTML에 넣기 전 특수문자 이스케이프 (따옴표 깨짐·스크립트 삽입 방지)
+   - kstToday() : 접속 PC 시간대와 무관하게 한국시간(KST) 기준 오늘 날짜 문자열 반환
+   ══════════════════════════════════════════════════════════════════════ */
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+function kstToday() {
+  const k = new Date(Date.now() + 9 * 3600 * 1000);
+  return k.toISOString().slice(0, 10);
+}
+function clampBD(v, fallback) {
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.min(MAX_BD, n));
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [3] 상태(state) 로드·정규화·저장
+   - normalizeState() : 불러온 JSON의 누락 필드 보정 (백업 파일·구버전 데이터 호환)
+   - saveState()      : localStorage 저장 + meta.updatedAt 갱신 (기기 간 최신본 비교 기준)
+   ══════════════════════════════════════════════════════════════════════ */
+const TODAY = kstToday();
+let state = loadState();
+let ghConfig = loadGhConfig();
+let curYM = TODAY.slice(0, 7);
+let ganttMode = "cat";
+
+function normalizeState(s) {
+  if (!s || !Array.isArray(s.tasks)) throw new Error("tasks 항목이 없습니다.");
+  s.guides = s.guides || {};
+  ["spot", "qtr", "yr"].forEach(k => { if (!Array.isArray(s.guides[k])) s.guides[k] = []; });
+  s.monthlyLogs = s.monthlyLogs || {};
+  s.meta = s.meta || { updatedAt: "" };
+  s.tasks.forEach(t => {
+    t.start = clampBD(t.start, 1);
+    t.end = Math.max(t.start, clampBD(t.end, t.start));
+  });
+  return s;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return normalizeState(JSON.parse(raw));
+  } catch (e) { /* 손상 데이터 → 기본값 사용 */ }
+  return normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+}
+
+function loadGhConfig() {
+  try {
+    const raw = localStorage.getItem(GH_CFG_KEY);
+    return raw ? JSON.parse(raw) : { owner: "", repo: "", branch: "main", token: "" };
+  } catch (e) {
+    return { owner: "", repo: "", branch: "main", token: "" };
+  }
+}
+
+function saveState() {
+  state.meta = state.meta || {};
+  state.meta.updatedAt = new Date().toISOString();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 저장소 차단 환경 */ }
+  const el = document.getElementById("save-msg");
+  const now = new Date();
+  const tStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+  el.textContent = `✓ 로컬 저장됨 (${tStr})`;
+  el.classList.remove("syncing");
+}
+
+function rerenderAll() {
+  renderCalendarTab();
+  renderManualTab();
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [4] 배포 폴더의 data.json 자동 로드
+   - 로컬 작업분이 없으면 data.json 채택
+   - 로컬 작업분이 있어도 data.json의 meta.updatedAt이 더 최신이면 확인 후 교체
+     (다른 PC에서 GitHub에 저장한 내용을 이 PC가 놓치지 않도록)
+   ══════════════════════════════════════════════════════════════════════ */
+async function tryFetchRepoDataJson() {
+  let hasLocal = false;
+  try { hasLocal = Boolean(localStorage.getItem(STORAGE_KEY)); } catch (e) { /* 무시 */ }
+  try {
+    const res = await fetch("./data.json?t=" + Date.now());
+    if (!res.ok) return;
+    const remote = normalizeState(await res.json());
+    const rTime = remote.meta.updatedAt || "";
+    const lTime = (state.meta && state.meta.updatedAt) || "";
+    if (!hasLocal) {
+      state = remote;
+    } else if (rTime && rTime > lTime) {
+      if (!confirm(`서버(data.json)에 더 최신 데이터가 있습니다.\n서버: ${rTime.slice(0,16)}\n이 PC: ${lTime.slice(0,16) || "기록 없음"}\n\n서버 데이터로 교체하시겠습니까?`)) return;
+      state = remote;
+    } else {
+      return;
+    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 무시 */ }
+    rerenderAll();
+  } catch (e) {
+    // 로컬 파일(file://) 실행 환경이면 패스
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [5] GitHub REST API 연동 (data.json 읽기/쓰기) + API 사용량 확인
+   - ghFetch()       : 모든 GitHub 호출의 공통 래퍼. 응답 헤더의 X-RateLimit-* 값을 읽어 사용량 표시 갱신
+   - checkGhUsage()  : /rate_limit 조회 (이 호출 자체는 한도 차감 없음)
+   - pushToGitHub()  : 기존 sha 조회 → PUT 커밋. 409(동시 수정 충돌) 시 안내
+   - pullFromGitHub(): 저장소 data.json 내려받아 현재 상태 교체
+   ══════════════════════════════════════════════════════════════════════ */
+function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function base64ToUtf8(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\s/g, ""))));
+}
+
+let ghCallCount = 0; // 이 페이지를 연 뒤 호출한 GitHub API 횟수
+function updateUsageUI(limit, remaining, resetEpoch) {
+  const el = document.getElementById("gh-usage");
+  if (!el) return;
+  const reset = resetEpoch ? new Date(Number(resetEpoch) * 1000) : null;
+  const rStr = reset ? `${String(reset.getHours()).padStart(2,"0")}:${String(reset.getMinutes()).padStart(2,"0")}` : "-";
+  el.textContent = `남은 호출 ${remaining ?? "?"} / ${limit ?? "?"}회 · 초기화 ${rStr} · 이번 세션 호출 ${ghCallCount}회`;
+}
+function ghHeaders(json) {
+  const h = { "Accept": "application/vnd.github+json" };
+  if (ghConfig.token) h["Authorization"] = `Bearer ${ghConfig.token}`;
+  if (json) h["Content-Type"] = "application/json";
+  return h;
+}
+async function ghFetch(url, opts = {}) {
+  ghCallCount++;
+  const res = await fetch(url, opts);
+  const lim = res.headers.get("x-ratelimit-limit");
+  if (lim) updateUsageUI(lim, res.headers.get("x-ratelimit-remaining"), res.headers.get("x-ratelimit-reset"));
+  return res;
+}
+async function checkGhUsage() {
+  try {
+    const res = await fetch("https://api.github.com/rate_limit", { headers: ghHeaders(false) });
+    const j = await res.json();
+    const c = j.resources && j.resources.core;
+    if (c) updateUsageUI(c.limit, c.remaining, c.reset);
+  } catch (e) {
+    document.getElementById("gh-usage").textContent = "조회 실패 (네트워크 확인)";
+  }
+}
+
+async function pushToGitHub() {
+  if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token) {
+    document.getElementById("gh-modal").classList.add("open");
+    return;
+  }
+  const el = document.getElementById("save-msg");
+  el.textContent = "⏳ GitHub에 저장 중...";
+  el.classList.add("syncing");
+
+  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/data.json`;
+
+  try {
+    // 1. 기존 data.json의 sha 조회 (덮어쓰기 커밋에 필요)
+    let sha;
+    const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(ghConfig.branch)}`, { headers: ghHeaders(false) });
+    if (getRes.ok) sha = (await getRes.json()).sha;
+
+    // 2. 저장 시각 갱신 후 PUT 커밋
+    saveState();
+    const body = {
+      message: `Update schedule & manual data (${new Date().toISOString().slice(0,16)})`,
+      content: utf8ToBase64(JSON.stringify(state, null, 2)),
+      branch: ghConfig.branch
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await ghFetch(apiUrl, { method: "PUT", headers: ghHeaders(true), body: JSON.stringify(body) });
+    if (putRes.status === 409) throw new Error("다른 기기에서 먼저 저장되어 충돌했습니다. 다시 한 번 저장해 주세요.");
+    if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료 또는 권한 부족, 또는 API 한도 초과`);
+    if (!putRes.ok) throw new Error("GitHub API 응답 오류: " + putRes.status);
+    el.textContent = "☁️ GitHub 동기화 완료! (Pages 반영 1~2분 소요)";
+    el.classList.remove("syncing");
+  } catch (err) {
+    el.textContent = "⚠️ GitHub 저장 실패";
+    el.classList.remove("syncing");
+    alert("GitHub 저장 중 오류가 발생했습니다.\n저장소명과 토큰 권한을 확인해 주세요.\n\n" + err.message);
+  }
+}
+
+async function pullFromGitHub() {
+  if (!ghConfig.owner || !ghConfig.repo) {
+    alert("GitHub 계정명과 저장소 이름을 먼저 입력해 주세요.");
+    return;
+  }
+  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/data.json?ref=${encodeURIComponent(ghConfig.branch)}`;
+  try {
+    const res = await ghFetch(apiUrl, { headers: ghHeaders(false) });
+    if (!res.ok) throw new Error("파일을 찾을 수 없거나 접근 권한이 없습니다. (" + res.status + ")");
+    const data = await res.json();
+    state = normalizeState(JSON.parse(base64ToUtf8(data.content)));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 무시 */ }
+    rerenderAll();
+    alert("GitHub 저장소의 최신 data.json 데이터를 불러왔습니다.");
+    document.getElementById("gh-modal").classList.remove("open");
+  } catch (err) {
+    alert("불러오기 실패: " + err.message);
+  }
+}
+
+function ensureMonthLog(ym) {
+  if (!state.monthlyLogs[ym]) {
+    state.monthlyLogs[ym] = { doneRegIds: [], spotTasks: [] };
+  }
+  const m = state.monthlyLogs[ym];
+  m.doneRegIds = m.doneRegIds || [];
+  m.spotTasks = m.spotTasks || [];
+  return m;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [6] 한국 달력 및 영업일(BD) 계산 엔진
+   - 주말·공휴일 제외 평일을 1영업일부터 순서대로 부여
+   - resolveBD() : 매뉴얼 영업일이 그달 총 영업일보다 크면 말일 영업일로 당겨 배치 (누락 방지)
+   ══════════════════════════════════════════════════════════════════════ */
+function buildMonthCalendarData(ym) {
+  const [year, month] = ym.split("-").map(Number);
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDate = new Date(year, month, 0).getDate();
+  const startDow = firstDay.getDay();
+
+  let bdCount = 0;
+  const bdToDate = {};
+  const dayMap = {};
+
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dow = new Date(year, month - 1, d).getDay();
+    const holName = KR_HOLIDAYS[ds] || "";
+    const isWeekend = (dow === 0 || dow === 6);
+    const isWorkday = !isWeekend && !holName;
+
+    if (isWorkday) {
+      bdCount++;
+      bdToDate[bdCount] = ds;
+      dayMap[ds] = { day: d, dow, bd: bdCount, holName: "", isWorkday: true };
+    } else {
+      dayMap[ds] = { day: d, dow, bd: null, holName, isWorkday: false };
+    }
+  }
+
+  const cells = [];
+  const prevLastDate = new Date(year, month - 1, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    cells.push({ other: true, day: prevLastDate - i });
+  }
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells.push({ other: false, dateStr: ds, ...dayMap[ds] });
+  }
+  let nextDay = 1;
+  while (cells.length % 7 !== 0) {
+    cells.push({ other: true, day: nextDay++ });
+  }
+
+  return { year, month, cells, bdToDate, dayMap, totalBD: bdCount };
+}
+
+function resolveBD(b, totalBD) {
+  return Math.min(b, totalBD);
+}
+
+/* 정례 업무 1건을 이번 달 실제 날짜로 변환 (시작/종료일, 말일 조정 여부, 지연 여부) */
+function mapTaskToMonth(t, cal, isDone) {
+  const s = Number(t.start), e = Number(t.end);
+  const rs = resolveBD(s, cal.totalBD), re = resolveBD(e, cal.totalBD);
+  const sDate = cal.bdToDate[rs] || "";
+  const eDate = cal.bdToDate[re] || "";
+  const adjusted = (s !== rs || e !== re);
+  const late = !isDone && t.mode !== "ext" && eDate && eDate < TODAY;
+  const isToday = sDate <= TODAY && TODAY <= eDate;
+  return { s, e, rs, re, sDate, eDate, adjusted, late, isToday };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7] [탭 1] 한국 실사 달력 & 체크리스트 & KPI 렌더링
+   ══════════════════════════════════════════════════════════════════════ */
+function renderCalendarTab() {
+  const cal = buildMonthCalendarData(curYM);
+  const { year, month, cells, bdToDate, totalBD } = cal;
+  const mLog = ensureMonthLog(curYM);
+  const showSpan = document.getElementById("chk-show-span").checked;
+
+  document.getElementById("ym-label").textContent = `${year}년 ${month}월`;
+  document.getElementById("in-ym-picker").value = curYM;
+
+  // 공휴일 사전 범위 밖 연도 경고
+  const warnEl = document.getElementById("cal-warn");
+  if (!HOLIDAY_YEARS.includes(year)) {
+    warnEl.style.display = "block";
+    warnEl.textContent = `⚠️ ${year}년 공휴일이 등록되지 않아 주말만 제외하고 영업일을 계산했습니다. 코드의 KR_HOLIDAYS에 공휴일을 추가하세요.`;
+  } else {
+    warnEl.style.display = "none";
+  }
+
+  // 날짜별 이벤트 목록 구성
+  const evByDate = {};
+  const pushEv = (ds, ev) => { (evByDate[ds] = evByDate[ds] || []).push(ev); };
+  const taskInfo = {};
+
+  state.tasks.forEach(t => {
+    const isDone = mLog.doneRegIds.includes(t.id);
+    const info = mapTaskToMonth(t, cal, isDone);
+    taskInfo[t.id] = info;
+    const ck = CAT_KEY[t.cat] || "perf";
+    const { rs, re } = info;
+    const adjMark = info.adjusted ? " (말일조정)" : "";
+
+    if (t.mode === "prep_rep" && re > rs) {
+      for (let b = rs; b <= re; b++) {
+        const ds = bdToDate[b];
+        if (!ds) continue;
+        if (b === re) {
+          pushEv(ds, { id: t.id, type: "reg", done: isDone, late: info.late, cls: `ev-ms-${ck}`, label: `★[${t.endLabel || "완료"}] ${t.name}${adjMark}` });
+        } else if (showSpan || b === rs) {
+          pushEv(ds, { id: t.id, type: "reg", done: isDone, late: false, cls: `ev-prep-${ck}`, label: b === rs ? `[착수] ${t.name}` : `· ${t.name}` });
+        }
+      }
+    } else {
+      for (let b = rs; b <= re; b++) {
+        const ds = bdToDate[b];
+        if (!ds) continue;
+        const cls = t.mode === "ext" ? "ev-ext" : `ev-ms-${ck}`;
+        pushEv(ds, { id: t.id, type: "reg", done: isDone, late: b === re && info.late, cls, label: t.name + (b === re ? adjMark : "") });
+      }
+    }
+  });
+
+  mLog.spotTasks.forEach(sp => {
+    const late = !sp.done && sp.date < TODAY;
+    pushEv(sp.date, { id: sp.id, type: "spot", done: sp.done, late, cls: "ev-spot", label: `[${sp.cat}] ${sp.name}` });
+  });
+
+  // 달력 그리드 HTML
+  const dows = ["일", "월", "화", "수", "목", "금", "토"];
+  let html = dows.map((w, i) => {
+    const col = i === 0 ? "#dc2626" : (i === 6 ? "#2563eb" : "#374151");
+    return `<div class="cal-th" style="color:${col}">${w}</div>`;
+  }).join("");
+
+  cells.forEach(c => {
+    if (c.other) {
+      html += `<div class="cal-cell other-month"><div class="c-day">${c.day}</div></div>`;
+      return;
+    }
+    const isSunOrHol = (c.dow === 0) || Boolean(c.holName);
+    const dayCol = isSunOrHol ? "#dc2626" : (c.dow === 6 ? "#2563eb" : "#1d2128");
+    const cellCls = `cal-cell ${isSunOrHol ? "hol-bg" : ""} ${c.dateStr === TODAY ? "today-ring" : ""}`;
+
+    let badges = "";
+    if (c.holName) badges += `<span class="hol-pill">${esc(c.holName)}</span>`;
+    if (c.bd) badges += `<span class="bd-pill" title="${c.bd}영업일">${c.bd}<span class="bd-sfx">영업일</span></span>`;
+
+    const evs = (evByDate[c.dateStr] || []).map(ev => {
+      const t = esc(ev.label) + (ev.late ? " · 지연" : "");
+      return `<div class="c-ev ${ev.cls} ${ev.done ? "done" : ""} ${ev.late ? "late" : ""}" onclick="toggleTaskFromCal('${ev.type}','${esc(ev.id)}')" title="${t} (클릭하여 완료 토글)">
+        <span>${ev.done ? "✓" : (ev.late ? "!" : "•")}</span><span>${esc(ev.label)}</span>
+      </div>`;
+    }).join("");
+
+    html += `<div class="${cellCls}">
+      <div class="c-top">
+        <span class="c-day" style="color:${dayCol}">${c.day}</span>
+        <div class="c-badges">${badges}</div>
+      </div>
+      <div class="c-ev-list">${evs}</div>
+    </div>`;
+  });
+
+  document.getElementById("kr-cal-grid").innerHTML = html;
+
+  // 정례 업무 체크리스트 (시작 영업일 순)
+  const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
+  const sorted = [...state.tasks].sort((a, b) => a.start - b.start || a.end - b.end);
+  document.getElementById("list-reg-tasks").innerHTML = sorted.map(t => {
+    const isDone = mLog.doneRegIds.includes(t.id);
+    const info = taskInfo[t.id];
+    const ck = CAT_KEY[t.cat] || "perf";
+    const dateRange = info.sDate === info.eDate ? md(info.sDate) : `${md(info.sDate)}~${md(info.eDate)}`;
+    const bdRange = t.start === t.end ? `${t.start}영업일` : `${t.start}~${t.end}영업일`;
+    const actTxt = t.endLabel ? ` · <b>${esc(t.endLabel)}</b>` : "";
+    let flags = "";
+    if (info.late) flags += `<span class="late-pill">지연</span>`;
+    else if (!isDone && info.isToday) flags += `<span class="today-pill">진행중</span>`;
+    if (info.adjusted) flags += `<span class="adj-pill" title="이달 총 영업일(${totalBD}일) 초과 → 말일 영업일로 조정">말일조정</span>`;
+
+    return `<div class="chk-row ${isDone ? "done" : ""} ${info.late ? "late" : ""}">
+      <label class="chk-left">
+        <input type="checkbox" ${isDone ? "checked" : ""} onchange="toggleTaskFromCal('reg','${esc(t.id)}')">
+        <span class="badge bg-${ck}">${esc(t.cat)}</span>
+        <span class="chk-title" title="${esc(t.desc)}">${esc(t.name)}</span>
+        ${flags}
+      </label>
+      <span class="chk-meta">${bdRange} (${dateRange})${actTxt}</span>
+    </div>`;
+  }).join("");
+
+  // SPOT/추가 업무 목록 (날짜순)
+  const spotListEl = document.getElementById("list-spot-tasks");
+  if (mLog.spotTasks.length === 0) {
+    spotListEl.innerHTML = `<div style="padding:14px;color:var(--mut);font-size:12px;text-align:center">등록된 이달의 추가/SPOT 업무가 없습니다.</div>`;
+  } else {
+    spotListEl.innerHTML = [...mLog.spotTasks].sort((a, b) => a.date.localeCompare(b.date)).map(sp => {
+      const ck = CAT_KEY[sp.cat] || "spot";
+      const late = !sp.done && sp.date < TODAY;
+      return `<div class="chk-row ${sp.done ? "done" : ""} ${late ? "late" : ""}">
+        <label class="chk-left">
+          <input type="checkbox" ${sp.done ? "checked" : ""} onchange="toggleTaskFromCal('spot','${esc(sp.id)}')">
+          <span class="badge bg-${ck}">${esc(sp.cat)}</span>
+          <span class="chk-title">${esc(sp.name)}</span>
+          ${late ? `<span class="late-pill">지연</span>` : ""}
+        </label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="chk-meta">${md(sp.date)}</span>
+          <button class="btn btn-danger" type="button" onclick="deleteSpotTask('${esc(sp.id)}')">삭제</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // KPI (삭제된 업무의 완료기록은 집계 제외)
+  const taskIds = new Set(state.tasks.map(t => t.id));
+  const regTotal = state.tasks.length;
+  const regDone = mLog.doneRegIds.filter(id => taskIds.has(id)).length;
+  const spotTotal = mLog.spotTasks.length;
+  const spotDone = mLog.spotTasks.filter(s => s.done).length;
+  const lateCnt = Object.values(taskInfo).filter(i => i.late).length + mLog.spotTasks.filter(s => !s.done && s.date < TODAY).length;
+  const allTotal = regTotal + spotTotal;
+  const allDone = regDone + spotDone;
+  const pct = allTotal > 0 ? Math.round((allDone / allTotal) * 100) : 0;
+  const todayBD = cal.dayMap[TODAY] && cal.dayMap[TODAY].bd;
+
+  document.getElementById("cal-kpi-area").innerHTML = `
+    <div class="cal-kpi-pill">📆 총 영업일: <b style="color:var(--fg)">${totalBD}일</b>${todayBD ? ` · 오늘 <b style="color:var(--c-perf)">${todayBD}영업일</b>` : ""}</div>
+    <div class="cal-kpi-pill">📌 정례 완료: <b style="color:var(--c-perf)">${regDone} / ${regTotal}건</b></div>
+    <div class="cal-kpi-pill">⚡ SPOT/추가: <b style="color:var(--c-spot)">${spotDone} / ${spotTotal}건</b></div>
+    <div class="cal-kpi-pill" style="${lateCnt ? "border-color:#fecaca;background:#fef2f2" : ""}">⏰ 지연: <b style="color:${lateCnt ? "#dc2626" : "var(--mut)"}">${lateCnt}건</b></div>
+    <div class="cal-kpi-pill">
+      <span>진행률 <b style="color:var(--c-std)">${pct}%</b></span>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  `;
+}
+
+window.toggleTaskFromCal = function(type, id) {
+  const mLog = ensureMonthLog(curYM);
+  if (type === "reg") {
+    const idx = mLog.doneRegIds.indexOf(id);
+    if (idx >= 0) mLog.doneRegIds.splice(idx, 1);
+    else mLog.doneRegIds.push(id);
+  } else {
+    const item = mLog.spotTasks.find(s => s.id === id);
+    if (item) item.done = !item.done;
+  }
+  saveState();
+  renderCalendarTab();
+};
+
+window.deleteSpotTask = function(id) {
+  const mLog = ensureMonthLog(curYM);
+  mLog.spotTasks = mLog.spotTasks.filter(s => s.id !== id);
+  saveState();
+  renderCalendarTab();
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   [8] [탭 2] 24영업일 매뉴얼 간트 & 가이드 카드 & 편집기 렌더링
+   ══════════════════════════════════════════════════════════════════════ */
+function renderManualTab() {
+  document.getElementById("kpi-cnt-perf").textContent = state.tasks.filter(t => t.cat === "실적").length;
+  document.getElementById("kpi-cnt-std").textContent  = state.tasks.filter(t => t.cat === "표준원가").length;
+  document.getElementById("kpi-cnt-meet").textContent = state.tasks.filter(t => t.cat === "회의체").length;
+  document.getElementById("kpi-cnt-spot").textContent = state.guides.spot.length;
+
+  const gantt = document.getElementById("gantt");
+  let html = `<div class="th-cat">구분</div><div class="th-nm">업무명</div>`;
+  for (let d = 1; d <= MAX_BD; d++) {
+    const wSep = (d === 6 || d === 11 || d === 16 || d === 21) ? "w-sep" : "";
+    const finZone = (d <= 5) ? "fin-zone" : "";
+    html += `<div class="day ${wSep} ${finZone}" title="${d}영업일">${d}</div>`;
+  }
+
+  let rowIdx = 2;
+  if (ganttMode === "cat") {
+    CAT_ORDER.forEach(catName => {
+      const items = state.tasks.filter(t => t.cat === catName).sort((a, b) => a.start - b.start || a.end - b.end);
+      if (items.length === 0) return;
+      const meta = CAT_META[catName];
+      html += `<div class="grp-hdr grp-${meta.key}" style="grid-row:${rowIdx}">● ${meta.label} — ${items.length}건</div>`;
+      rowIdx++;
+      items.forEach(t => {
+        html += buildGanttRow(t, rowIdx);
+        rowIdx++;
+      });
+    });
+  } else {
+    const items = [...state.tasks].sort((a, b) => a.start - b.start || a.end - b.end);
+    items.forEach(t => {
+      html += buildGanttRow(t, rowIdx);
+      rowIdx++;
+    });
+  }
+  gantt.innerHTML = html;
+
+  renderGuideCards("spot", "grid-spot-guide", "spot-card", "bg-spot");
+  renderGuideCards("qtr",  "grid-qtr-guide",  "qtr-card",  "bg-qtr");
+  renderGuideCards("yr",   "grid-yr-guide",   "yr-card",   "bg-yr");
+
+  const tb = document.getElementById("tb-manual-editor");
+  tb.innerHTML = state.tasks.map((t, idx) => {
+    return `<tr>
+      <td>
+        <select onchange="updateManualTask(${idx}, 'cat', this.value)">
+          ${CAT_ORDER.map(c => `<option value="${c}" ${t.cat === c ? "selected" : ""}>${c}</option>`).join("")}
+        </select>
+      </td>
+      <td><input type="text" value="${esc(t.name)}" onchange="updateManualTask(${idx}, 'name', this.value)" style="font-weight:600"></td>
+      <td><input type="number" min="1" max="24" value="${t.start}" onchange="updateManualTask(${idx}, 'start', this.value)"></td>
+      <td><input type="number" min="1" max="24" value="${t.end}" onchange="updateManualTask(${idx}, 'end', this.value)"></td>
+      <td>
+        <select onchange="updateManualTask(${idx}, 'mode', this.value)">
+          <option value="work" ${t.mode === "work" ? "selected" : ""}>직접수행 (진한 단색)</option>
+          <option value="prep_rep" ${t.mode === "prep_rep" ? "selected" : ""}>취합·대기 후 액션 (빗금+강조)</option>
+          <option value="ext" ${t.mode === "ext" ? "selected" : ""}>타부서 선행 (회색 빗금)</option>
+        </select>
+      </td>
+      <td><input type="text" value="${esc(t.endLabel)}" placeholder="보고/결재/확인/회의" onchange="updateManualTask(${idx}, 'endLabel', this.value)"></td>
+      <td><input type="text" value="${esc(t.desc)}" onchange="updateManualTask(${idx}, 'desc', this.value)"></td>
+      <td style="text-align:center"><button class="btn btn-danger" type="button" onclick="removeManualTask(${idx})">삭제</button></td>
+    </tr>`;
+  }).join("");
+}
+
+function buildGanttRow(t, rowIdx) {
+  const ck = CAT_KEY[t.cat] || "perf";
+  const s = clampBD(t.start, 1);
+  const e = Math.max(s, clampBD(t.end, s));
+  const nm = esc(t.name), lb = esc(t.endLabel);
+
+  let r = `<div class="cell-cat" style="grid-row:${rowIdx};grid-column:1"><span class="badge bg-${ck}">${esc(t.cat)}</span></div>`;
+  r += `<div class="cell-nm" style="grid-row:${rowIdx};grid-column:2" title="${esc(t.desc) || nm}"><span>${nm}</span></div>`;
+
+  for (let d = 1; d <= MAX_BD; d++) {
+    const wSep = (d === 6 || d === 11 || d === 16 || d === 21) ? "w-sep" : "";
+    const finBg = (d <= 5) ? "fin-bg" : "";
+    r += `<div class="grid-bg ${wSep} ${finBg}" style="grid-row:${rowIdx};grid-column:${d + 2}"></div>`;
+  }
+
+  if (t.mode === "prep_rep" && e > s) {
+    const prepEnd = e - 1;
+    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${s + 2} / ${prepEnd + 3};padding-right:0" title="[${nm}] 진행 기간 (${s}~${prepEnd}영업일)">
+            <div class="bar b-prep-${ck}"></div>
+          </div>`;
+    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${e + 2} / ${e + 3};padding-left:0" title="[${nm}] ${e}영업일 ${lb}">
+            <div class="bar b-milestone-${ck}">${lb}</div>
+          </div>`;
+  } else {
+    const barClass = t.mode === "ext" ? "b-ext" : `b-${ck}`;
+    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${s + 2} / ${e + 3}" title="[${esc(t.cat)}] ${nm} (${s}~${e}영업일)">
+            <div class="bar ${barClass}"></div>
+          </div>`;
+  }
+  return r;
+}
+
+function renderGuideCards(groupKey, containerId, cardCls, badgeCls) {
+  const el = document.getElementById(containerId);
+  const items = state.guides[groupKey] || [];
+  el.innerHTML = items.map((g, idx) => `
+    <div class="info-card ${cardCls}">
+      <div class="ic-top">
+        <span class="ic-title editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'title',this.innerText)">${esc(g.title)}</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span class="badge ${badgeCls} editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'badge',this.innerText)">${esc(g.badge)}</span>
+          <button class="btn btn-danger" type="button" onclick="deleteGuideCard('${groupKey}',${idx})" style="padding:1px 5px">×</button>
+        </div>
+      </div>
+      <div class="ic-desc editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'desc',this.innerText)">${esc(g.desc)}</div>
+    </div>
+  `).join("");
+}
+
+/* 편집기 입력 반영: 영업일은 1~24 범위로 보정, 종료 ≥ 시작 유지 */
+window.updateManualTask = function(idx, key, val) {
+  const t = state.tasks[idx];
+  if (key === "start") {
+    t.start = clampBD(val, t.start);
+    if (t.end < t.start) t.end = t.start;
+  } else if (key === "end") {
+    t.end = Math.max(t.start, clampBD(val, t.end));
+  } else {
+    t[key] = val;
+  }
+  saveState();
+  rerenderAll();
+};
+
+window.removeManualTask = function(idx) {
+  if (!confirm(`'${state.tasks[idx].name}' 업무를 삭제하시겠습니까?`)) return;
+  state.tasks.splice(idx, 1);
+  saveState();
+  rerenderAll();
+};
+
+window.updateGuideCard = function(groupKey, idx, field, val) {
+  state.guides[groupKey][idx][field] = val.trim();
+  saveState();
+};
+
+window.addGuideCard = function(groupKey) {
+  state.guides[groupKey].push({
+    id: "G" + Date.now(),
+    title: "신규 업무 항목 (클릭하여 수정)",
+    badge: "주기 입력",
+    desc: "상세 업무 설명을 클릭하여 입력하세요."
+  });
+  saveState();
+  renderManualTab();
+};
+
+window.deleteGuideCard = function(groupKey, idx) {
+  if (!confirm("이 항목을 삭제하시겠습니까?")) return;
+  state.guides[groupKey].splice(idx, 1);
+  saveState();
+  renderManualTab();
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   [9] 이벤트 리스너 바인딩 (탭 전환·월 이동·SPOT 등록·정렬 전환)
+   ══════════════════════════════════════════════════════════════════════ */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view-sec").forEach(s => s.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* 월 이동 시 SPOT 입력 기본 날짜: 이번 달이면 오늘, 다른 달이면 1일 */
+function defaultSpotDate() {
+  return curYM === TODAY.slice(0, 7) ? TODAY : `${curYM}-01`;
+}
+function shiftMonth(delta) {
+  let [y, m] = curYM.split("-").map(Number);
+  m += delta;
+  if (m < 1) { m = 12; y--; }
+  if (m > 12) { m = 1; y++; }
+  curYM = `${y}-${String(m).padStart(2, "0")}`;
+  document.getElementById("in-spot-date").value = defaultSpotDate();
+  renderCalendarTab();
+}
+document.getElementById("btn-prev-m").addEventListener("click", () => shiftMonth(-1));
+document.getElementById("btn-next-m").addEventListener("click", () => shiftMonth(1));
+document.getElementById("in-ym-picker").addEventListener("change", e => {
+  if (e.target.value) {
+    curYM = e.target.value;
+    document.getElementById("in-spot-date").value = defaultSpotDate();
+    renderCalendarTab();
+  }
+});
+document.getElementById("chk-show-span").addEventListener("change", renderCalendarTab);
+
+/* SPOT 등록: 입력한 날짜가 속한 달의 기록에 저장하고, 그 달로 화면 이동 */
+document.getElementById("btn-add-spot").addEventListener("click", () => {
+  const dateVal = document.getElementById("in-spot-date").value || defaultSpotDate();
+  const catVal  = document.getElementById("in-spot-cat").value;
+  const nameInput = document.getElementById("in-spot-name");
+  const nameVal = nameInput.value.trim();
+  if (!nameVal) { nameInput.focus(); return; }
+
+  const ym = dateVal.slice(0, 7);
+  ensureMonthLog(ym).spotTasks.push({ id: "SP_" + Date.now(), date: dateVal, cat: catVal, name: nameVal, done: false });
+  curYM = ym;
+  nameInput.value = "";
+  saveState();
+  renderCalendarTab();
+});
+document.getElementById("in-spot-name").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btn-add-spot").click();
+});
+
+document.getElementById("btn-add-manual").addEventListener("click", () => {
+  state.tasks.push({
+    id: "T_" + Date.now(),
+    cat: "실적",
+    name: "신규 정례 업무",
+    start: 1,
+    end: 3,
+    mode: "prep_rep",
+    endLabel: "보고",
+    desc: "업무 내용을 입력하세요."
+  });
+  saveState();
+  rerenderAll();
+});
+
+document.querySelectorAll("[data-gmode]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    ganttMode = btn.dataset.gmode;
+    document.querySelectorAll("[data-gmode]").forEach(b => b.setAttribute("aria-pressed", b === btn));
+    renderManualTab();
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [10] GitHub 동기화 모달 제어
+   ══════════════════════════════════════════════════════════════════════ */
+function refreshGhButtonUI() {
+  const pushBtn = document.getElementById("btn-gh-push");
+  pushBtn.style.display = (ghConfig.owner && ghConfig.repo && ghConfig.token) ? "inline-flex" : "none";
+}
+function readGhForm() {
+  ghConfig = {
+    owner:  document.getElementById("gh-owner").value.trim(),
+    repo:   document.getElementById("gh-repo").value.trim(),
+    branch: document.getElementById("gh-branch").value.trim() || "main",
+    token:  document.getElementById("gh-token").value.trim()
+  };
+  try { localStorage.setItem(GH_CFG_KEY, JSON.stringify(ghConfig)); } catch (e) { /* 무시 */ }
+  refreshGhButtonUI();
+}
+
+document.getElementById("btn-gh-modal").addEventListener("click", () => {
+  document.getElementById("gh-owner").value  = ghConfig.owner || "";
+  document.getElementById("gh-repo").value   = ghConfig.repo || "";
+  document.getElementById("gh-branch").value = ghConfig.branch || "main";
+  document.getElementById("gh-token").value  = ghConfig.token || "";
+  document.getElementById("gh-modal").classList.add("open");
+});
+document.getElementById("btn-close-modal").addEventListener("click", () => {
+  document.getElementById("gh-modal").classList.remove("open");
+});
+document.getElementById("btn-gh-save-cfg").addEventListener("click", () => {
+  readGhForm();
+  document.getElementById("gh-modal").classList.remove("open");
+  if (ghConfig.token) pushToGitHub();
+});
+document.getElementById("btn-gh-push").addEventListener("click", pushToGitHub);
+document.getElementById("btn-gh-pull").addEventListener("click", () => { readGhForm(); pullFromGitHub(); });
+document.getElementById("btn-gh-usage").addEventListener("click", () => { readGhForm(); checkGhUsage(); });
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11] JSON 파일 백업 & 복원 & 초기화
+   - 백업 파일명: data_YYYYMMDD.json (저장소 업로드 시 data.json으로 변경)
+   - 복원 시 구조 검증(normalizeState) 실패하면 기존 데이터 유지
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById("btn-export").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `data_${TODAY.replace(/-/g, "")}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+document.getElementById("in-import").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      state = normalizeState(JSON.parse(ev.target.result));
+      saveState();
+      rerenderAll();
+    } catch (err) {
+      alert("유효한 백업 파일이 아닙니다: " + err.message);
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if (confirm("모든 매뉴얼과 월별 체크 내역을 초기 기본값으로 되돌리시겠습니까?")) {
+    state = normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+    saveState();
+    rerenderAll();
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [12] 초기 실행
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById("in-spot-date").value = TODAY;
+refreshGhButtonUI();
+rerenderAll();
+tryFetchRepoDataJson();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+[결과물 저장 이력] (시간 KST)
+
+2026-10-26 19:55 | rawdata/gemini_gdrive/ | 원천데이터: 구글드라이브 제미나이 작업물 (github_pages_배포패키지.zip, index.html, data.json, README.md 원본)
+2026-10-26 19:55 | co-schedule/index.html | 개선 웹앱 본체 (GitHub Pages 파일명 고정으로 C-·일시 규칙 제외)
+2026-10-26 19:55 | co-schedule/data.json | 공유 데이터 (meta.updatedAt 추가)
+2026-10-26 19:55 | co-schedule/README.md | 배포·동기화·공휴일 관리 안내
+2026-10-26 19:55 | C-업무대시보드_평가보고서_261026_1955.html | 대시보드 평가·개선 보고서

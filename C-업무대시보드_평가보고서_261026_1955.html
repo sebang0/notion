@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>업무 대시보드 평가</title>
+<style>
+:root { --bg:#f4f5f7; --panel:#fff; --line:#dfe2e7; --fg:#1d2128; --mut:#5d6572;
+  --red:#dc2626; --red-bg:#fef2f2; --amb:#b45309; --amb-bg:#fffbeb; --grn:#0f766e; --grn-bg:#f0fdfa; --blu:#2563eb; --blu-bg:#eff6ff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#14161a; --panel:#1d2026; --line:#2e333b; --fg:#e7e9ec; --mut:#9aa3af;
+  --red:#f87171; --red-bg:#2a1717; --amb:#fbbf24; --amb-bg:#2a2214; --grn:#5eead4; --grn-bg:#11241f; --blu:#93c5fd; --blu-bg:#152033; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif; font-size:14px; line-height:1.5; }
+.wrap { max-width:1100px; margin:0 auto; padding:24px 16px 60px; display:grid; gap:16px; }
+h1 { font-size:22px; margin:0; } h2 { font-size:16px; margin:0 0 10px; }
+.mut { color:var(--mut); font-size:12.5px; }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; min-width:0; }
+.score { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+.sc { border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.sc b { font-size:22px; font-family:ui-monospace,Consolas,monospace; }
+.bar { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin-top:6px; }
+.bar i { display:block; height:100%; background:var(--blu); }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+th,td { border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+th { color:var(--mut); font-size:12px; white-space:nowrap; }
+.tw { overflow-x:auto; }
+.tag { display:inline-block; border-radius:5px; padding:1px 7px; font-size:11.5px; font-weight:700; white-space:nowrap; }
+.t-h { background:var(--red-bg); color:var(--red); } .t-m { background:var(--amb-bg); color:var(--amb); }
+.t-l { background:var(--blu-bg); color:var(--blu); } .t-ok { background:var(--grn-bg); color:var(--grn); }
+ul { margin:0; padding-left:18px; } li { margin:2px 0; }
+.flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; }
+.flow span { border:1px solid var(--line); border-radius:6px; padding:4px 9px; }
+.flow .x { border-color:var(--red); color:var(--red); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="mut">평가 대상 · 제미나이 작성 「손익·원가 월간 실사 캘린더 & 표준 업무 매뉴얼」 (index.html · data.json)</div>
+    <h1>업무 대시보드 평가 · 개선 결과</h1>
+    <div class="mut">작성 2026-10-26 19:55 KST</div>
+  </div>
+
+  <section class="panel">
+    <h2>종합 평가 (5점 척도 · 원본 → 개선본)</h2>
+    <div class="score">
+      <div class="sc">구성·가독성<br><b>4.5</b> → <b>4.5</b><div class="bar"><i style="width:90%"></i></div></div>
+      <div class="sc">업무 반영도<br><b>4.5</b> → <b>4.5</b><div class="bar"><i style="width:90%"></i></div></div>
+      <div class="sc">날짜 계산 정확성<br><b>2.5</b> → <b>4.5</b><div class="bar"><i style="width:90%"></i></div></div>
+      <div class="sc">데이터 안정성<br><b>2.5</b> → <b>4.0</b><div class="bar"><i style="width:80%"></i></div></div>
+      <div class="sc">보안<br><b>2.0</b> → <b>3.0</b><div class="bar"><i style="width:60%"></i></div></div>
+      <div class="sc">모바일<br><b>2.0</b> → <b>4.0</b><div class="bar"><i style="width:80%"></i></div></div>
+    </div>
+    <ul style="margin-top:12px">
+      <li><span class="tag t-ok">강점</span> 영업일 → 실제 날짜 자동 변환 · 카테고리 색 체계 · 간트/캘린더 연동 · 편집기 · 백업/복원</li>
+      <li><span class="tag t-h">약점</span> 오늘 날짜 하드코딩 · 짧은 달 업무 누락 · 기기 간 데이터 불일치 · 입력값 HTML 깨짐</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>발견 이슈 & 조치</h2>
+    <div class="tw"><table>
+      <thead><tr><th>심각도</th><th>이슈</th><th>영향</th><th>조치</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag t-h">높음</span></td><td>오늘 = "2026-10-26" 고정 · 시작월 2026-10 고정</td><td>11월부터 오늘 표시·기본월 오류</td><td>KST 기준 실제 오늘 자동 계산</td></tr>
+        <tr><td><span class="tag t-h">높음</span></td><td>그달 총 영업일 &lt; 매뉴얼 영업일</td><td>2월(17일)·5월(18일) 「2차 추정실적(20~22)」 달력·날짜 누락</td><td>말일 영업일로 당겨 배치 + 「말일조정」 표시</td></tr>
+        <tr><td><span class="tag t-h">높음</span></td><td>로컬 데이터 있으면 서버 data.json 무시</td><td>PC A에서 저장 → PC B 미반영</td><td>meta.updatedAt 비교 → 최신본 교체 확인창</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>공휴일 누락: 2025-06-03 대선 · 2027-12-27 성탄 대체 · 근로자의날 · 2028년 전체</td><td>영업일 1일씩 밀림</td><td>추가 + 미등록 연도 경고</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>업무명·설명 HTML 미이스케이프</td><td>따옴표 입력 시 편집칸 잘림 · 스크립트 삽입 가능</td><td>전 출력 이스케이프</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>다른 달 날짜로 SPOT 등록 시 현재 달에 저장</td><td>달력 미표시 (유실처럼 보임)</td><td>해당 날짜의 달에 저장 + 화면 이동</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>토큰 안내 「외부로 전송되지 않음」</td><td>사실과 다름 (api.github.com 전송)</td><td>문구 정정 · Fine-grained 토큰 권장</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>GitHub API 사용량 확인 기능 없음</td><td>한도 초과 원인 파악 불가</td><td>남은 호출수·초기화 시각·세션 호출수 표시</td></tr>
+        <tr><td><span class="tag t-m">중간</span></td><td>모바일 가로 스크롤 (390px 화면 → 568px)</td><td>폰에서 화면 잘림</td><td>grid 최소폭·줄바꿈 보정</td></tr>
+        <tr><td><span class="tag t-l">낮음</span></td><td>삭제 업무의 완료기록도 완료건수 집계</td><td>완료 &gt; 전체 가능</td><td>존재 업무만 집계</td></tr>
+        <tr><td><span class="tag t-l">낮음</span></td><td>영업일 입력 범위·종료&lt;시작 검증 없음</td><td>간트 깨짐</td><td>1~24 보정 · 종료 ≥ 시작</td></tr>
+        <tr><td><span class="tag t-l">낮음</span></td><td>백업 불러오기 구조 검증 없음 · 저장 실패 시 상태표시 고착</td><td>화면 오류</td><td>구조 검증 · 상태표시 해제 · 409 충돌 안내</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <h2>추가 기능</h2>
+    <ul>
+      <li><b>지연 표시</b> — 종료일 경과 + 미완료 → 빨간 「지연」 배지 · KPI 「⏰ 지연 N건」</li>
+      <li><b>진행중 표시</b> — 오늘이 업무 기간 내 → 「진행중」 배지</li>
+      <li><b>오늘 영업일</b> — KPI에 「오늘 N영업일」</li>
+      <li><b>정렬</b> — 체크리스트 시작 영업일순 · SPOT 날짜순</li>
+      <li><b>삭제 확인창</b> — 정례 업무·가이드 카드</li>
+      <li><b>백업 파일명</b> — data_YYYYMMDD.json</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>배포 흐름 (요청 1~5단계 수행 결과)</h2>
+    <div class="flow">
+      <span>① zip 해제 ✓</span><span>② git 커밋 ✓</span>
+      <span class="x">③ gh CLI 로그인 무효 → GitHub 커넥터로 대체</span>
+      <span class="x">④ Pages 활성화 API 미지원 → 사용자 1회 클릭</span>
+      <span>⑤ URL</span>
+    </div>
+    <div class="mut" style="margin-top:8px">상세 결과는 대화 답변 참조</div>
+  </section>
+
+  <section class="panel">
+    <h2>잔여 리스크</h2>
+    <ul>
+      <li><span class="tag t-h">주의</span> 무료 계정 Pages = <b>Public 저장소</b> → data.json(화주명·지사 일정·경영계획 건수) 외부 열람 가능</li>
+      <li><span class="tag t-m">주의</span> 토큰 브라우저 평문 저장 → 개인 PC 한정 사용</li>
+      <li><span class="tag t-l">관리</span> 임시공휴일·선거일 → KR_HOLIDAYS 수동 추가</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>
