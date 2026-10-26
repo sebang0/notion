@@ -6,3 +6,4 @@
 2026-10-26 19:55 | co-schedule/README.md (→ docs/로 이동) | 배포·동기화·공휴일 관리 안내
 2026-10-26 19:55 | C-업무대시보드_평가보고서_261026_1955.html | 대시보드 평가·개선 보고서
 2026-10-26 22:52 | docs/ (index.html, data.json, README.md) | co-schedule/ 폴더를 docs/로 이동 · notion 저장소 GitHub Pages(/docs) 배포용 · 동기화 대상 자동 감지 추가
+2026-10-26 23:23 | docs/index.html, docs/data.json, docs/README.md | 데이터 암호화 적용 (AES-256-GCM · 잠금화면 · 비밀번호 변경 · 토큰 암호화 · 코드 내 업무 원문 제거) · data.json 암호문으로 교체
