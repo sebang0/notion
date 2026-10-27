@@ -3,10 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>손익·원가 일정 관리 & 업무 매뉴얼</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<title>Notion</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20d%3D%22M14%204h28l12%2012v40a4%204%200%200%201-4%204H14a4%204%200%200%201-4-4V8a4%204%200%200%201%204-4z%22%20fill%3D%22%232563eb%22/%3E%3Cpath%20d%3D%22M42%204v8a4%204%200%200%200%204%204h8z%22%20fill%3D%22%2393c5fd%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2226%22%20width%3D%2228%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2236%22%20width%3D%2228%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2246%22%20width%3D%2218%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
 <style>
+/* ━━━━ 글꼴: 세방고딕 Regular(본문) + Bold(제목·버튼·강조)
+   - 1순위: PC에 설치된 세방고딕 (local)
+   - 2순위: 저장소 docs/fonts/ 의 웹폰트 파일 (업로드 시 자동 사용)
+   - 대체: Apple SD Gothic Neo / 맑은 고딕 ━━━━ */
+@font-face {
+  font-family: "SebangGothic"; font-weight: 400; font-style: normal; font-display: swap;
+  src: local("세방고딕 Regular"), local("세방고딕"), local("SebangGothic-Regular"), local("Sebang Gothic Regular"), local("SebangGothic"),
+       url("fonts/SebangGothic-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "SebangGothic"; font-weight: 700; font-style: normal; font-display: swap;
+  src: local("세방고딕 Bold"), local("SebangGothic-Bold"), local("Sebang Gothic Bold"),
+       url("fonts/SebangGothic-Bold.woff2") format("woff2");
+}
 :root {
   --bg: #f4f5f7;
   --panel: #ffffff;
@@ -46,16 +59,18 @@
   --c-yr-bg: #eef2ff;
   --c-yr-bd: #c7d2fe;
 
-  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --f-body: "SebangGothic", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+  --f-mono: "SebangGothic", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;  /* 숫자는 tabular-nums로 정렬 */
 }
 
 * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body {
   margin: 0; padding: 0;
   background: var(--bg); color: var(--fg);
-  font-family: var(--f-body); font-size: 13.5px; line-height: 1.5;
+  font-family: var(--f-body); font-size: 13.5px; line-height: 1.5; font-weight: 400;
+  font-variant-numeric: tabular-nums;
 }
+h1, h2, .btn, .tab-btn, .badge, .kpi .l, .kpi .n, .c-day, .ym-title, b, strong, th { font-weight: 700; }
 .wrap {
   max-width: 1440px; margin: 0 auto;
   padding: 22px 20px 60px;
@@ -402,6 +417,41 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
 }
 .form-row { display: flex; flex-direction: column; gap: 4px; }
 .form-row label { font-size: 12px; font-weight: 700; color: #374151; }
+.form-row textarea { font: inherit; font-size: 12.5px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+.tm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tm-grid .tm-wide { grid-column: 1 / -1; }
+@media (max-width: 480px) { .tm-grid { grid-template-columns: 1fr; } }
+/* 헤더 버튼 */
+.icon-btn { font-size: 16px; line-height: 1; padding: 5px 10px; }
+.btn:disabled { opacity: .35; cursor: default; }
+.menu-wrap { position: relative; }
+.menu-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; min-width: 170px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  padding: 4px; display: flex; flex-direction: column; }
+.menu-pop[hidden] { display: none; }
+.menu-pop > button, .menu-pop > label { font: inherit; font-size: 13px; text-align: left; background: none; border: 0; border-radius: 6px;
+  padding: 8px 10px; cursor: pointer; color: var(--fg); }
+.menu-pop > button:hover, .menu-pop > label:hover, .menu-pop > button:focus-visible { background: var(--bg); outline: none; }
+/* 저장 알림: 우측 하단 플로팅 (클릭 또는 2.5초 후 사라짐) */
+.save-float { position: fixed; z-index: 10002; right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  font-size: 12.5px; font-weight: 700; color: var(--c-std); background: var(--c-std-bg); border: 1px solid var(--c-std-bd);
+  padding: 8px 14px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); cursor: pointer; }
+.save-float.syncing { color: var(--c-spot); background: var(--c-spot-bg); border-color: var(--c-spot-bd); }
+.save-float.err { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+/* 타임테이블 직접 편집: 막대 드래그(이동) · 양 끝 핸들(기간 조정) · 클릭(편집 팝업) */
+.tlg .bar-wrap[data-id] { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.tlg .bar-wrap[data-id]:hover .bar { filter: brightness(0.95); box-shadow: 0 0 0 2px rgba(37,99,235,0.35); }
+.tlg .gh { position: absolute; top: 2px; bottom: 2px; width: 9px; z-index: 3; cursor: ew-resize; border-radius: 3px; }
+.tlg .gh-l { left: 0; } .tlg .gh-r { right: 0; }
+.tlg .bar-wrap[data-id]:hover .gh { background: rgba(29,33,40,0.28); }
+@media (pointer: coarse) { .tlg .gh { width: 14px; background: rgba(29,33,40,0.15); } }
+.tlg .cell-nm[data-id], .tlg .cell-cat[data-id] { cursor: pointer; }
+.tlg .cell-nm[data-id]:hover span { text-decoration: underline; }
+.tlg .grid-bg[data-bd] { cursor: copy; }
+.tlg .grid-bg[data-bd]:hover { background: rgba(37,99,235,0.07); }
+.grp-add { margin-left: auto; font: inherit; font-size: 11.5px; font-weight: 700; border: 1px solid currentColor; background: transparent;
+  color: inherit; border-radius: 999px; padding: 1px 9px; cursor: pointer; }
+body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: none; }
 .off-pill { font-size: 10px; color: #374151; font-weight: 600; background: #e5e7eb; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .leave-pill { font-size: 10px; color: #166534; font-weight: 700; background: #bbf7d0; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .leave-warn-pill { font-size: 10.5px; font-weight: 700; color: #92400e; background: #fde68a; padding: 0 6px; border-radius: 99px; white-space: nowrap; }
@@ -456,6 +506,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .wrap > *, .view-sec > *, .cal-layout > *, .two-col > *, .panel { min-width: 0; }
 .ym-nav { flex-wrap: wrap; }
 @media (max-width: 640px) {
+  .save-float { right: 12px; left: 12px; text-align: center; }
   .kpis { grid-template-columns: 1fr 1fr; }
   .kpi { padding: 10px 12px; }
   .chk-row { flex-wrap: wrap; }
@@ -481,22 +532,21 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 <div class="wrap">
   <!-- 상단 타이틀 & GitHub 클라우드 동기화 도구 -->
   <div class="top-header">
-    <div>
-      <div class="lbl">관리회계 · 월간 업무 운영</div>
-      <h1>손익·원가 월간 실사 캘린더 & 표준 업무 매뉴얼</h1>
-    </div>
+    <h1>실적·손익·원가관리 업무 일정표</h1>
     <div class="header-actions">
-      <span class="save-indicator" id="save-msg">🔒 잠김</span>
+      <button class="btn icon-btn" type="button" id="btn-undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button>
+      <button class="btn icon-btn" type="button" id="btn-redo" title="다시 실행 (Ctrl+Y 또는 Ctrl+Shift+Z)" aria-label="다시 실행" disabled>↷</button>
       <button class="btn btn-dark" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
-      <button class="btn" type="button" id="btn-gh-push" title="현재 변경사항을 GitHub data.json에 암호화하여 즉시 커밋합니다">⬆️ GitHub에 즉시 저장</button>
-      <button class="btn" type="button" id="btn-export" title="매뉴얼과 월별 체크 내역을 암호화된 JSON 파일로 백업합니다">💾 백업</button>
-      <label class="btn" style="cursor:pointer" title="백업한 JSON 파일을 불러옵니다">
-        📂 불러오기
-        <input type="file" id="in-import" accept=".json" style="display:none">
-      </label>
-      <button class="btn" type="button" id="btn-chpw" title="데이터 암호화 비밀번호를 변경합니다">🔑 비밀번호 변경</button>
-      <button class="btn btn-dark" type="button" id="btn-lock" title="화면을 잠그고 메모리의 비밀번호를 지웁니다">🔒 잠금</button>
-      <button class="btn btn-danger" type="button" id="btn-reset" title="모든 데이터를 비웁니다">전체 비우기</button>
+      <div class="menu-wrap">
+        <button class="btn" type="button" id="btn-menu" aria-haspopup="true" aria-expanded="false" aria-controls="menu-pop">☰ 메뉴</button>
+        <div class="menu-pop" id="menu-pop" role="menu" hidden>
+          <button type="button" role="menuitem" id="btn-export" title="암호화된 JSON 파일로 백업">💾 백업</button>
+          <label role="menuitem" title="백업한 JSON 파일을 불러옵니다">📂 불러오기<input type="file" id="in-import" accept=".json" hidden></label>
+          <button type="button" role="menuitem" id="btn-chpw">🔑 비밀번호 변경</button>
+          <button type="button" role="menuitem" id="btn-lock">🔒 잠금</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="button" id="btn-gh-push" title="현재 변경사항을 GitHub data.json에 암호화하여 저장합니다">⬆️ 저장</button>
     </div>
   </div>
 
@@ -773,6 +823,40 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   </form>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="save-float" id="save-msg" role="status" title="클릭하면 닫힙니다" hidden></div>
+
+<!-- ━━━━ 정례 업무 편집 팝업 (표준 타임테이블에서 막대·업무명·빈칸 클릭) ━━━━ -->
+<div class="modal-backdrop" id="task-modal">
+  <form class="modal-box" id="task-form" autocomplete="off">
+    <h2 style="font-size:17px" id="tm-title">정례 업무 편집</h2>
+    <div class="tm-grid">
+      <div class="form-row"><label for="tm-cat">카테고리</label>
+        <select id="tm-cat"><option>선행</option><option>실적</option><option>표준원가</option><option>회의체</option></select></div>
+      <div class="form-row"><label for="tm-mode">진행 형태</label>
+        <select id="tm-mode">
+          <option value="work">직접수행 (진한 단색)</option>
+          <option value="prep_rep">취합·대기 후 액션 (빗금+강조)</option>
+          <option value="ext">타부서 선행 (회색 빗금)</option>
+        </select></div>
+      <div class="form-row tm-wide"><label for="tm-name">업무명</label><input type="text" id="tm-name" placeholder="업무명"></div>
+      <div class="form-row"><label for="tm-start">시작 영업일 (1~24)</label><input type="number" id="tm-start" min="1" max="24"></div>
+      <div class="form-row"><label for="tm-end">종료 영업일 (1~24)</label><input type="number" id="tm-end" min="1" max="24"></div>
+      <div class="form-row tm-wide"><label for="tm-label">완료 액션 라벨 (취합·대기 후 액션일 때 마지막 날 표시)</label><input type="text" id="tm-label" placeholder="보고 / 결재 / 확인 / 회의"></div>
+      <div class="form-row tm-wide"><label for="tm-desc">주요 내용 및 산출물 설명</label><textarea id="tm-desc" rows="3"></textarea></div>
+    </div>
+    <div class="lock-msg" id="tm-msg"></div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-danger" type="button" id="btn-tm-del">삭제</button>
+        <button class="btn" type="button" id="btn-tm-dup">복제</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" type="button" id="btn-tm-cancel">취소</button>
+        <button class="btn btn-primary" type="submit">저장</button>
+      </div>
+    </div>
+  </form>
+</div>
 
 <!-- ━━━━ GitHub 클라우드 연동 설정 모달 ━━━━ -->
 <div class="modal-backdrop" id="gh-modal">
@@ -931,15 +1015,82 @@ function loadGhConfig() {
   }
 }
 
+/* 변경 저장: 내용이 바뀐 경우에만 기록(되돌리기 이력) → 암호화 저장 → 우측 하단 알림 */
 function saveState() {
+  if (!recordHistory()) return;
   state.meta = state.meta || {};
   state.meta.updatedAt = new Date().toISOString();
   persistLocal();
-  const el = document.getElementById("save-msg");
   const now = new Date();
   const tStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
-  el.textContent = `🔐 암호화 저장됨 (${tStr})`;
-  el.classList.remove("syncing");
+  setSaveMsg(`🔐 암호화 저장됨 (${tStr})`);
+}
+
+/* 우측 하단 플로팅 알림
+   - kind: "" 정상 / "syncing" 진행 중(자동으로 닫히지 않음) / "err" 오류
+   - 클릭하거나 2.5초(오류 6초) 지나면 사라짐 */
+let saveMsgTimer = null;
+function setSaveMsg(text, kind = "") {
+  const el = document.getElementById("save-msg");
+  el.textContent = text;
+  el.className = "save-float " + kind;
+  el.hidden = false;
+  clearTimeout(saveMsgTimer);
+  if (kind !== "syncing") saveMsgTimer = setTimeout(() => { el.hidden = true; }, kind === "err" ? 6000 : 2500);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [3-0] 되돌리기 / 다시 실행 (모든 메뉴 공통)
+   - 변경할 때마다 상태 스냅샷을 이력에 쌓음 (최대 100단계, 메모리에만 보관)
+   - ↶ / Ctrl+Z : 이전 상태로 · ↷ / Ctrl+Y · Ctrl+Shift+Z : 다음 상태로
+   - 입력칸에서 글자를 쓰는 중에는 브라우저 기본 되돌리기 사용
+   ══════════════════════════════════════════════════════════════════════ */
+const HIST_MAX = 100;
+let hist = [], hIdx = -1;
+function snapState() {
+  const c = JSON.parse(JSON.stringify(state));
+  delete c.meta;
+  return JSON.stringify(c);
+}
+function resetHistory() {
+  hist = [snapState()];
+  hIdx = 0;
+  updateUndoUI();
+}
+function recordHistory() {
+  const s = snapState();
+  if (hIdx >= 0 && hist[hIdx] === s) return false;
+  hist = hist.slice(0, hIdx + 1);
+  hist.push(s);
+  if (hist.length > HIST_MAX) hist.shift();
+  hIdx = hist.length - 1;
+  updateUndoUI();
+  return true;
+}
+function applyHistory(i) {
+  const meta = state.meta || {};
+  state = normalizeState(JSON.parse(hist[i]));
+  state.meta = meta;
+  state.meta.updatedAt = new Date().toISOString();
+  hIdx = i;
+  persistLocal();
+  rerenderAll();
+  updateUndoUI();
+}
+function undo() {
+  if (hIdx <= 0) { showToast("더 되돌릴 작업이 없습니다."); return; }
+  applyHistory(hIdx - 1);
+  showToast(`↶ 되돌리기 (남은 ${hIdx}단계)`);
+}
+function redo() {
+  if (hIdx >= hist.length - 1) { showToast("다시 실행할 작업이 없습니다."); return; }
+  applyHistory(hIdx + 1);
+  showToast("↷ 다시 실행");
+}
+function updateUndoUI() {
+  const u = document.getElementById("btn-undo"), r = document.getElementById("btn-redo");
+  if (u) u.disabled = hIdx <= 0;
+  if (r) r.disabled = hIdx < 0 || hIdx >= hist.length - 1;
 }
 
 function rerenderAll() {
@@ -1076,7 +1227,7 @@ function showLock(mode, msg) {
   const T = {
     unlock: ["🔒 데이터 잠금 해제", "업무 데이터는 비밀번호로 암호화되어 있습니다.", "비밀번호", "열기"],
     setup:  ["🔑 새 비밀번호 설정", "저장된 암호화 데이터가 없습니다. 비밀번호를 정하면 이후 모든 데이터가 이 비밀번호로 암호화됩니다.", "", "설정"],
-    change: ["🔑 비밀번호 변경", "변경 후 [⬆️ GitHub에 즉시 저장]을 눌러야 다른 PC에도 새 비밀번호가 적용됩니다.", "현재 비밀번호", "변경"]
+    change: ["🔑 비밀번호 변경", "변경 후 [⬆️ 저장]을 눌러야 다른 PC에도 새 비밀번호가 적용됩니다.", "현재 비밀번호", "변경"]
   }[mode];
   $("lock-title").textContent = T[0];
   $("lock-desc").textContent = T[1];
@@ -1131,7 +1282,7 @@ async function submitLock(ev) {
       sessionPw = readNewPw();
       curSalt = newSalt();
       keyCache.clear();
-      note = "비밀번호를 변경했습니다. [⬆️ GitHub에 즉시 저장]으로 서버에도 반영하세요.";
+      note = "비밀번호를 변경했습니다. [⬆️ 저장]으로 서버에도 반영하세요.";
     }
     try { localStorage.removeItem(LEGACY_KEY); } catch (e) { /* 무시 */ }
     if (lockCtx.mode === "change") await saveGhConfig(); else await unlockGhToken();
@@ -1140,8 +1291,8 @@ async function submitLock(ev) {
     msgEl.textContent = "";
     refreshGhButtonUI();
     rerenderAll();
-    const el = document.getElementById("save-msg");
-    el.textContent = "🔓 잠금 해제됨";
+    if (lockCtx.mode !== "change") resetHistory();
+    setSaveMsg("🔓 잠금 해제됨");
     if (note) alert(note);
   } catch (err) {
     msgEl.textContent = err.message;
@@ -1232,9 +1383,7 @@ async function pushToGitHub() {
     document.getElementById("gh-modal").classList.add("open");
     return;
   }
-  const el = document.getElementById("save-msg");
-  el.textContent = "⏳ GitHub에 저장 중...";
-  el.classList.add("syncing");
+  setSaveMsg("⏳ GitHub에 저장 중...", "syncing");
 
   try {
     const { branch, path } = await resolveGhTarget();
@@ -1262,11 +1411,9 @@ async function pushToGitHub() {
     if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
     if (putRes.status === 404) throw new Error(`저장소 또는 브랜치(${branch})를 찾을 수 없습니다. 저장소명과 토큰의 저장소 선택을 확인해 주세요.`);
     if (!putRes.ok) throw new Error("GitHub API 응답 오류: " + putRes.status);
-    el.textContent = "☁️ GitHub 동기화 완료! (Pages 반영 1~2분 소요)";
-    el.classList.remove("syncing");
+    setSaveMsg("☁️ 저장 완료 (Pages 반영 1~2분 소요)");
   } catch (err) {
-    el.textContent = "⚠️ GitHub 저장 실패";
-    el.classList.remove("syncing");
+    setSaveMsg("⚠️ 저장 실패", "err");
     alert("GitHub 저장 실패\n\n" + err.message);
   }
 }
@@ -1289,6 +1436,7 @@ async function pullFromGitHub() {
     } else {
       state = normalizeState(parsed); // 구버전 평문 → 다음 저장부터 암호화
     }
+    recordHistory();
     await persistLocal();
     rerenderAll();
     alert("GitHub 저장소의 최신 data.json 데이터를 불러왔습니다.");
@@ -1819,6 +1967,16 @@ function renderManualTab() {
   });
   document.getElementById("kpi-sub-spot").textContent = names(state.guides.spot.map(g => g.title)) || "등록된 항목 없음";
 
+  renderGantt();
+
+  renderGuideCards("spot", "grid-spot-guide", "spot-card", "bg-spot");
+  renderGuideCards("qtr",  "grid-qtr-guide",  "qtr-card",  "bg-qtr");
+  renderGuideCards("yr",   "grid-yr-guide",   "yr-card",   "bg-yr");
+  renderEditorTable();
+}
+
+/* 간트 타임라인만 다시 그림 (드래그 중 실시간 미리보기에 사용) */
+function renderGantt() {
   const gantt = document.getElementById("gantt");
   let html = `<div class="th-cat">구분</div><div class="th-nm">업무명</div>`;
   for (let d = 1; d <= MAX_BD; d++) {
@@ -1833,7 +1991,7 @@ function renderManualTab() {
       const items = state.tasks.filter(t => t.cat === catName).sort((a, b) => a.start - b.start || a.end - b.end);
       if (items.length === 0) return;
       const meta = CAT_META[catName];
-      html += `<div class="grp-hdr grp-${meta.key}" style="grid-row:${rowIdx}">● ${meta.label} — ${items.length}건</div>`;
+      html += `<div class="grp-hdr grp-${meta.key}" style="grid-row:${rowIdx}">● ${meta.label} — ${items.length}건<button class="grp-add" type="button" data-add-cat="${catName}">+ 업무 추가</button></div>`;
       rowIdx++;
       items.forEach(t => {
         html += buildGanttRow(t, rowIdx);
@@ -1848,11 +2006,10 @@ function renderManualTab() {
     });
   }
   gantt.innerHTML = html;
+}
 
-  renderGuideCards("spot", "grid-spot-guide", "spot-card", "bg-spot");
-  renderGuideCards("qtr",  "grid-qtr-guide",  "qtr-card",  "bg-qtr");
-  renderGuideCards("yr",   "grid-yr-guide",   "yr-card",   "bg-yr");
-
+/* 하단 매뉴얼 편집기 표 */
+function renderEditorTable() {
   const tb = document.getElementById("tb-manual-editor");
   tb.innerHTML = state.tasks.map((t, idx) => {
     return `<tr>
@@ -1884,27 +2041,31 @@ function buildGanttRow(t, rowIdx) {
   const e = Math.max(s, clampBD(t.end, s));
   const nm = esc(t.name), lb = esc(t.endLabel);
 
-  let r = `<div class="cell-cat" style="grid-row:${rowIdx};grid-column:1"><span class="badge bg-${ck}">${esc(t.cat)}</span></div>`;
-  r += `<div class="cell-nm" style="grid-row:${rowIdx};grid-column:2" title="${esc(t.desc) || nm}"><span>${nm}</span></div>`;
+  const id = esc(t.id);
+  const tip = "드래그: 이동 · 양 끝: 기간 조정 · 클릭: 편집";
+  let r = `<div class="cell-cat" data-id="${id}" style="grid-row:${rowIdx};grid-column:1" title="클릭: 편집"><span class="badge bg-${ck}">${esc(t.cat)}</span></div>`;
+  r += `<div class="cell-nm" data-id="${id}" style="grid-row:${rowIdx};grid-column:2" title="${esc(t.desc) || nm} (클릭: 편집)"><span>${nm}</span></div>`;
 
   for (let d = 1; d <= MAX_BD; d++) {
     const wSep = (d === 6 || d === 11 || d === 16 || d === 21) ? "w-sep" : "";
     const finBg = (d <= 5) ? "fin-bg" : "";
-    r += `<div class="grid-bg ${wSep} ${finBg}" style="grid-row:${rowIdx};grid-column:${d + 2}"></div>`;
+    r += `<div class="grid-bg ${wSep} ${finBg}" data-bd="${d}" data-cat="${esc(t.cat)}" style="grid-row:${rowIdx};grid-column:${d + 2}" title="${d}영업일 · 클릭: 새 업무 추가"></div>`;
   }
 
+  const hl = `<span class="gh gh-l" data-h="start" title="시작 영업일 조정"></span>`;
+  const hr = `<span class="gh gh-r" data-h="end" title="종료 영업일 조정"></span>`;
   if (t.mode === "prep_rep" && e > s) {
     const prepEnd = e - 1;
-    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${s + 2} / ${prepEnd + 3};padding-right:0" title="[${nm}] 진행 기간 (${s}~${prepEnd}영업일)">
-            <div class="bar b-prep-${ck}"></div>
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${s + 2} / ${prepEnd + 3};padding-right:0" title="[${nm}] 진행 기간 (${s}~${prepEnd}영업일) · ${tip}">
+            <div class="bar b-prep-${ck}"></div>${hl}
           </div>`;
-    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${e + 2} / ${e + 3};padding-left:0" title="[${nm}] ${e}영업일 ${lb}">
-            <div class="bar b-milestone-${ck}">${lb}</div>
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${e + 2} / ${e + 3};padding-left:0" title="[${nm}] ${e}영업일 ${lb} · ${tip}">
+            <div class="bar b-milestone-${ck}">${lb}</div>${hr}
           </div>`;
   } else {
     const barClass = t.mode === "ext" ? "b-ext" : `b-${ck}`;
-    r += `<div class="bar-wrap" style="grid-row:${rowIdx};grid-column:${s + 2} / ${e + 3}" title="[${esc(t.cat)}] ${nm} (${s}~${e}영업일)">
-            <div class="bar ${barClass}"></div>
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${s + 2} / ${e + 3}" title="[${esc(t.cat)}] ${nm} (${s}~${e}영업일) · ${tip}">
+            <div class="bar ${barClass}"></div>${hl}${hr}
           </div>`;
   }
   return r;
@@ -1943,10 +2104,11 @@ window.updateManualTask = function(idx, key, val) {
 };
 
 window.removeManualTask = function(idx) {
-  if (!confirm(`'${state.tasks[idx].name}' 업무를 삭제하시겠습니까?`)) return;
+  const name = state.tasks[idx].name;
   state.tasks.splice(idx, 1);
   saveState();
   rerenderAll();
+  showToast(`'${name}' 삭제 · ↶ 또는 Ctrl+Z로 되돌리기`);
 };
 
 window.updateGuideCard = function(groupKey, idx, field, val) {
@@ -1966,7 +2128,6 @@ window.addGuideCard = function(groupKey) {
 };
 
 window.deleteGuideCard = function(groupKey, idx) {
-  if (!confirm("이 항목을 삭제하시겠습니까?")) return;
   state.guides[groupKey].splice(idx, 1);
   saveState();
   renderManualTab();
@@ -2027,20 +2188,7 @@ document.getElementById("in-spot-name").addEventListener("keydown", e => {
   if (e.key === "Enter") document.getElementById("btn-add-spot").click();
 });
 
-document.getElementById("btn-add-manual").addEventListener("click", () => {
-  state.tasks.push({
-    id: "T_" + Date.now(),
-    cat: "실적",
-    name: "신규 정례 업무",
-    start: 1,
-    end: 3,
-    mode: "prep_rep",
-    endLabel: "보고",
-    desc: "업무 내용을 입력하세요."
-  });
-  saveState();
-  rerenderAll();
-});
+document.getElementById("btn-add-manual").addEventListener("click", () => openTaskDialog(null, { cat: "실적", start: 1, end: 3, mode: "prep_rep", endLabel: "보고" }));
 
 document.querySelectorAll("[data-gmode]").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -2053,7 +2201,7 @@ document.querySelectorAll("[data-gmode]").forEach(btn => {
 /* ══════════════════════════════════════════════════════════════════════
    [10] GitHub 동기화 모달 제어
    ══════════════════════════════════════════════════════════════════════ */
-/* [⬆️ GitHub에 즉시 저장] 버튼은 항상 표시
+/* [⬆️ 저장] 버튼은 항상 표시
    - 토큰 설정 전: 흐리게 표시, 클릭 시 동기화 설정창 열림 (pushToGitHub 내부 처리)
    - 토큰 설정 후: 정상 표시, 클릭 시 즉시 커밋 */
 function refreshGhButtonUI() {
@@ -2096,7 +2244,7 @@ document.getElementById("btn-gh-pull").addEventListener("click", () => { readGhF
 document.getElementById("btn-gh-usage").addEventListener("click", () => { readGhForm(); checkGhUsage(); });
 
 /* ══════════════════════════════════════════════════════════════════════
-   [11] JSON 파일 백업 & 복원 & 초기화
+   [11] JSON 파일 백업 & 복원 (☰ 메뉴)
    - 백업 파일 = 암호화 봉투 (data_YYYYMMDD.json, 저장소 업로드 시 data.json으로 변경)
    - 복원: 암호화 백업은 현재 비밀번호로 복호화, 구버전 평문 백업도 수용
    - 복원 시 구조 검증(normalizeState) 실패하면 기존 데이터 유지
@@ -2133,12 +2281,211 @@ document.getElementById("in-import").addEventListener("change", e => {
   reader.readAsText(file);
 });
 
-document.getElementById("btn-reset").addEventListener("click", () => {
-  if (confirm("모든 매뉴얼과 월별 체크 내역을 비우시겠습니까?\n(GitHub에 저장하기 전까지 서버 데이터는 유지됩니다)")) {
-    state = normalizeState(JSON.parse(JSON.stringify(EMPTY_STATE)));
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-1] 표준 타임테이블 직접 편집
+   - 막대 가운데 드래그 : 기간 길이 유지한 채 이동
+   - 막대 양 끝(핸들) 드래그 : 시작 / 종료 영업일 조정
+   - 막대·업무명·구분 클릭 : 편집 팝업 (카테고리·업무명·영업일·진행 형태·완료 액션·설명·삭제·복제)
+   - 빈 칸 클릭 : 그 영업일로 새 업무 추가 · 그룹 제목의 [+ 업무 추가]
+   - 터치 : 0.35초 길게 누른 뒤 드래그 / 바로 밀면 타임라인 스크롤
+   ══════════════════════════════════════════════════════════════════════ */
+const ganttEl = document.getElementById("gantt");
+const tlWrap = ganttEl.closest(".tl-wrap");
+let gdrag = null;
+
+/* 화면 x좌표 → 영업일(1~24): 상단 영업일 머리칸 위치 기준 */
+function bdFromX(x) {
+  const days = ganttEl.querySelectorAll(".day");
+  for (let i = 0; i < days.length; i++) {
+    if (x < days[i].getBoundingClientRect().right) return i + 1;
+  }
+  return MAX_BD;
+}
+
+ganttEl.addEventListener("pointerdown", e => {
+  if (e.button !== 0) return;
+  const bar = e.target.closest(".bar-wrap[data-id]");
+  if (!bar) return;
+  const t = state.tasks.find(x => x.id === bar.dataset.id);
+  if (!t) return;
+  const hd = e.target.closest(".gh");
+  gdrag = { id: t.id, mode: hd ? hd.dataset.h : "move", x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY,
+            bd0: bdFromX(e.clientX), s0: t.start, e0: t.end, active: false, scrolling: false,
+            touch: e.pointerType !== "mouse", timer: null };
+  if (gdrag.touch) gdrag.timer = setTimeout(() => { if (gdrag && !gdrag.scrolling) { gdrag.active = true; document.body.classList.add("gdragging"); } }, 350);
+  e.preventDefault();
+});
+
+document.addEventListener("pointermove", e => {
+  if (!gdrag) return;
+  const g = gdrag;
+  if (!g.active) {
+    const dist = Math.hypot(e.clientX - g.x0, e.clientY - g.y0);
+    if (g.touch) {
+      if (dist > 8) { clearTimeout(g.timer); g.scrolling = true; }
+      if (g.scrolling) {
+        tlWrap.scrollLeft -= e.clientX - g.lx;
+        window.scrollBy(0, -(e.clientY - g.ly));
+        g.lx = e.clientX; g.ly = e.clientY;
+      }
+      return;
+    }
+    if (dist < 4) return;
+    g.active = true;
+    document.body.classList.add("gdragging");
+  }
+  const t = state.tasks.find(x => x.id === g.id);
+  if (!t) return;
+  const d = bdFromX(e.clientX) - g.bd0;
+  let s = g.s0, en = g.e0;
+  if (g.mode === "move") {
+    const len = g.e0 - g.s0;
+    s = Math.max(1, Math.min(MAX_BD - len, g.s0 + d));
+    en = s + len;
+  } else if (g.mode === "start") {
+    s = Math.max(1, Math.min(g.e0, g.s0 + d));
+  } else {
+    en = Math.max(g.s0, Math.min(MAX_BD, g.e0 + d));
+  }
+  if (s !== t.start || en !== t.end) {
+    t.start = s; t.end = en;
+    renderGantt();
+    showToast(`${t.name} · ${s === en ? s : s + "~" + en}영업일`);
+  }
+});
+
+function endGanttDrag(cancel) {
+  if (!gdrag) return;
+  const g = gdrag;
+  gdrag = null;
+  clearTimeout(g.timer);
+  document.body.classList.remove("gdragging");
+  const t = state.tasks.find(x => x.id === g.id);
+  if (!t || g.scrolling) return;
+  if (cancel) { t.start = g.s0; t.end = g.e0; renderGantt(); return; }
+  if (!g.active) { openTaskDialog(g.id); return; }
+  if (t.start !== g.s0 || t.end !== g.e0) {
     saveState();
     rerenderAll();
   }
+}
+document.addEventListener("pointerup", () => endGanttDrag(false));
+document.addEventListener("pointercancel", () => endGanttDrag(true));
+
+/* 업무명·구분 클릭 → 편집, 빈 칸 클릭 → 새 업무, 그룹 [+ 업무 추가] */
+ganttEl.addEventListener("click", e => {
+  if (e.target.closest(".bar-wrap")) return;
+  const add = e.target.closest("[data-add-cat]");
+  if (add) { openTaskDialog(null, { cat: add.dataset.addCat }); return; }
+  const nm = e.target.closest(".cell-nm[data-id], .cell-cat[data-id]");
+  if (nm) { openTaskDialog(nm.dataset.id); return; }
+  const cell = e.target.closest(".grid-bg[data-bd]");
+  if (cell) { const bd = Number(cell.dataset.bd); openTaskDialog(null, { cat: cell.dataset.cat, start: bd, end: bd }); }
+});
+
+/* 편집 팝업 */
+let tmEditId = null;
+function syncTaskLabelRow() {
+  document.getElementById("tm-label").disabled = document.getElementById("tm-mode").value !== "prep_rep";
+}
+function openTaskDialog(id, preset = {}) {
+  const t = id ? state.tasks.find(x => x.id === id) : null;
+  tmEditId = t ? t.id : null;
+  const v = t || { cat: "실적", name: "", start: 1, end: 1, mode: "work", endLabel: "", desc: "", ...preset };
+  document.getElementById("tm-title").textContent = t ? "정례 업무 편집" : "새 정례 업무";
+  document.getElementById("tm-cat").value = CAT_ORDER.includes(v.cat) ? v.cat : "실적";
+  document.getElementById("tm-name").value = v.name || "";
+  document.getElementById("tm-start").value = v.start;
+  document.getElementById("tm-end").value = v.end;
+  document.getElementById("tm-mode").value = v.mode || "work";
+  document.getElementById("tm-label").value = v.endLabel || "";
+  document.getElementById("tm-desc").value = v.desc || "";
+  document.getElementById("tm-msg").textContent = "";
+  document.getElementById("btn-tm-del").hidden = !t;
+  document.getElementById("btn-tm-dup").hidden = !t;
+  syncTaskLabelRow();
+  document.getElementById("task-modal").classList.add("open");
+  setTimeout(() => document.getElementById("tm-name").focus(), 0);
+}
+function closeTaskDialog() {
+  document.getElementById("task-modal").classList.remove("open");
+  tmEditId = null;
+}
+function readTaskForm() {
+  const name = document.getElementById("tm-name").value.trim();
+  if (!name) throw new Error("업무명을 입력해 주세요.");
+  const start = clampBD(document.getElementById("tm-start").value, 1);
+  const end = Math.max(start, clampBD(document.getElementById("tm-end").value, start));
+  const mode = document.getElementById("tm-mode").value;
+  return { cat: document.getElementById("tm-cat").value, name, start, end, mode,
+           endLabel: mode === "prep_rep" ? document.getElementById("tm-label").value.trim() : "",
+           desc: document.getElementById("tm-desc").value.trim() };
+}
+document.getElementById("tm-mode").addEventListener("change", syncTaskLabelRow);
+document.getElementById("btn-tm-cancel").addEventListener("click", closeTaskDialog);
+document.getElementById("task-form").addEventListener("submit", e => {
+  e.preventDefault();
+  let v;
+  try { v = readTaskForm(); } catch (err) { document.getElementById("tm-msg").textContent = err.message; return; }
+  if (tmEditId) Object.assign(state.tasks.find(x => x.id === tmEditId), v);
+  else state.tasks.push({ id: "T_" + Date.now(), ...v });
+  const isNew = !tmEditId;
+  closeTaskDialog();
+  saveState();
+  rerenderAll();
+  showToast(isNew ? `'${v.name}' 추가` : `'${v.name}' 수정`);
+});
+document.getElementById("btn-tm-del").addEventListener("click", () => {
+  const idx = state.tasks.findIndex(x => x.id === tmEditId);
+  closeTaskDialog();
+  if (idx >= 0) removeManualTask(idx);
+});
+document.getElementById("btn-tm-dup").addEventListener("click", () => {
+  let v;
+  try { v = readTaskForm(); } catch (err) { document.getElementById("tm-msg").textContent = err.message; return; }
+  const idx = state.tasks.findIndex(x => x.id === tmEditId);
+  const copy = { id: "T_" + Date.now(), ...v, name: v.name + " (복사)" };
+  state.tasks.splice(idx + 1, 0, copy);
+  closeTaskDialog();
+  saveState();
+  rerenderAll();
+  openTaskDialog(copy.id);
+  showToast("복제했습니다. 이름과 일정을 수정하세요.");
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-2] ☰ 메뉴 · 되돌리기/다시 실행 버튼 · 단축키 · 저장 알림 닫기
+   ══════════════════════════════════════════════════════════════════════ */
+const menuBtn = document.getElementById("btn-menu");
+const menuPop = document.getElementById("menu-pop");
+function setMenu(open) {
+  menuPop.hidden = !open;
+  menuBtn.setAttribute("aria-expanded", String(open));
+}
+menuBtn.addEventListener("click", e => { e.stopPropagation(); setMenu(menuPop.hidden); });
+menuPop.addEventListener("click", e => { if (e.target.closest("button")) setMenu(false); });
+document.getElementById("in-import").addEventListener("change", () => setMenu(false));
+document.addEventListener("click", e => { if (!e.target.closest(".menu-wrap")) setMenu(false); });
+
+document.getElementById("btn-undo").addEventListener("click", undo);
+document.getElementById("btn-redo").addEventListener("click", redo);
+document.getElementById("save-msg").addEventListener("click", e => { e.currentTarget.hidden = true; });
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    setMenu(false);
+    ["task-modal", "day-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
+    return;
+  }
+  if (!(e.ctrlKey || e.metaKey)) return;
+  if (document.getElementById("lock-modal").classList.contains("open")) return;
+  const tg = e.target;
+  // 글자 입력칸에서는 브라우저 기본 되돌리기 (체크박스·버튼에 포커스가 있을 때는 앱 되돌리기)
+  if (tg.matches && tg.matches('textarea, [contenteditable=true], input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button])')) return;
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
 });
 
 /* ══════════════════════════════════════════════════════════════════════

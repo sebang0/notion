@@ -1,4 +1,4 @@
-# 손익·원가 월간 실사 캘린더 & 표준 업무 매뉴얼 웹앱
+# 실적·손익·원가관리 업무 일정표
 
 GitHub Pages 정적 웹앱 (서버 없음 · index.html + data.json 2개 파일로 동작)
 
@@ -21,7 +21,7 @@ GitHub Pages 정적 웹앱 (서버 없음 · index.html + data.json 2개 파일�
 | 비밀번호 보관 | 어디에도 저장 안 함 (메모리만) → **분실 시 복구 불가** |
 
 - 접속 → 비밀번호 입력 → 사용 → 🔒 잠금 또는 창 닫기
-- 🔑 비밀번호 변경 → 반드시 [⬆️ GitHub에 즉시 저장] (다른 PC는 새 비밀번호로 열기)
+- 🔑 비밀번호 변경 → 반드시 [⬆️ 저장] (다른 PC는 새 비밀번호로 열기)
 - 비밀번호 권장: 12자 이상 · 다른 서비스와 다른 문구
 
 ## 배포 (최초 1회) — sebang0/notion 저장소 docs/ 폴더
@@ -36,7 +36,7 @@ GitHub Pages 정적 웹앱 (서버 없음 · index.html + data.json 2개 파일�
 2. Owner·Repository는 github.io 접속 시 자동 입력 · 브랜치·경로는 비워두면 Pages 설정에서 자동 감지 · 토큰만 입력
    - 토큰: GitHub → Settings → Developer settings → **Fine-grained tokens** → Repository access: `notion` 1개 → Permissions **Contents: Read and write**, **Pages: Read-only**
    - 토큰은 데이터 비밀번호로 암호화해 브라우저에 저장
-3. 이후 **[⬆️ GitHub에 즉시 저장]** → `docs/data.json` 커밋 → Pages 반영 1~2분
+3. 이후 **[⬆️ 저장]** → `docs/data.json` 커밋 → Pages 반영 1~2분
 4. 다른 PC 접속 시 data.json과 브라우저 저장본 중 최신본으로 열림
 5. **[🔄 사용량 조회]** : GitHub API 시간당 남은 호출 수 확인 (토큰 사용 시 5,000회/시간)
 
@@ -54,6 +54,23 @@ GitHub Pages 정적 웹앱 (서버 없음 · index.html + data.json 2개 파일�
 | 회청 | 토요일 |
 | 회색 빗금 | 회사 휴무 → 영업일 계산에서 제외 |
 | 초록 / 반쪽 초록 | 내 연차 / 반차 → 영업일 영향 없음, 마감일과 겹치면 「연차일 마감」 경고 |
+
+## 표준 타임테이블 사용법
+| 동작 | 결과 |
+|---|---|
+| 막대 가운데 드래그 | 기간 유지한 채 이동 |
+| 막대 양 끝 드래그 | 시작 / 종료 영업일 조정 |
+| 막대·업무명 클릭 | 편집 팝업 (카테고리·업무명·영업일·진행 형태·완료 액션·설명·삭제·복제) |
+| 빈 칸 클릭 · 그룹 [+ 업무 추가] | 새 업무 추가 |
+| 터치 | 길게 누른 뒤 드래그 · 바로 밀면 스크롤 |
+
+## 되돌리기 / 다시 실행
+- 상단 ↶ ↷ 버튼 · Ctrl+Z / Ctrl+Y(또는 Ctrl+Shift+Z) · 모든 메뉴 공통 · 최대 100단계
+- 새로고침·잠금 시 이력 초기화
+
+## 글꼴 (세방고딕)
+- PC에 세방고딕 설치 시 자동 적용
+- 모든 기기 적용: `docs/fonts/SebangGothic-Regular.woff2`, `docs/fonts/SebangGothic-Bold.woff2` 추가
 
 ## 공휴일 관리
 - `index.html`의 `KR_HOLIDAYS` 표 (2025~2028 등록, 근로자의날 포함)
