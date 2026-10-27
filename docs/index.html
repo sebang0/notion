@@ -1106,7 +1106,8 @@ function ghHeaders(json) {
 }
 async function ghFetch(url, opts = {}) {
   ghCallCount++;
-  const res = await fetch(url, opts);
+  // cache: "no-store" → GitHub API의 60초 캐시를 쓰지 않음 (오래된 sha로 저장 충돌(409) 나는 문제 방지)
+  const res = await fetch(url, { cache: "no-store", ...opts });
   const lim = res.headers.get("x-ratelimit-limit");
   if (lim) updateUsageUI(lim, res.headers.get("x-ratelimit-remaining"), res.headers.get("x-ratelimit-reset"));
   return res;
@@ -1156,30 +1157,34 @@ async function pushToGitHub() {
     const { branch, path } = await resolveGhTarget();
     const apiUrl = contentsUrl(path);
 
-    // 1. 기존 data.json의 sha 조회 (덮어쓰기 커밋에 필요)
-    let sha;
-    const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: ghHeaders(false) });
-    if (getRes.ok) sha = (await getRes.json()).sha;
-
-    // 2. 저장 시각 갱신 후 PUT 커밋
+    // 1. 저장 시각 갱신 후 암호문 생성
     saveState();
-    const body = {
-      message: `Update schedule & manual data (${new Date().toISOString().slice(0,16)})`,
-      content: utf8ToBase64(JSON.stringify(await buildEnvelope(), null, 2)),
-      branch
-    };
-    if (sha) body.sha = sha;
+    const content = utf8ToBase64(JSON.stringify(await buildEnvelope(), null, 2));
 
-    const putRes = await ghFetch(apiUrl, { method: "PUT", headers: ghHeaders(true), body: JSON.stringify(body) });
-    if (putRes.status === 409) throw new Error("다른 기기에서 먼저 저장되어 충돌했습니다. 다시 한 번 저장해 주세요.");
-    if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료 또는 권한 부족, 또는 API 한도 초과`);
+    // 2. 최신 sha 조회 → PUT 커밋. 409(sha 불일치)면 sha 재조회 후 최대 2회 재시도
+    let putRes;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      let sha;
+      const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, { headers: ghHeaders(false) });
+      if (getRes.ok) sha = (await getRes.json()).sha;
+      else if (getRes.status === 401 || getRes.status === 403) throw new Error(`권한 오류(${getRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
+
+      const body = { message: `Update schedule & manual data (${new Date().toISOString().slice(0,16)})`, content, branch };
+      if (sha) body.sha = sha;
+      putRes = await ghFetch(apiUrl, { method: "PUT", headers: ghHeaders(true), body: JSON.stringify(body) });
+      if (putRes.status !== 409) break;
+      await new Promise(r => setTimeout(r, 800));
+    }
+    if (putRes.status === 409) throw new Error("저장 충돌이 반복됩니다. 잠시 후 다시 저장해 주세요.");
+    if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
+    if (putRes.status === 404) throw new Error(`저장소 또는 브랜치(${branch})를 찾을 수 없습니다. 저장소명과 토큰의 저장소 선택을 확인해 주세요.`);
     if (!putRes.ok) throw new Error("GitHub API 응답 오류: " + putRes.status);
     el.textContent = "☁️ GitHub 동기화 완료! (Pages 반영 1~2분 소요)";
     el.classList.remove("syncing");
   } catch (err) {
     el.textContent = "⚠️ GitHub 저장 실패";
     el.classList.remove("syncing");
-    alert("GitHub 저장 중 오류가 발생했습니다.\n저장소명과 토큰 권한을 확인해 주세요.\n\n" + err.message);
+    alert("GitHub 저장 실패\n\n" + err.message);
   }
 }
 

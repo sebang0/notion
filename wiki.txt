@@ -8,3 +8,4 @@
 2026-10-26 22:52 | docs/ (index.html, data.json, README.md) | co-schedule/ 폴더를 docs/로 이동 · notion 저장소 GitHub Pages(/docs) 배포용 · 동기화 대상 자동 감지 추가
 2026-10-26 23:23 | docs/index.html, docs/data.json, docs/README.md | 데이터 암호화 적용 (AES-256-GCM · 잠금화면 · 비밀번호 변경 · 토큰 암호화 · 코드 내 업무 원문 제거) · data.json 암호문으로 교체
 2026-10-27 13:16 | docs/index.html | [⬆️ GitHub에 즉시 저장] 버튼 상시 표시 (토큰 미설정 시 흐리게, 클릭 시 설정창)
+2026-10-27 13:20 | docs/index.html | GitHub 저장 충돌(409) 수정: API 캐시 미사용 + 충돌 시 sha 재조회 자동 재시도 · 오류 메시지 상태코드별 구분
