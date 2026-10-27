@@ -155,7 +155,7 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 .bg-qtr  { background: var(--c-qtr-bg);  color: var(--c-qtr);  border: 1px solid var(--c-qtr-bd); }
 .bg-yr   { background: var(--c-yr-bg);   color: var(--c-yr);   border: 1px solid var(--c-yr-bd); }
 
-/* ━━━━ [탭 1] 한국 실사 캘린더 레이아웃 ━━━━ */
+/* ━━━━ [탭 1] 이달의 일정 레이아웃 ━━━━ */
 .cal-toolbar {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
 }
@@ -174,16 +174,16 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 }
 .prog-bar-fill { height: 100%; background: var(--c-std); transition: width .2s; }
 
-.cal-layout {
-  display: grid; grid-template-columns: 1.75fr 1fr; gap: 18px; align-items: start;
-}
+/* 달력은 전체 폭, 정례 체크리스트·SPOT 관리는 달력 아래 2열 (좁은 화면은 1열) */
+.cal-layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 @media (max-width: 1100px) {
-  .cal-layout { grid-template-columns: 1fr; }
+  .cal-below { grid-template-columns: 1fr; }
 }
 
-/* 한국 달력 7열 그리드 */
+/* 한국 달력 7열 그리드: 일·토 최소 폭(56px), 평일 5열이 나머지 공간을 균등 사용 */
 .cal-grid {
-  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  display: grid; grid-template-columns: 56px repeat(5, minmax(0, 1fr)) 56px;
   border-top: 1px solid var(--line); border-left: 1px solid var(--line);
   border-radius: 8px; overflow: hidden;
 }
@@ -198,6 +198,9 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
   transition: background .1s;
 }
 .cal-cell:hover { background: #fcfcfd; }
+.cal-cell.wkend { padding: 6px 3px; }
+.cal-cell.wkend .c-top { flex-direction: column; align-items: flex-start; }
+.cal-cell.wkend .c-ev { font-size: 10px; padding: 1px 3px; }
 .cal-cell.other-month { background: #f8fafc; opacity: 0.42; pointer-events: none; }
 .cal-cell.hol-bg { background: #fdecee; }
 .cal-cell.sat-bg { background: #eef2f8; }
@@ -258,7 +261,7 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 .chk-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chk-meta { font-family: var(--f-mono); font-size: 11px; color: var(--mut); white-space: nowrap; }
 
-/* ━━━━ [탭 2] 24영업일 간트 타임라인 & 매뉴얼 에디터 ━━━━ */
+/* ━━━━ [탭 2] 표준 타임테이블 (24영업일 간트 & 매뉴얼 에디터) ━━━━ */
 .kpis {
   display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 14px;
 }
@@ -464,6 +467,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .nav-tabs { overflow-x: auto; }
   .tab-btn { padding: 9px 12px; font-size: 12.5px; white-space: nowrap; }
   .cal-cell { min-height: 72px; padding: 3px; }
+  .cal-grid { grid-template-columns: 30px repeat(5, minmax(0, 1fr)) 30px; }
+  .cal-cell.wkend { padding: 3px 1px; }
   .c-ev { font-size: 9.5px; padding: 1px 3px; }
   .bd-pill, .hol-pill { font-size: 8.5px; white-space: nowrap; }
   .two-col { grid-template-columns: 1fr; }
@@ -497,12 +502,12 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
   <!-- 메인 탭 네비게이션 -->
   <nav class="nav-tabs" aria-label="메인 메뉴">
-    <button class="tab-btn active" type="button" data-tab="view-cal">📅 1. 월간 실사 캘린더 & 일정 관리 (한국 달력 기준)</button>
-    <button class="tab-btn" type="button" data-tab="view-man">📘 2. 표준 업무 매뉴얼 & 편집기 (1~24 영업일 기준)</button>
+    <button class="tab-btn active" type="button" data-tab="view-cal">📅 이달의 일정</button>
+    <button class="tab-btn" type="button" data-tab="view-man">📘 표준 타임테이블</button>
   </nav>
 
   <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       [탭 1] 한국 실사 달력 & 그달의 일정 관리
+       [탭 1] 이달의 일정 (달력 · 체크리스트 · SPOT 관리)
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <div id="view-cal" class="view-sec active">
     <section class="panel" style="padding: 14px 20px;">
@@ -523,7 +528,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       <section class="panel">
         <div class="head-bar" style="margin-bottom:10px">
           <div>
-            <h2>한국 실사 캘린더 (대한민국 공휴일·대체공휴일 자동 반영)</h2>
+            <h2 id="cal-title">달력</h2>
             <div style="font-size:12px;color:var(--mut);margin-top:2px">
               업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록
             </div>
@@ -548,8 +553,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
         <div class="cal-grid" id="kr-cal-grid"></div>
       </section>
 
-      <!-- 우측: 이달의 체크리스트 & SPOT/추가 업무 등록 -->
-      <div style="display:grid;gap:18px">
+      <!-- 달력 아래: 이달의 체크리스트 & SPOT/추가 업무 등록 -->
+      <div class="cal-below">
         <section class="panel">
           <div class="head-bar" style="margin-bottom:8px">
             <div>
@@ -589,7 +594,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   </div>
 
   <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       [탭 2] 표준 업무 매뉴얼 & 편집기 (1~24 영업일 기준)
+       [탭 2] 표준 타임테이블 (1~24 영업일 기준 매뉴얼 & 편집기)
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <div id="view-man" class="view-sec">
     <section class="kpis" aria-label="카테고리별 요약">
@@ -616,7 +621,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
         <div>
           <h2>1. 월간 정례 업무 표준 타임라인 (1 ~ 24 영업일)</h2>
           <div style="font-size:12px;color:var(--mut);margin-top:2px">
-            하단 [5. 매뉴얼 편집기]에서 영업일이나 완료 액션을 수정하면 이 차트와 1번 탭의 한국 실사 캘린더에 즉시 반영됩니다.
+            하단 [5. 매뉴얼 편집기]에서 영업일이나 완료 액션을 수정하면 이 차트와 [이달의 일정] 달력에 즉시 반영됩니다.
           </div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -1381,7 +1386,7 @@ function mapTaskToMonth(t, cal, isDone, mLog) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   [7] [탭 1] 한국 실사 달력 & 체크리스트 & KPI 렌더링
+   [7] [탭 1] 이달의 일정: 달력 & 체크리스트 & KPI 렌더링
    - 셀 배경: 흰색 = 영업일 / 분홍 = 일요일·공휴일 / 회청 = 토요일 / 회색 빗금 = 회사 휴무 / 초록 = 내 연차
    ══════════════════════════════════════════════════════════════════════ */
 function renderCalendarTab() {
@@ -1391,6 +1396,7 @@ function renderCalendarTab() {
   const showSpan = document.getElementById("chk-show-span").checked;
 
   document.getElementById("ym-label").textContent = `${year}년 ${month}월`;
+  document.getElementById("cal-title").textContent = `${month}월 달력`;
   document.getElementById("in-ym-picker").value = curYM;
 
   // 공휴일 사전 범위 밖 연도 경고
@@ -1460,7 +1466,7 @@ function renderCalendarTab() {
     else if (c.dow === 6) bg = "sat-bg";
     else if (c.offName) bg = "off-bg";
     else if (c.leave) bg = c.leave === "연차" ? "leave-bg" : "half-bg";
-    const cellCls = `cal-cell ${bg} ${c.dateStr === TODAY ? "today-ring" : ""}`;
+    const cellCls = `cal-cell ${bg} ${c.dow === 0 || c.dow === 6 ? "wkend" : ""} ${c.dateStr === TODAY ? "today-ring" : ""}`;
 
     let badges = "";
     if (c.holName) badges += `<span class="hol-pill">${esc(c.holName)}</span>`;
@@ -1800,7 +1806,7 @@ document.getElementById("day-form").addEventListener("submit", e => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   [8] [탭 2] 24영업일 매뉴얼 간트 & 가이드 카드 & 편집기 렌더링
+   [8] [탭 2] 표준 타임테이블: 간트 & 가이드 카드 & 편집기 렌더링
    ══════════════════════════════════════════════════════════════════════ */
 function renderManualTab() {
   document.getElementById("kpi-cnt-perf").textContent = state.tasks.filter(t => t.cat === "실적").length;
