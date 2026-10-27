@@ -458,7 +458,6 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
 /* ━━━━ PDF 출력 (표준 타임테이블 · body.print-tl 일 때만 적용, Ctrl+P 일반 인쇄에는 영향 없음)
    - A4 가로 · 편집기·버튼·다른 탭·팝업 숨김 · 타임라인을 용지 폭에 맞춤 ━━━━ */
 @media print {
-  @page { size: A4 landscape; margin: 8mm; }
   body.print-tl { background: #fff; font-size: 11px; }
   body.print-tl .top-header, body.print-tl .nav-tabs, body.print-tl #view-cal, body.print-tl .modal-backdrop,
   body.print-tl .toast, body.print-tl .save-float, body.print-tl .no-print, body.print-tl .grp-add,
@@ -468,7 +467,7 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
   body.print-tl #view-man > * + * { margin-top: 8px; }
   body.print-tl .print-head { display: flex; justify-content: space-between; align-items: baseline;
     font-size: 14px; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 4px; }
-  body.print-tl #print-date { font-size: 10.5px; font-weight: 400; color: var(--mut); }
+  body.print-tl .print-date { font-size: 10.5px; font-weight: 400; color: var(--mut); }
   body.print-tl .panel { box-shadow: none; padding: 10px 12px; }
   body.print-tl .kpis { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   body.print-tl .kpi { padding: 5px 10px; gap: 0; }
@@ -476,22 +475,47 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
   body.print-tl .kpi .sub { font-size: 10px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
   body.print-tl .two-col, body.print-tl .print-break, body.print-tl .card-grid-3 { break-inside: avoid; }
   body.print-tl .tl-wrap { overflow: visible; }
-  body.print-tl .tlg { min-width: 0; grid-template-columns: 62px 170px repeat(24, minmax(0, 1fr)); font-size: 10.5px; }
+  body.print-tl .tlg { min-width: 0; grid-template-columns: 52px 150px repeat(24, minmax(0, 1fr)); font-size: 10px; }
+  body.print-tl .tlg .day { font-size: 9.5px; }
   body.print-tl .tlg .cell-nm, body.print-tl .tlg .cell-cat { padding-top: 2px; padding-bottom: 2px; }
   body.print-tl .tlg .bar-wrap { height: 15px; }
-  body.print-tl .tlg .bar { height: 13px; font-size: 9.5px; }
+  body.print-tl .tlg .bar { height: 13px; font-size: 8px; letter-spacing: -0.03em; padding: 0; overflow: visible; }
   body.print-tl .tlg .grp-hdr { padding: 3px 10px; margin-top: 3px; }
   body.print-tl .tlg .th-cat, body.print-tl .tlg .th-nm, body.print-tl .tlg .day { padding: 4px 2px; }
   body.print-tl .head-bar { margin-bottom: 6px !important; }
-  body.print-tl .legend { margin-top: 4px; padding-top: 4px; font-size: 9.5px; gap: 4px 14px; flex-wrap: nowrap; }
+  body.print-tl .legend { margin-top: 4px; padding-top: 4px; font-size: 9.5px; gap: 2px 12px; }
   body.print-tl .panel { padding: 8px 12px; }
   body.print-tl .print-head { padding-bottom: 2px; }
-  body.print-tl .print-break { break-before: page; }
-  body.print-tl #sec-gantt { zoom: 0.9; break-inside: avoid; }   /* 1쪽: 요약 + 타임라인 + 범례 */
+  body.print-tl #sec-gantt { break-inside: avoid; }   /* 타임라인은 한 쪽 안에 */
   body.print-tl .two-col { grid-template-columns: 1fr 1fr; }
-  body.print-tl .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  body.print-tl .card-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  body.print-tl .info-card { padding: 8px 10px; }
+  body.print-tl .ic-title { font-size: 12px; }
+  body.print-tl .ic-desc { font-size: 10.5px; }
   body.print-tl .info-card, body.print-tl .kpi, body.print-tl .tlg > div { break-inside: avoid; }
   body.print-tl .editable-box { outline: none !important; }
+
+  /* ── 이달의 일정: 달력만 (A4 가로) ── */
+  body.print-cal { background: #fff; }
+  body.print-cal .top-header, body.print-cal .nav-tabs, body.print-cal #view-man, body.print-cal .modal-backdrop,
+  body.print-cal .toast, body.print-cal .save-float, body.print-cal .no-print, body.print-cal .btn,
+  body.print-cal #view-cal > section:first-child, body.print-cal .cal-below, body.print-cal #cal-warn { display: none !important; }
+  body.print-cal .wrap { max-width: none; padding: 0; }
+  body.print-cal #view-cal, body.print-cal .cal-layout { display: block !important; }
+  body.print-cal #sec-cal { box-shadow: none; border: 0; padding: 0; }
+  body.print-cal .print-head { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 3px; margin-bottom: 6px; }
+  body.print-cal .print-date { font-size: 10px; font-weight: 400; color: var(--mut); }
+  body.print-cal #cal-title { font-size: 15px; }
+  body.print-cal .head-bar { margin-bottom: 4px !important; }
+  body.print-cal .cal-legend { font-size: 9.5px; margin-bottom: 4px; }
+  body.print-cal .cal-grid { grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 40px; }
+  body.print-cal .cal-th { padding: 3px 2px; font-size: 10.5px; }
+  body.print-cal .cal-cell { min-height: 92px; padding: 3px; gap: 2px; break-inside: avoid; }
+  body.print-cal .cal-cell.today-ring { box-shadow: none; }
+  body.print-cal .c-day { font-size: 11px; }
+  body.print-cal .c-ev { font-size: 8.5px; line-height: 1.25; padding: 1px 3px; white-space: normal; overflow: visible; }  /* 업무명 줄바꿈해서 전부 표시 */
+  body.print-cal .c-ev.late, body.print-cal .c-ev.leave-hit { outline-width: 1px; }
 }
 .off-pill { font-size: 10px; color: #374151; font-weight: 600; background: #e5e7eb; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .leave-pill { font-size: 10px; color: #166534; font-weight: 700; background: #bbf7d0; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
@@ -616,18 +640,23 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
     <div class="cal-layout">
       <!-- 한국 달력 패널 -->
-      <section class="panel">
+      <section class="panel" id="sec-cal">
+        <div class="print-head">
+          <span>실적·손익·원가관리 업무 일정표 · <span id="print-cal-ym"></span></span>
+          <span class="print-date"></span>
+        </div>
         <div class="head-bar" style="margin-bottom:10px">
           <div>
             <h2 id="cal-title">달력</h2>
-            <div style="font-size:12px;color:var(--mut);margin-top:2px">
+            <div class="no-print" style="font-size:12px;color:var(--mut);margin-top:2px">
               업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록
             </div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div class="no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <label style="font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:4px">
               <input type="checkbox" id="chk-show-span" checked> 진행 기간(빗금 업무) 모든 영업일에 표시
             </label>
+            <button class="btn btn-dark" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
           </div>
         </div>
 
@@ -689,12 +718,12 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <div id="view-man" class="view-sec">
     <div class="man-toolbar no-print">
-      <span style="font-size:12px;color:var(--mut)">편집기를 제외한 요약·타임라인·SPOT·분기·연간 업무를 A4 가로로 출력합니다.</span>
+      <span style="font-size:12px;color:var(--mut)">편집기를 제외한 요약·타임라인·SPOT·분기·연간 업무를 A4 세로로 출력합니다.</span>
       <button class="btn btn-dark" type="button" id="btn-pdf" title="인쇄 창에서 대상: 'PDF로 저장' 선택">📄 PDF 출력</button>
     </div>
     <div class="print-head">
       <span>실적·손익·원가관리 업무 일정표 · 표준 타임테이블 (1~24 영업일)</span>
-      <span id="print-date"></span>
+      <span class="print-date"></span>
     </div>
     <section class="kpis" aria-label="카테고리별 요약">
       <div class="kpi k-perf">
@@ -741,7 +770,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       </div>
     </section>
 
-    <section class="panel print-break">
+    <section class="panel">
       <div class="head-bar" style="margin-bottom:10px">
         <div>
           <h2>2. SPOT 업무 매뉴얼<span class="no-print"> (클릭하여 텍스트 직접 수정 가능)</span></h2>
@@ -2538,21 +2567,35 @@ document.addEventListener("keydown", e => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   [11-3] 표준 타임테이블 PDF 출력
-   - 브라우저 인쇄 기능 사용 (글자가 이미지가 아닌 텍스트로 저장되어 선명·검색 가능)
-   - 인쇄 창 기본 파일명: C-표준타임테이블_YYMMDD_HHMM (KST)
-   - 출력 대상: 요약 KPI · 타임라인 · SPOT · 분기 · 연간 (편집기 제외)
+   [11-3] PDF 출력 (브라우저 인쇄 → 'PDF로 저장')
+   - 글자가 이미지가 아닌 텍스트로 저장되어 선명·검색 가능
+   - printSection(mode, size, name)
+       mode : body에 붙일 클래스 (print-tl 표준 타임테이블 / print-cal 이달의 일정 달력)
+       size : 용지 방향 → 출력 직전에 @page 규칙을 주입하고 출력 후 제거
+       name : 인쇄 창 기본 파일명 접두어 → C-{name}_YYMMDD_HHMM (KST)
+   - 표준 타임테이블 : A4 세로 · 요약 KPI · 타임라인 · SPOT · 분기 · 연간 (편집기 제외)
+   - 이달의 일정     : A4 가로 · 달력 패널만 (체크리스트·SPOT 목록·상단 요약 제외)
    ══════════════════════════════════════════════════════════════════════ */
-document.getElementById("btn-pdf").addEventListener("click", () => {
+function printSection(mode, size, name) {
   const k = new Date(Date.now() + 9 * 3600 * 1000).toISOString(); // KST
   const stamp = `${k.slice(2, 4)}${k.slice(5, 7)}${k.slice(8, 10)}_${k.slice(11, 13)}${k.slice(14, 16)}`;
-  document.getElementById("print-date").textContent = `출력 ${k.slice(0, 10)} ${k.slice(11, 16)}`;
+  document.querySelectorAll(".print-date").forEach(el => { el.textContent = `출력 ${k.slice(0, 10)} ${k.slice(11, 16)}`; });
+  const pageStyle = document.createElement("style");
+  pageStyle.id = "print-page-size";
+  pageStyle.textContent = `@page { size: A4 ${size}; margin: 8mm; }`;
+  document.head.appendChild(pageStyle);
   const prevTitle = document.title;
-  document.title = `C-표준타임테이블_${stamp}`;
-  document.body.classList.add("print-tl");
-  const restore = () => { document.body.classList.remove("print-tl"); document.title = prevTitle; };
+  document.title = `C-${name}_${stamp}`;
+  document.body.classList.add(mode);
+  const restore = () => { document.body.classList.remove(mode); document.title = prevTitle; pageStyle.remove(); };
   window.addEventListener("afterprint", restore, { once: true });
   window.print();
+}
+document.getElementById("btn-pdf").addEventListener("click", () => printSection("print-tl", "portrait", "표준타임테이블"));
+document.getElementById("btn-pdf-cal").addEventListener("click", () => {
+  const [y, m] = curYM.split("-");
+  document.getElementById("print-cal-ym").textContent = `${y}년 ${Number(m)}월 달력`;
+  printSection("print-cal", "landscape", `${Number(m)}월달력`);
 });
 
 /* ══════════════════════════════════════════════════════════════════════

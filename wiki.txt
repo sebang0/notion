@@ -15,3 +15,4 @@
 2026-10-27 14:16 | rawdata/fonts/세방고딕2.0_Regular.ttf, 세방고딕2.0_Bold.ttf | 원천데이터: 사용자 첨부 세방고딕 2.0 원본 글꼴
 2026-10-27 14:16 | docs/fonts/SebangGothic-Regular.woff2, SebangGothic-Bold.woff2 | 세방고딕 웹폰트 변환본 (TTF → woff2)
 2026-10-27 14:16 | docs/index.html, docs/README.md | 표준 타임테이블 PDF 출력(A4 가로 2쪽, 편집기 제외, 파일명 C-표준타임테이블_YYMMDD_HHMM) · 세방고딕 실제 글꼴명 반영
+2026-10-27 14:29 | docs/index.html, docs/README.md | PDF 출력: 표준 타임테이블 A4 세로 · 이달의 일정 달력 전용 출력 추가(A4 가로, 파일명 C-M월달력_YYMMDD_HHMM)
