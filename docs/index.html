@@ -455,7 +455,7 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
     <div class="header-actions">
       <span class="save-indicator" id="save-msg">🔒 잠김</span>
       <button class="btn btn-dark" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
-      <button class="btn" type="button" id="btn-gh-push" style="display:none" title="현재 변경사항을 GitHub data.json에 즉시 커밋합니다">⬆️ GitHub에 즉시 저장</button>
+      <button class="btn" type="button" id="btn-gh-push" title="현재 변경사항을 GitHub data.json에 암호화하여 즉시 커밋합니다">⬆️ GitHub에 즉시 저장</button>
       <button class="btn" type="button" id="btn-export" title="매뉴얼과 월별 체크 내역을 암호화된 JSON 파일로 백업합니다">💾 백업</button>
       <label class="btn" style="cursor:pointer" title="백업한 JSON 파일을 불러옵니다">
         📂 불러오기
@@ -1723,9 +1723,15 @@ document.querySelectorAll("[data-gmode]").forEach(btn => {
 /* ══════════════════════════════════════════════════════════════════════
    [10] GitHub 동기화 모달 제어
    ══════════════════════════════════════════════════════════════════════ */
+/* [⬆️ GitHub에 즉시 저장] 버튼은 항상 표시
+   - 토큰 설정 전: 흐리게 표시, 클릭 시 동기화 설정창 열림 (pushToGitHub 내부 처리)
+   - 토큰 설정 후: 정상 표시, 클릭 시 즉시 커밋 */
 function refreshGhButtonUI() {
   const pushBtn = document.getElementById("btn-gh-push");
-  pushBtn.style.display = (ghConfig.owner && ghConfig.repo && ghConfig.token) ? "inline-flex" : "none";
+  const ready = Boolean(ghConfig.owner && ghConfig.repo && ghConfig.token);
+  pushBtn.style.opacity = ready ? "1" : "0.55";
+  pushBtn.title = ready ? "현재 변경사항을 GitHub data.json에 암호화하여 즉시 커밋합니다"
+                        : "GitHub 토큰 설정이 필요합니다 (클릭 시 설정창 열림)";
 }
 function readGhForm() {
   ghConfig = {
