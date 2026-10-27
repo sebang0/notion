@@ -8,16 +8,16 @@
 <style>
 /* ━━━━ 글꼴: 세방고딕 Regular(본문) + Bold(제목·버튼·강조)
    - 1순위: PC에 설치된 세방고딕 (local)
-   - 2순위: 저장소 docs/fonts/ 의 웹폰트 파일 (업로드 시 자동 사용)
+   - 2순위: docs/fonts/ 웹폰트 (원본 rawdata/fonts/세방고딕2.0_*.ttf → woff2 변환, 설치 안 된 기기·모바일)
    - 대체: Apple SD Gothic Neo / 맑은 고딕 ━━━━ */
 @font-face {
   font-family: "SebangGothic"; font-weight: 400; font-style: normal; font-display: swap;
-  src: local("세방고딕 Regular"), local("세방고딕"), local("SebangGothic-Regular"), local("Sebang Gothic Regular"), local("SebangGothic"),
+  src: local("세방고딕 2.0 Regular"), local("SEBANGGOTHIC2.0R"),
        url("fonts/SebangGothic-Regular.woff2") format("woff2");
 }
 @font-face {
   font-family: "SebangGothic"; font-weight: 700; font-style: normal; font-display: swap;
-  src: local("세방고딕 Bold"), local("SebangGothic-Bold"), local("Sebang Gothic Bold"),
+  src: local("세방고딕 2.0 Bold"), local("SEBANGGOTHIC2.0B"),
        url("fonts/SebangGothic-Bold.woff2") format("woff2");
 }
 :root {
@@ -452,6 +452,47 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
 .grp-add { margin-left: auto; font: inherit; font-size: 11.5px; font-weight: 700; border: 1px solid currentColor; background: transparent;
   color: inherit; border-radius: 999px; padding: 1px 9px; cursor: pointer; }
 body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: none; }
+.man-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; }
+.print-head { display: none; }
+
+/* ━━━━ PDF 출력 (표준 타임테이블 · body.print-tl 일 때만 적용, Ctrl+P 일반 인쇄에는 영향 없음)
+   - A4 가로 · 편집기·버튼·다른 탭·팝업 숨김 · 타임라인을 용지 폭에 맞춤 ━━━━ */
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+  body.print-tl { background: #fff; font-size: 11px; }
+  body.print-tl .top-header, body.print-tl .nav-tabs, body.print-tl #view-cal, body.print-tl .modal-backdrop,
+  body.print-tl .toast, body.print-tl .save-float, body.print-tl .no-print, body.print-tl .grp-add,
+  body.print-tl .gh, body.print-tl .btn { display: none !important; }
+  body.print-tl .wrap { max-width: none; padding: 0; gap: 8px; }
+  body.print-tl #view-man { display: block !important; }   /* 블록 배치: 페이지 나눔 규칙 적용을 위해 grid 대신 block */
+  body.print-tl #view-man > * + * { margin-top: 8px; }
+  body.print-tl .print-head { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 14px; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 4px; }
+  body.print-tl #print-date { font-size: 10.5px; font-weight: 400; color: var(--mut); }
+  body.print-tl .panel { box-shadow: none; padding: 10px 12px; }
+  body.print-tl .kpis { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  body.print-tl .kpi { padding: 5px 10px; gap: 0; }
+  body.print-tl .kpi .n { font-size: 18px; }
+  body.print-tl .kpi .sub { font-size: 10px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  body.print-tl .two-col, body.print-tl .print-break, body.print-tl .card-grid-3 { break-inside: avoid; }
+  body.print-tl .tl-wrap { overflow: visible; }
+  body.print-tl .tlg { min-width: 0; grid-template-columns: 62px 170px repeat(24, minmax(0, 1fr)); font-size: 10.5px; }
+  body.print-tl .tlg .cell-nm, body.print-tl .tlg .cell-cat { padding-top: 2px; padding-bottom: 2px; }
+  body.print-tl .tlg .bar-wrap { height: 15px; }
+  body.print-tl .tlg .bar { height: 13px; font-size: 9.5px; }
+  body.print-tl .tlg .grp-hdr { padding: 3px 10px; margin-top: 3px; }
+  body.print-tl .tlg .th-cat, body.print-tl .tlg .th-nm, body.print-tl .tlg .day { padding: 4px 2px; }
+  body.print-tl .head-bar { margin-bottom: 6px !important; }
+  body.print-tl .legend { margin-top: 4px; padding-top: 4px; font-size: 9.5px; gap: 4px 14px; flex-wrap: nowrap; }
+  body.print-tl .panel { padding: 8px 12px; }
+  body.print-tl .print-head { padding-bottom: 2px; }
+  body.print-tl .print-break { break-before: page; }
+  body.print-tl #sec-gantt { zoom: 0.9; break-inside: avoid; }   /* 1쪽: 요약 + 타임라인 + 범례 */
+  body.print-tl .two-col { grid-template-columns: 1fr 1fr; }
+  body.print-tl .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  body.print-tl .info-card, body.print-tl .kpi, body.print-tl .tlg > div { break-inside: avoid; }
+  body.print-tl .editable-box { outline: none !important; }
+}
 .off-pill { font-size: 10px; color: #374151; font-weight: 600; background: #e5e7eb; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .leave-pill { font-size: 10px; color: #166534; font-weight: 700; background: #bbf7d0; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .leave-warn-pill { font-size: 10.5px; font-weight: 700; color: #92400e; background: #fde68a; padding: 0 6px; border-radius: 99px; white-space: nowrap; }
@@ -647,6 +688,14 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
        [탭 2] 표준 타임테이블 (1~24 영업일 기준 매뉴얼 & 편집기)
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <div id="view-man" class="view-sec">
+    <div class="man-toolbar no-print">
+      <span style="font-size:12px;color:var(--mut)">편집기를 제외한 요약·타임라인·SPOT·분기·연간 업무를 A4 가로로 출력합니다.</span>
+      <button class="btn btn-dark" type="button" id="btn-pdf" title="인쇄 창에서 대상: 'PDF로 저장' 선택">📄 PDF 출력</button>
+    </div>
+    <div class="print-head">
+      <span>실적·손익·원가관리 업무 일정표 · 표준 타임테이블 (1~24 영업일)</span>
+      <span id="print-date"></span>
+    </div>
     <section class="kpis" aria-label="카테고리별 요약">
       <div class="kpi k-perf">
         <div class="top"><span class="l">실적 (월간)</span><span class="n" id="kpi-cnt-perf" style="color:var(--c-perf)">0</span></div>
@@ -666,15 +715,15 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="sec-gantt">
       <div class="head-bar">
         <div>
           <h2>1. 월간 정례 업무 표준 타임라인 (1 ~ 24 영업일)</h2>
-          <div style="font-size:12px;color:var(--mut);margin-top:2px">
+          <div class="no-print" style="font-size:12px;color:var(--mut);margin-top:2px">
             하단 [5. 매뉴얼 편집기]에서 영업일이나 완료 액션을 수정하면 이 차트와 [이달의 일정] 달력에 즉시 반영됩니다.
           </div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div class="no-print" style="display:flex;gap:6px;align-items:center">
           <span style="font-size:12px;color:var(--mut);font-weight:600">정렬:</span>
           <button class="chip" type="button" data-gmode="cat" aria-pressed="true">카테고리별 묶음</button>
           <button class="chip" type="button" data-gmode="time" aria-pressed="false">영업일순(흐름순)</button>
@@ -692,11 +741,11 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel print-break">
       <div class="head-bar" style="margin-bottom:10px">
         <div>
-          <h2>2. SPOT 업무 매뉴얼 (클릭하여 텍스트 직접 수정 가능)</h2>
-          <div style="font-size:12px;color:var(--mut)">제목이나 설명을 마우스로 클릭해 바로 수정하시면 자동 저장됩니다.</div>
+          <h2>2. SPOT 업무 매뉴얼<span class="no-print"> (클릭하여 텍스트 직접 수정 가능)</span></h2>
+          <div class="no-print" style="font-size:12px;color:var(--mut)">제목이나 설명을 마우스로 클릭해 바로 수정하시면 자동 저장됩니다.</div>
         </div>
         <button class="btn" type="button" onclick="addGuideCard('spot')">+ SPOT 항목 추가</button>
       </div>
@@ -708,7 +757,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
         <div class="head-bar" style="margin-bottom:10px">
           <div>
             <h2>3. 분기 업무 (Quarterly)</h2>
-            <div style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+            <div class="no-print" style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
           </div>
           <button class="btn" type="button" onclick="addGuideCard('qtr')">+ 분기 업무 추가</button>
         </div>
@@ -719,7 +768,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
         <div class="head-bar" style="margin-bottom:10px">
           <div>
             <h2>4. 연간 업무 (Annual)</h2>
-            <div style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+            <div class="no-print" style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
           </div>
           <button class="btn" type="button" onclick="addGuideCard('yr')">+ 연간 업무 추가</button>
         </div>
@@ -727,7 +776,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       </section>
     </div>
 
-    <section class="panel">
+    <section class="panel no-print" id="sec-editor">
       <div class="head-bar">
         <div>
           <h2>5. 월간 정례 업무 매뉴얼 편집기 (직접 수정 · 추가 · 삭제)</h2>
@@ -2486,6 +2535,24 @@ document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
   else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-3] 표준 타임테이블 PDF 출력
+   - 브라우저 인쇄 기능 사용 (글자가 이미지가 아닌 텍스트로 저장되어 선명·검색 가능)
+   - 인쇄 창 기본 파일명: C-표준타임테이블_YYMMDD_HHMM (KST)
+   - 출력 대상: 요약 KPI · 타임라인 · SPOT · 분기 · 연간 (편집기 제외)
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById("btn-pdf").addEventListener("click", () => {
+  const k = new Date(Date.now() + 9 * 3600 * 1000).toISOString(); // KST
+  const stamp = `${k.slice(2, 4)}${k.slice(5, 7)}${k.slice(8, 10)}_${k.slice(11, 13)}${k.slice(14, 16)}`;
+  document.getElementById("print-date").textContent = `출력 ${k.slice(0, 10)} ${k.slice(11, 16)}`;
+  const prevTitle = document.title;
+  document.title = `C-표준타임테이블_${stamp}`;
+  document.body.classList.add("print-tl");
+  const restore = () => { document.body.classList.remove("print-tl"); document.title = prevTitle; };
+  window.addEventListener("afterprint", restore, { once: true });
+  window.print();
 });
 
 /* ══════════════════════════════════════════════════════════════════════

@@ -68,9 +68,19 @@ GitHub Pages 정적 웹앱 (서버 없음 · index.html + data.json 2개 파일�
 - 상단 ↶ ↷ 버튼 · Ctrl+Z / Ctrl+Y(또는 Ctrl+Shift+Z) · 모든 메뉴 공통 · 최대 100단계
 - 새로고침·잠금 시 이력 초기화
 
-## 글꼴 (세방고딕)
-- PC에 세방고딕 설치 시 자동 적용
-- 모든 기기 적용: `docs/fonts/SebangGothic-Regular.woff2`, `docs/fonts/SebangGothic-Bold.woff2` 추가
+## 글꼴 (세방고딕 2.0)
+| 파일 | 용도 |
+|---|---|
+| `docs/fonts/SebangGothic-Regular.woff2` · `-Bold.woff2` | 웹폰트 (각 약 290KB, 전체 글자 포함) |
+| `rawdata/fonts/세방고딕2.0_Regular.ttf` · `_Bold.ttf` | 원본 (Pages 미배포) |
+- PC 설치 글꼴 우선 → 없으면 웹폰트 → 대체 글꼴(맑은 고딕)
+- 저작권: SEBANG CO., LTD. (사내 문서·화면용)
+
+## PDF 출력 (표준 타임테이블)
+- [📄 PDF 출력] → 인쇄 창 대상 **PDF로 저장** → 저장
+- 기본 파일명 `C-표준타임테이블_YYMMDD_HHMM`
+- A4 가로 2쪽: ① 요약 + 타임라인 + 범례 ② SPOT · 분기 · 연간 (편집기 제외)
+- 글자는 텍스트로 저장 (선명 · 검색 가능)
 
 ## 공휴일 관리
 - `index.html`의 `KR_HOLIDAYS` 표 (2025~2028 등록, 근로자의날 포함)
