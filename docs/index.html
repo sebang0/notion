@@ -1,0 +1,2802 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Notion</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20d%3D%22M14%204h28l12%2012v40a4%204%200%200%201-4%204H14a4%204%200%200%201-4-4V8a4%204%200%200%201%204-4z%22%20fill%3D%22%232563eb%22/%3E%3Cpath%20d%3D%22M42%204v8a4%204%200%200%200%204%204h8z%22%20fill%3D%22%2393c5fd%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2226%22%20width%3D%2228%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2236%22%20width%3D%2228%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2218%22%20y%3D%2246%22%20width%3D%2218%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
+<style>
+/* ━━━━ 글꼴: 세방고딕 Regular(본문) + Bold(제목·버튼·강조)
+   - 1순위: PC에 설치된 세방고딕 (local)
+   - 2순위: docs/fonts/ 웹폰트 (원본 rawdata/fonts/세방고딕2.0_*.ttf → woff2 변환, 설치 안 된 기기·모바일)
+   - 대체: Apple SD Gothic Neo / 맑은 고딕 ━━━━ */
+@font-face {
+  font-family: "SebangGothic"; font-weight: 400; font-style: normal; font-display: swap;
+  src: local("세방고딕 2.0 Regular"), local("SEBANGGOTHIC2.0R"),
+       url("fonts/SebangGothic-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "SebangGothic"; font-weight: 700; font-style: normal; font-display: swap;
+  src: local("세방고딕 2.0 Bold"), local("SEBANGGOTHIC2.0B"),
+       url("fonts/SebangGothic-Bold.woff2") format("woff2");
+}
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --line: #dfe2e7;
+  --line-soft: #eef0f3;
+  --fg: #1d2128;
+  --mut: #5d6572;
+
+  --c-ext: #6b7280;
+  --c-ext-bg: #f3f4f6;
+  --c-ext-bd: #d1d5db;
+
+  --c-perf: #2563eb;
+  --c-perf-prep: #dbeafe;
+  --c-perf-bd: #93c5fd;
+  --c-perf-bg: #eff6ff;
+
+  --c-std: #0d9488;
+  --c-std-prep: #ccfbf1;
+  --c-std-bd: #5eead4;
+  --c-std-bg: #f0fdfa;
+
+  --c-meet: #7c3aed;
+  --c-meet-prep: #ede9fe;
+  --c-meet-bd: #c4b5fd;
+  --c-meet-bg: #f5f3ff;
+
+  --c-spot: #d97706;
+  --c-spot-bg: #fffbeb;
+  --c-spot-bd: #fde68a;
+
+  --c-qtr: #0284c7;
+  --c-qtr-bg: #f0f9ff;
+  --c-qtr-bd: #bae6fd;
+
+  --c-yr: #4f46e5;
+  --c-yr-bg: #eef2ff;
+  --c-yr-bd: #c7d2fe;
+
+  --f-body: "SebangGothic", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+  --f-mono: "SebangGothic", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;  /* 숫자는 tabular-nums로 정렬 */
+}
+
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 13.5px; line-height: 1.5; font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, .btn, .tab-btn, .badge, .kpi .l, .kpi .n, .c-day, .ym-title, b, strong, th { font-weight: 700; }
+.wrap {
+  max-width: 1440px; margin: 0 auto;
+  padding: 22px 20px 60px;
+  display: grid; gap: 18px;
+}
+
+/* 상단 헤더 & 네비게이션 탭 */
+.top-header {
+  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+}
+.lbl {
+  font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mut); font-weight: 600;
+}
+h1 { font-size: 23px; margin: 2px 0 0; font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 15.5px; margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+.header-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.save-indicator {
+  font-size: 12px; font-weight: 600; color: var(--c-std);
+  background: var(--c-std-bg); border: 1px solid var(--c-std-bd);
+  padding: 4px 10px; border-radius: 999px;
+}
+.save-indicator.syncing {
+  color: var(--c-spot); background: var(--c-spot-bg); border-color: var(--c-spot-bd);
+}
+
+.nav-tabs {
+  display: flex; gap: 8px; border-bottom: 2px solid var(--line); padding-bottom: 0;
+}
+.tab-btn {
+  padding: 11px 22px; font: inherit; font-size: 14px; font-weight: 700;
+  border: 1px solid transparent; border-bottom: none;
+  border-radius: 8px 8px 0 0; background: transparent; color: var(--mut);
+  cursor: pointer; transition: all .12s; margin-bottom: -2px;
+}
+.tab-btn:hover { color: var(--fg); background: #eceff3; }
+.tab-btn.active {
+  background: var(--panel); color: var(--c-perf);
+  border-color: var(--line); border-bottom: 2px solid var(--panel);
+}
+
+.view-sec { display: none; gap: 18px; }
+.view-sec.active { display: grid; }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.head-bar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* 버튼 & 인풋 공통 */
+.btn {
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all .12s; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--c-perf); border-color: var(--c-perf); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-dark { background: #1f2937; border-color: #1f2937; color: #fff; }
+.btn-dark:hover { background: #111827; }
+.btn-amber { background: var(--c-spot); border-color: var(--c-spot); color: #fff; }
+.btn-amber:hover { background: #b45309; }
+.btn-danger { color: #dc2626; border-color: #fecaca; background: #fef2f2; padding: 3px 8px; font-size: 11.5px; }
+.btn-danger:hover { background: #fee2e2; }
+
+input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="month"], select {
+  font: inherit; font-size: 12.5px; padding: 6px 9px;
+  border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--fg);
+}
+input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1px; }
+
+.chip {
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 12px; font-weight: 500;
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+
+/* 배지 */
+.badge {
+  display: inline-block; border-radius: 5px; padding: 2px 7px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.bg-ext  { background: var(--c-ext-bg);  color: #374151;      border: 1px solid var(--c-ext-bd); }
+.bg-perf { background: var(--c-perf-bg); color: var(--c-perf); border: 1px solid var(--c-perf-bd); }
+.bg-std  { background: var(--c-std-bg);  color: var(--c-std);  border: 1px solid var(--c-std-bd); }
+.bg-meet { background: var(--c-meet-bg); color: var(--c-meet); border: 1px solid var(--c-meet-bd); }
+.bg-spot { background: var(--c-spot-bg); color: var(--c-spot); border: 1px solid var(--c-spot-bd); }
+.bg-qtr  { background: var(--c-qtr-bg);  color: var(--c-qtr);  border: 1px solid var(--c-qtr-bd); }
+.bg-yr   { background: var(--c-yr-bg);   color: var(--c-yr);   border: 1px solid var(--c-yr-bd); }
+
+/* ━━━━ [탭 1] 이달의 일정 레이아웃 ━━━━ */
+.cal-toolbar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+}
+.ym-nav { display: flex; align-items: center; gap: 8px; }
+.ym-title { font-size: 19px; font-weight: 700; min-width: 130px; text-align: center; font-family: var(--f-mono); }
+
+.cal-kpis {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+}
+.cal-kpi-pill {
+  background: #f8fafc; border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 12px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+}
+.prog-bar-wrap {
+  width: 110px; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
+}
+.prog-bar-fill { height: 100%; background: var(--c-std); transition: width .2s; }
+
+/* 달력은 전체 폭, 정례 체크리스트·SPOT 관리는 달력 아래 2열 (좁은 화면은 1열) */
+.cal-layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1100px) {
+  .cal-below { grid-template-columns: 1fr; }
+}
+
+/* 한국 달력 7열 그리드: 일·토 최소 폭(56px), 평일 5열이 나머지 공간을 균등 사용 */
+.cal-grid {
+  display: grid; grid-template-columns: 56px repeat(5, minmax(0, 1fr)) 56px;
+  border-top: 1px solid var(--line); border-left: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden;
+}
+.cal-th {
+  background: #f8fafc; font-weight: 700; font-size: 12px; text-align: center;
+  padding: 8px 4px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.cal-cell {
+  min-height: 126px; padding: 6px;
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: #fff; display: flex; flex-direction: column; gap: 4px;
+  transition: background .1s;
+}
+.cal-cell:hover { background: #fcfcfd; }
+.cal-cell.wkend { padding: 6px 3px; }
+.cal-cell.wkend .c-top { flex-direction: column; align-items: flex-start; }
+.cal-cell.wkend .c-ev { font-size: 10px; padding: 1px 3px; }
+.cal-cell.other-month { background: #f8fafc; opacity: 0.42; pointer-events: none; }
+.cal-cell.hol-bg { background: #fdecee; }
+.cal-cell.sat-bg { background: #eef2f8; }
+.cal-cell.off-bg { background: repeating-linear-gradient(-45deg, #eceef2, #eceef2 6px, #e0e3e9 6px, #e0e3e9 12px); }
+.cal-cell.leave-bg { background: #dcf3e4; }
+.cal-cell.half-bg { background: linear-gradient(135deg, #dcf3e4 50%, #ffffff 50%); }
+.cal-cell[data-date] { cursor: cell; }
+.cal-cell.drop-ok { box-shadow: inset 0 0 0 2px var(--c-std); }
+.cal-cell.drop-no { box-shadow: inset 0 0 0 2px #dc2626; }
+.cal-cell.today-ring { box-shadow: inset 0 0 0 2px var(--c-perf); }
+
+.c-top {
+  display: flex; justify-content: space-between; align-items: center; gap: 2px; margin-bottom: 2px;
+}
+.c-day { font-family: var(--f-mono); font-weight: 700; font-size: 13px; }
+.c-badges { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+.bd-pill {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 600;
+  background: #eef2ff; color: #3730a3; padding: 0 5px; border-radius: 99px; border: 1px solid #c7d2fe;
+}
+.hol-pill {
+  font-size: 10px; color: #dc2626; font-weight: 600; background: #fef2f2;
+  padding: 0 4px; border-radius: 4px;
+}
+
+.c-ev-list { display: flex; flex-direction: column; gap: 3px; }
+.c-ev {
+  font-size: 11px; padding: 2px 5px; border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 4px;
+  transition: opacity .12s, transform .08s;
+}
+.c-ev:hover { opacity: 0.88; }
+.c-ev.done { text-decoration: line-through; opacity: 0.45; }
+
+/* 달력 이벤트 배지 스타일 */
+.ev-ms-perf { background: var(--c-perf); color: #fff; font-weight: 700; }
+.ev-prep-perf { background: var(--c-perf-bg); color: #1d4ed8; border: 1px solid var(--c-perf-bd); }
+.ev-ms-std { background: var(--c-std); color: #fff; font-weight: 700; }
+.ev-prep-std { background: var(--c-std-bg); color: #0f766e; border: 1px solid var(--c-std-bd); }
+.ev-ms-meet { background: var(--c-meet); color: #fff; font-weight: 700; }
+.ev-prep-meet { background: var(--c-meet-bg); color: #6d28d9; border: 1px solid var(--c-meet-bd); }
+.ev-ext { background: #f3f4f6; color: #4b5563; border: 1px dashed #9ca3af; }
+.ev-spot { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-weight: 700; }
+
+/* 우측 체크리스트 사이드바 */
+.chk-list {
+  display: flex; flex-direction: column; max-height: 430px; overflow-y: auto;
+  border: 1px solid var(--line-soft); border-radius: 8px;
+}
+.chk-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px;
+}
+.chk-row:hover { background: #f8fafc; }
+.chk-row.done .chk-title { text-decoration: line-through; color: var(--mut); }
+.chk-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; cursor: pointer; }
+.chk-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+button.chk-title { font: inherit; font-weight: 500; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; min-width: 0; }
+button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underline; color: var(--c-perf); outline: none; }
+.memo-prev { font-size: 11px; color: var(--mut); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+/* 달력 칩: 업무명 말줄임 · 메모 표시 · ✎ 수정 버튼(마우스를 올렸을 때만) */
+.c-ev .ev-lb { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.c-ev .ev-memo { font-size: 9px; flex-shrink: 0; }
+.c-ev .ev-edit { display: none; flex-shrink: 0; margin-left: 2px; border: 0; border-radius: 3px; padding: 0 4px; font-size: 10px; line-height: 14px;
+  background: rgba(255,255,255,0.92); color: #1f2937; cursor: pointer; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+@media (hover: hover) { .c-ev:hover .ev-edit { display: inline-block; } }
+.c-ev .ev-edit:hover { background: #fff; color: var(--c-perf); }
+/* 수정·메모 팝업 */
+.mm-info { font-size: 12.5px; color: #374151; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 3px; }
+.mm-info .mm-desc { color: var(--mut); font-size: 12px; }
+.mm-done { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.mm-h-head { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+.mm-history { max-height: 180px; overflow-y: auto; display: grid; gap: 6px; }
+.mm-h-item { border-left: 3px solid var(--c-perf-bd); background: var(--c-perf-bg); border-radius: 0 6px 6px 0; padding: 5px 8px; font-size: 12px; }
+.mm-h-item b { display: block; font-size: 11px; color: var(--c-perf); }
+.mm-h-item div { white-space: pre-wrap; word-break: break-word; }
+.mm-h-empty { font-size: 12px; color: var(--mut); }
+.chk-meta { font-family: var(--f-mono); font-size: 11px; color: var(--mut); white-space: nowrap; }
+
+/* ━━━━ [탭 2] 표준 타임테이블 (24영업일 간트 & 매뉴얼 에디터) ━━━━ */
+.kpis {
+  display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 14px;
+}
+@media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px 18px; display: flex; flex-direction: column; gap: 4px;
+  border-left: 4px solid var(--line);
+}
+.kpi.k-perf { border-left-color: var(--c-perf); }
+.kpi.k-std  { border-left-color: var(--c-std); }
+.kpi.k-meet { border-left-color: var(--c-meet); }
+.kpi.k-spot { border-left-color: var(--c-spot); }
+.kpi .top { display: flex; justify-content: space-between; align-items: baseline; }
+.kpi .n { font-family: var(--f-mono); font-size: 25px; font-weight: 600; }
+.kpi .l { font-size: 13.5px; font-weight: 700; color: var(--fg); }
+.kpi .sub { font-size: 12px; color: var(--mut); }
+
+.tl-wrap { overflow-x: auto; padding-bottom: 6px; }
+.tlg {
+  display: grid;
+  grid-template-columns: 82px 210px repeat(24, minmax(34px, 1fr));
+  min-width: 1120px; font-size: 12.5px; align-items: center;
+}
+.tlg .th-cat, .tlg .th-nm, .tlg .day {
+  font-size: 11.5px; font-weight: 600; color: var(--mut);
+  border-bottom: 2px solid var(--line); padding: 8px 2px; background: #fafbfc; white-space: nowrap;
+}
+.tlg .th-cat { padding-left: 8px; }
+.tlg .th-nm  { padding-left: 6px; }
+.tlg .day {
+  font-family: var(--f-mono); text-align: center; border-left: 1px solid var(--line-soft);
+  font-variant-numeric: tabular-nums;
+}
+.tlg .day.w-sep, .tlg .grid-bg.w-sep { border-left: 1.5px solid #cbd5e1; }
+.tlg .day.fin-zone { background: #f3f4f6; color: #4b5563; }
+
+.tlg .grp-hdr {
+  grid-column: 1 / -1; font-size: 12px; font-weight: 700;
+  padding: 7px 10px; margin-top: 6px; border-radius: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.grp-ext  { background: var(--c-ext-bg);  color: #374151;      border: 1px solid var(--c-ext-bd); }
+.grp-perf { background: var(--c-perf-bg); color: var(--c-perf); border: 1px solid var(--c-perf-bd); }
+.grp-std  { background: var(--c-std-bg);  color: var(--c-std);  border: 1px solid var(--c-std-bd); }
+.grp-meet { background: var(--c-meet-bg); color: var(--c-meet); border: 1px solid var(--c-meet-bd); }
+
+.tlg .cell-cat { padding: 8px 6px 8px 8px; font-size: 11.5px; font-weight: 600; border-bottom: 1px solid var(--line-soft); }
+.tlg .cell-nm {
+  padding: 8px 10px 8px 6px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tlg .grid-bg { height: 100%; border-left: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.tlg .grid-bg.fin-bg { background: rgba(243, 244, 246, 0.45); }
+
+.bar-wrap { position: relative; height: 24px; display: flex; align-items: center; z-index: 2; padding: 0 2px; }
+.bar {
+  width: 100%; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-body); font-size: 10.5px; font-weight: 600; color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08); white-space: nowrap; overflow: hidden;
+}
+.b-ext {
+  background: repeating-linear-gradient(-45deg, #e5e7eb, #e5e7eb 6px, #d1d5db 6px, #d1d5db 12px);
+  color: #374151; border: 1px solid #9ca3af; box-shadow: none; font-weight: 700;
+}
+.b-perf { background: var(--c-perf); }
+.b-std  { background: var(--c-std); }
+.b-meet { background: var(--c-meet); }
+
+.b-prep-perf {
+  background: repeating-linear-gradient(-45deg, #eff6ff, #eff6ff 5px, #dbeafe 5px, #dbeafe 10px);
+  border: 1px solid var(--c-perf-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-prep-std {
+  background: repeating-linear-gradient(-45deg, #f0fdfa, #f0fdfa 5px, #ccfbf1 5px, #ccfbf1 10px);
+  border: 1px solid var(--c-std-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-prep-meet {
+  background: repeating-linear-gradient(-45deg, #f5f3ff, #f5f3ff 5px, #ede9fe 5px, #ede9fe 10px);
+  border: 1px solid var(--c-meet-bd); border-right: none; border-radius: 4px 0 0 4px; box-shadow: none;
+}
+.b-milestone-perf { background: var(--c-perf); color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+.b-milestone-std  { background: var(--c-std);  color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+.b-milestone-meet { background: var(--c-meet); color: #fff; border-radius: 0 4px 4px 0; font-weight: 700; font-size: 10.5px; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 14px 22px; font-size: 12px; color: var(--mut);
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft);
+}
+.sw { display: inline-block; width: 14px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+.sw-hatch { background: repeating-linear-gradient(-45deg, #e5e7eb, #e5e7eb 3px, #9ca3af 3px, #9ca3af 6px); border: 1px solid #6b7280; }
+.sw-prep  { background: repeating-linear-gradient(-45deg, #eff6ff, #eff6ff 3px, #93c5fd 3px, #93c5fd 6px); border: 1px solid #3b82f6; }
+.sw-solid { background: var(--c-perf); }
+
+/* SPOT / 분기 / 연간 카드 (편집 가능) */
+.card-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 14px; }
+.info-card {
+  border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px;
+  background: #fafbfc; display: flex; flex-direction: column; gap: 6px;
+}
+.info-card.spot-card { background: #fffdf9; border-color: #fde68a; border-left: 4px solid var(--c-spot); }
+.info-card.qtr-card  { background: #f8fdff; border-color: #bae6fd; border-left: 4px solid var(--c-qtr); }
+.info-card.yr-card   { background: #f8faff; border-color: #c7d2fe; border-left: 4px solid var(--c-yr); }
+.ic-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ic-title { font-size: 14px; font-weight: 700; color: var(--fg); }
+.ic-desc { font-size: 12.5px; color: #374151; line-height: 1.5; }
+.editable-box[contenteditable="true"]:hover {
+  outline: 1px dashed #94a3b8; border-radius: 4px; background: rgba(255,255,255,0.7);
+}
+.editable-box[contenteditable="true"]:focus {
+  outline: 2px solid var(--c-perf); border-radius: 4px; background: #fff;
+}
+
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
+
+/* 매뉴얼 편집 테이블 */
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 880px; font-size: 12.5px; }
+th {
+  text-align: left; font-weight: 600; color: var(--mut); font-size: 11.5px;
+  border-bottom: 2px solid var(--line); padding: 8px 8px; background: #fafbfc; white-space: nowrap;
+}
+td { border-bottom: 1px solid var(--line); padding: 6px 8px; vertical-align: middle; }
+td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
+
+/* GitHub 클라우드 동기화 모달 */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
+  display: none; align-items: center; justify-content: center; z-index: 9999; padding: 16px;
+}
+.modal-backdrop.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 12px; max-width: 520px; width: 100%;
+  padding: 22px 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.form-row { display: flex; flex-direction: column; gap: 4px; }
+.form-row label { font-size: 12px; font-weight: 700; color: #374151; }
+.form-row textarea { font: inherit; font-size: 12.5px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+.tm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tm-grid .tm-wide { grid-column: 1 / -1; }
+@media (max-width: 480px) { .tm-grid { grid-template-columns: 1fr; } }
+/* 헤더 버튼 */
+.icon-btn { font-size: 16px; line-height: 1; padding: 5px 10px; }
+.btn:disabled { opacity: .35; cursor: default; }
+.menu-wrap { position: relative; }
+.menu-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; min-width: 170px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  padding: 4px; display: flex; flex-direction: column; }
+.menu-pop[hidden] { display: none; }
+.menu-pop > button, .menu-pop > label { font: inherit; font-size: 13px; text-align: left; background: none; border: 0; border-radius: 6px;
+  padding: 8px 10px; cursor: pointer; color: var(--fg); }
+.menu-pop > button:hover, .menu-pop > label:hover, .menu-pop > button:focus-visible { background: var(--bg); outline: none; }
+/* 저장 알림: 우측 하단 플로팅 (클릭 또는 2.5초 후 사라짐) */
+.save-float { position: fixed; z-index: 10002; right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  font-size: 12.5px; font-weight: 700; color: var(--c-std); background: var(--c-std-bg); border: 1px solid var(--c-std-bd);
+  padding: 8px 14px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); cursor: pointer; }
+.save-float.syncing { color: var(--c-spot); background: var(--c-spot-bg); border-color: var(--c-spot-bd); }
+.save-float.err { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+/* 타임테이블 직접 편집: 막대 드래그(이동) · 양 끝 핸들(기간 조정) · 클릭(편집 팝업) */
+.tlg .bar-wrap[data-id] { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.tlg .bar-wrap[data-id]:hover .bar { filter: brightness(0.95); box-shadow: 0 0 0 2px rgba(37,99,235,0.35); }
+.tlg .gh { position: absolute; top: 2px; bottom: 2px; width: 9px; z-index: 3; cursor: ew-resize; border-radius: 3px; }
+.tlg .gh-l { left: 0; } .tlg .gh-r { right: 0; }
+.tlg .bar-wrap[data-id]:hover .gh { background: rgba(29,33,40,0.28); }
+@media (pointer: coarse) { .tlg .gh { width: 14px; background: rgba(29,33,40,0.15); } }
+.tlg .cell-nm[data-id], .tlg .cell-cat[data-id] { cursor: pointer; }
+.tlg .cell-nm[data-id]:hover span { text-decoration: underline; }
+.tlg .grid-bg[data-bd] { cursor: copy; }
+.tlg .grid-bg[data-bd]:hover { background: rgba(37,99,235,0.07); }
+.grp-add { margin-left: auto; font: inherit; font-size: 11.5px; font-weight: 700; border: 1px solid currentColor; background: transparent;
+  color: inherit; border-radius: 999px; padding: 1px 9px; cursor: pointer; }
+body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: none; }
+.man-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; }
+.print-head { display: none; }
+
+/* ━━━━ PDF 출력 (표준 타임테이블 · body.print-tl 일 때만 적용, Ctrl+P 일반 인쇄에는 영향 없음)
+   - A4 가로 · 편집기·버튼·다른 탭·팝업 숨김 · 타임라인을 용지 폭에 맞춤 ━━━━ */
+@media print {
+  body.print-tl { background: #fff; font-size: 11px; }
+  body.print-tl .top-header, body.print-tl .nav-tabs, body.print-tl #view-cal, body.print-tl .modal-backdrop,
+  body.print-tl .toast, body.print-tl .save-float, body.print-tl .no-print, body.print-tl .grp-add,
+  body.print-tl .gh, body.print-tl .btn { display: none !important; }
+  body.print-tl .wrap { max-width: none; padding: 0; gap: 8px; }
+  body.print-tl #view-man { display: block !important; }   /* 블록 배치: 페이지 나눔 규칙 적용을 위해 grid 대신 block */
+  body.print-tl #view-man > * + * { margin-top: 8px; }
+  body.print-tl .print-head { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 14px; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 4px; }
+  body.print-tl .print-date { font-size: 10.5px; font-weight: 400; color: var(--mut); }
+  body.print-tl .panel { box-shadow: none; padding: 10px 12px; }
+  body.print-tl .kpis { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  body.print-tl .kpi { padding: 5px 10px; gap: 0; }
+  body.print-tl .kpi .n { font-size: 18px; }
+  body.print-tl .kpi .sub { font-size: 10px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  body.print-tl .two-col, body.print-tl .print-break, body.print-tl .card-grid-3 { break-inside: avoid; }
+  body.print-tl .tl-wrap { overflow: visible; }
+  body.print-tl .tlg { min-width: 0; grid-template-columns: 52px 150px repeat(24, minmax(0, 1fr)); font-size: 10px; }
+  body.print-tl .tlg .day { font-size: 9.5px; }
+  body.print-tl .tlg .cell-nm, body.print-tl .tlg .cell-cat { padding-top: 2px; padding-bottom: 2px; }
+  body.print-tl .tlg .bar-wrap { height: 15px; }
+  body.print-tl .tlg .bar { height: 13px; font-size: 8px; letter-spacing: -0.03em; padding: 0; overflow: visible; }
+  body.print-tl .tlg .grp-hdr { padding: 3px 10px; margin-top: 3px; }
+  body.print-tl .tlg .th-cat, body.print-tl .tlg .th-nm, body.print-tl .tlg .day { padding: 4px 2px; }
+  body.print-tl .head-bar { margin-bottom: 6px !important; }
+  body.print-tl .legend { margin-top: 4px; padding-top: 4px; font-size: 9.5px; gap: 2px 12px; }
+  body.print-tl .panel { padding: 8px 12px; }
+  body.print-tl .print-head { padding-bottom: 2px; }
+  body.print-tl #sec-gantt { break-inside: avoid; }   /* 타임라인은 한 쪽 안에 */
+  body.print-tl .two-col { grid-template-columns: 1fr 1fr; }
+  body.print-tl .card-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  body.print-tl .info-card { padding: 8px 10px; }
+  body.print-tl .ic-title { font-size: 12px; }
+  body.print-tl .ic-desc { font-size: 10.5px; }
+  body.print-tl .info-card, body.print-tl .kpi, body.print-tl .tlg > div { break-inside: avoid; }
+  body.print-tl .editable-box { outline: none !important; }
+
+  /* ── 이달의 일정: 달력만 (A4 가로) ── */
+  body.print-cal { background: #fff; }
+  body.print-cal .top-header, body.print-cal .nav-tabs, body.print-cal #view-man, body.print-cal .modal-backdrop,
+  body.print-cal .toast, body.print-cal .save-float, body.print-cal .no-print, body.print-cal .btn,
+  body.print-cal #view-cal > section:first-child, body.print-cal .cal-below, body.print-cal #cal-warn { display: none !important; }
+  body.print-cal .wrap { max-width: none; padding: 0; }
+  body.print-cal #view-cal, body.print-cal .cal-layout { display: block !important; }
+  body.print-cal #sec-cal { box-shadow: none; border: 0; padding: 0; }
+  body.print-cal .print-head { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 3px; margin-bottom: 6px; }
+  body.print-cal .print-date { font-size: 10px; font-weight: 400; color: var(--mut); }
+  body.print-cal #cal-title { font-size: 15px; }
+  body.print-cal .head-bar { margin-bottom: 4px !important; }
+  body.print-cal .cal-legend { font-size: 9.5px; margin-bottom: 4px; }
+  body.print-cal .cal-grid { grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 40px; }
+  body.print-cal .cal-th { padding: 3px 2px; font-size: 10.5px; }
+  body.print-cal .cal-cell { min-height: 92px; padding: 3px; gap: 2px; break-inside: avoid; }
+  body.print-cal .cal-cell.today-ring { box-shadow: none; }
+  body.print-cal .c-day { font-size: 11px; }
+  body.print-cal .c-ev { font-size: 8.5px; line-height: 1.25; padding: 1px 3px; white-space: normal; overflow: visible; }  /* 업무명 줄바꿈해서 전부 표시 */
+  body.print-cal .c-ev .ev-lb { white-space: normal; overflow: visible; }
+  body.print-cal .c-ev .ev-edit { display: none !important; }
+  body.print-cal .c-ev.late, body.print-cal .c-ev.leave-hit { outline-width: 1px; }
+}
+.off-pill { font-size: 10px; color: #374151; font-weight: 600; background: #e5e7eb; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
+.leave-pill { font-size: 10px; color: #166534; font-weight: 700; background: #bbf7d0; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
+.leave-warn-pill { font-size: 10.5px; font-weight: 700; color: #92400e; background: #fde68a; padding: 0 6px; border-radius: 99px; white-space: nowrap; }
+.c-ev { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
+.c-ev.leave-hit { outline: 2px dashed #d97706; outline-offset: -1px; }
+.c-ev.drag-src { opacity: 0.35; }
+.drag-ghost { position: fixed; z-index: 10000; pointer-events: none; opacity: 0.92; box-shadow: 0 6px 16px rgba(0,0,0,0.25); cursor: grabbing; }
+body.dragging, body.dragging * { cursor: grabbing !important; }
+.chk-flags { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.mini-btn { padding: 0 6px; font-size: 11px; line-height: 18px; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--mut); margin-bottom: 8px; }
+.cal-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.lg { display: inline-block; width: 14px; height: 12px; border-radius: 3px; border: 1px solid var(--line); }
+.lg-work { background: #fff; } .lg-hol { background: #fdecee; } .lg-sat { background: #eef2f8; }
+.lg-off { background: repeating-linear-gradient(-45deg, #eceef2, #eceef2 3px, #d6dae1 3px, #d6dae1 6px); }
+.lg-leave { background: #dcf3e4; } .lg-half { background: linear-gradient(135deg, #dcf3e4 50%, #fff 50%); }
+.lg-today { background: #fff; box-shadow: inset 0 0 0 2px var(--c-perf); }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg label { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center; }
+.seg label:has(input:checked) { background: var(--fg); color: #fff; border-color: var(--fg); }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 10001;
+  background: #1f2937; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.2); max-width: calc(100vw - 32px); }
+.lock-backdrop { background: var(--bg); }
+.lock-msg { font-size: 12px; font-weight: 600; color: #dc2626; min-height: 18px; }
+[hidden] { display: none !important; }
+
+/* 지연·오늘·말일조정 표시 */
+.late-pill {
+  font-size: 10.5px; font-weight: 700; color: #fff; background: #dc2626;
+  padding: 0 6px; border-radius: 99px; white-space: nowrap;
+}
+.today-pill {
+  font-size: 10.5px; font-weight: 700; color: #fff; background: var(--c-perf);
+  padding: 0 6px; border-radius: 99px; white-space: nowrap;
+}
+.adj-pill {
+  font-size: 10px; font-weight: 600; color: #92400e; background: #fef3c7;
+  padding: 0 5px; border-radius: 4px; white-space: nowrap;
+}
+.chk-row.late { background: #fef2f2; }
+.c-ev.late { outline: 2px solid #dc2626; outline-offset: -1px; }
+.warn-box {
+  font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 6px; padding: 6px 10px; margin-bottom: 10px;
+}
+.api-usage {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--mut);
+  background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
+}
+
+/* 모바일 대응 (폰 폭) — grid 자식의 최소폭 자동 확장 방지 */
+.wrap > *, .view-sec > *, .cal-layout > *, .two-col > *, .panel { min-width: 0; }
+.ym-nav { flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .save-float { right: 12px; left: 12px; text-align: center; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi { padding: 10px 12px; }
+  .chk-row { flex-wrap: wrap; }
+  .chk-meta, .chk-title { white-space: normal; }
+  .chk-left { flex-wrap: wrap; }
+  .cal-kpi-pill { flex-wrap: wrap; }
+  .wrap { padding: 14px 12px 40px; }
+  h1 { font-size: 18px; }
+  .nav-tabs { overflow-x: auto; }
+  .tab-btn { padding: 9px 12px; font-size: 12.5px; white-space: nowrap; }
+  .cal-cell { min-height: 72px; padding: 3px; }
+  .cal-grid { grid-template-columns: 30px repeat(5, minmax(0, 1fr)) 30px; }
+  .cal-cell.wkend { padding: 3px 1px; }
+  .c-ev { font-size: 9.5px; padding: 1px 3px; }
+  .bd-pill, .hol-pill { font-size: 8.5px; white-space: nowrap; }
+  .two-col { grid-template-columns: 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- 상단 타이틀 & GitHub 클라우드 동기화 도구 -->
+  <div class="top-header">
+    <h1>실적·손익·원가관리 업무 일정표</h1>
+    <div class="header-actions">
+      <button class="btn icon-btn" type="button" id="btn-undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button>
+      <button class="btn icon-btn" type="button" id="btn-redo" title="다시 실행 (Ctrl+Y 또는 Ctrl+Shift+Z)" aria-label="다시 실행" disabled>↷</button>
+      <button class="btn btn-dark" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
+      <div class="menu-wrap">
+        <button class="btn" type="button" id="btn-menu" aria-haspopup="true" aria-expanded="false" aria-controls="menu-pop">☰ 메뉴</button>
+        <div class="menu-pop" id="menu-pop" role="menu" hidden>
+          <button type="button" role="menuitem" id="btn-export" title="암호화된 JSON 파일로 백업">💾 백업</button>
+          <label role="menuitem" title="백업한 JSON 파일을 불러옵니다">📂 불러오기<input type="file" id="in-import" accept=".json" hidden></label>
+          <button type="button" role="menuitem" id="btn-chpw">🔑 비밀번호 변경</button>
+          <button type="button" role="menuitem" id="btn-lock">🔒 잠금</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="button" id="btn-gh-push" title="현재 변경사항을 GitHub data.json에 암호화하여 저장합니다">⬆️ 저장</button>
+    </div>
+  </div>
+
+  <!-- 메인 탭 네비게이션 -->
+  <nav class="nav-tabs" aria-label="메인 메뉴">
+    <button class="tab-btn active" type="button" data-tab="view-cal">📅 이달의 일정</button>
+    <button class="tab-btn" type="button" data-tab="view-man">📘 표준 타임테이블</button>
+  </nav>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       [탭 1] 이달의 일정 (달력 · 체크리스트 · SPOT 관리)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div id="view-cal" class="view-sec active">
+    <section class="panel" style="padding: 14px 20px;">
+      <div class="cal-toolbar">
+        <div class="ym-nav">
+          <button class="btn" type="button" id="btn-prev-m">◀ 이전 달</button>
+          <span class="ym-title" id="ym-label">2026년 10월</span>
+          <button class="btn" type="button" id="btn-next-m">다음 달 ▶</button>
+          <input type="month" id="in-ym-picker" value="2026-10" style="margin-left:6px">
+        </div>
+
+        <div class="cal-kpis" id="cal-kpi-area"></div>
+      </div>
+    </section>
+
+    <div class="cal-layout">
+      <!-- 한국 달력 패널 -->
+      <section class="panel" id="sec-cal">
+        <div class="print-head">
+          <span>실적·손익·원가관리 업무 일정표 · <span id="print-cal-ym"></span></span>
+          <span class="print-date"></span>
+        </div>
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2 id="cal-title">달력</h2>
+            <div class="no-print" style="font-size:12px;color:var(--mut);margin-top:2px">
+              업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록
+            </div>
+          </div>
+          <div class="no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label style="font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:4px">
+              <input type="checkbox" id="chk-show-span" checked> 진행 기간(빗금 업무) 모든 영업일에 표시
+            </label>
+            <button class="btn btn-dark" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
+          </div>
+        </div>
+
+        <div class="warn-box" id="cal-warn" style="display:none"></div>
+        <div class="cal-legend" aria-label="달력 배경 범례">
+          <span><i class="lg lg-work"></i>영업일</span>
+          <span><i class="lg lg-hol"></i>일요일·공휴일</span>
+          <span><i class="lg lg-sat"></i>토요일</span>
+          <span><i class="lg lg-off"></i>회사 휴무 (영업일 제외)</span>
+          <span><i class="lg lg-leave"></i>내 연차</span>
+          <span><i class="lg lg-half"></i>내 반차</span>
+          <span><i class="lg lg-today"></i>오늘</span>
+        </div>
+        <div class="cal-grid" id="kr-cal-grid"></div>
+      </section>
+
+      <!-- 달력 아래: 이달의 체크리스트 & SPOT/추가 업무 등록 -->
+      <div class="cal-below">
+        <section class="panel">
+          <div class="head-bar" style="margin-bottom:8px">
+            <div>
+              <h2>✅ 이달의 정례 업무 체크리스트</h2>
+              <div style="font-size:11.5px;color:var(--mut)">영업일 기준 일정이 이번 달 실제 한국 달력 날짜로 자동 변환된 목록입니다.</div>
+            </div>
+          </div>
+          <div class="chk-list" id="list-reg-tasks"></div>
+        </section>
+
+        <section class="panel">
+          <div class="head-bar" style="margin-bottom:8px">
+            <div>
+              <h2>➕ 이달의 추가 / SPOT 업무 관리</h2>
+              <div style="font-size:11.5px;color:var(--mut)">이번 달에 수시로 발생한 수지분석, CO 점검, 대관청 회신 등을 날짜별로 추가하세요.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            <input type="date" id="in-spot-date" style="width:132px">
+            <select id="in-spot-cat" style="width:92px">
+              <option value="SPOT">SPOT</option>
+              <option value="실적">실적</option>
+              <option value="표준원가">표준원가</option>
+              <option value="회의체">회의체</option>
+              <option value="분기">분기</option>
+              <option value="연간">연간</option>
+            </select>
+            <input type="text" id="in-spot-name" placeholder="추가할 업무명 입력 (예: OO 화주 수지분석 검토)" style="flex:1;min-width:160px">
+            <button class="btn btn-amber" type="button" id="btn-add-spot">+ 등록</button>
+          </div>
+
+          <div class="chk-list" id="list-spot-tasks" style="max-height:240px"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       [탭 2] 표준 타임테이블 (1~24 영업일 기준 매뉴얼 & 편집기)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div id="view-man" class="view-sec">
+    <div class="man-toolbar no-print">
+      <span style="font-size:12px;color:var(--mut)">편집기를 제외한 요약·타임라인·SPOT·분기·연간 업무를 A4 세로로 출력합니다.</span>
+      <button class="btn btn-dark" type="button" id="btn-pdf" title="인쇄 창에서 대상: 'PDF로 저장' 선택">📄 PDF 출력</button>
+    </div>
+    <div class="print-head">
+      <span>실적·손익·원가관리 업무 일정표 · 표준 타임테이블 (1~24 영업일)</span>
+      <span class="print-date"></span>
+    </div>
+    <section class="kpis" aria-label="카테고리별 요약">
+      <div class="kpi k-perf">
+        <div class="top"><span class="l">실적 (월간)</span><span class="n" id="kpi-cnt-perf" style="color:var(--c-perf)">0</span></div>
+        <div class="sub" id="kpi-sub-perf"></div>
+      </div>
+      <div class="kpi k-std">
+        <div class="top"><span class="l">표준원가 (월간)</span><span class="n" id="kpi-cnt-std" style="color:var(--c-std)">0</span></div>
+        <div class="sub" id="kpi-sub-std"></div>
+      </div>
+      <div class="kpi k-meet">
+        <div class="top"><span class="l">회의체 (월간)</span><span class="n" id="kpi-cnt-meet" style="color:var(--c-meet)">0</span></div>
+        <div class="sub" id="kpi-sub-meet"></div>
+      </div>
+      <div class="kpi k-spot">
+        <div class="top"><span class="l">SPOT (상시·수시)</span><span class="n" id="kpi-cnt-spot" style="color:var(--c-spot)">0</span></div>
+        <div class="sub" id="kpi-sub-spot"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="sec-gantt">
+      <div class="head-bar">
+        <div>
+          <h2>1. 월간 정례 업무 표준 타임라인 (1 ~ 24 영업일)</h2>
+          <div class="no-print" style="font-size:12px;color:var(--mut);margin-top:2px">
+            하단 [5. 매뉴얼 편집기]에서 영업일이나 완료 액션을 수정하면 이 차트와 [이달의 일정] 달력에 즉시 반영됩니다.
+          </div>
+        </div>
+        <div class="no-print" style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:12px;color:var(--mut);font-weight:600">정렬:</span>
+          <button class="chip" type="button" data-gmode="cat" aria-pressed="true">카테고리별 묶음</button>
+          <button class="chip" type="button" data-gmode="time" aria-pressed="false">영업일순(흐름순)</button>
+        </div>
+      </div>
+
+      <div class="tl-wrap">
+        <div class="tlg" id="gantt"></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="sw sw-solid"></i><b>진한 단색 (텍스트 없음)</b> — 해당 영업일 동안 직접 산출·마감 수행</span>
+        <span><i class="sw sw-prep"></i><b>연한 빗금 + 우측 완료 액션(보고·결재·확인·회의)</b> — 앞단 요청·접수·취합 진행 후 마지막 날 완료</span>
+        <span><i class="sw sw-hatch"></i><b>회색 빗금 (1~5영업일)</b> — 재무 마감 (재무회계팀 주관 선행 일정)</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head-bar" style="margin-bottom:10px">
+        <div>
+          <h2>2. SPOT 업무<span class="no-print"> (클릭하여 텍스트 직접 수정 가능)</span></h2>
+          <div class="no-print" style="font-size:12px;color:var(--mut)">제목이나 설명을 마우스로 클릭해 바로 수정하시면 자동 저장됩니다.</div>
+        </div>
+        <button class="btn" type="button" onclick="addGuideCard('spot')">+ SPOT 항목 추가</button>
+      </div>
+      <div class="card-grid-3" id="grid-spot-guide"></div>
+    </section>
+
+    <div class="two-col">
+      <section class="panel">
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2>3. 분기 업무 (Quarterly)</h2>
+            <div class="no-print" style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+          </div>
+          <button class="btn" type="button" onclick="addGuideCard('qtr')">+ 분기 업무 추가</button>
+        </div>
+        <div style="display:grid;gap:10px" id="grid-qtr-guide"></div>
+      </section>
+
+      <section class="panel">
+        <div class="head-bar" style="margin-bottom:10px">
+          <div>
+            <h2>4. 연간 업무 (Annual)</h2>
+            <div class="no-print" style="font-size:12px;color:var(--mut)">클릭하여 직접 수정하거나 항목을 추가할 수 있습니다.</div>
+          </div>
+          <button class="btn" type="button" onclick="addGuideCard('yr')">+ 연간 업무 추가</button>
+        </div>
+        <div style="display:grid;gap:10px" id="grid-yr-guide"></div>
+      </section>
+    </div>
+
+    <section class="panel no-print" id="sec-editor">
+      <div class="head-bar">
+        <div>
+          <h2>5. 월간 정례 업무 매뉴얼 편집기 (직접 수정 · 추가 · 삭제)</h2>
+          <div style="font-size:12px;color:var(--mut)">
+            여기서 업무명, 시작/종료 영업일(1~24), 진행 형태, 완료 액션(보고·결재·확인·회의)을 수정하면 위 간트 차트와 캘린더에 즉시 반영됩니다.
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button" id="btn-add-manual">+ 새 정례 업무 추가</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:110px">카테고리</th>
+              <th style="width:200px">업무명</th>
+              <th style="width:85px">시작 영업일</th>
+              <th style="width:85px">종료 영업일</th>
+              <th style="width:175px">진행 형태</th>
+              <th style="width:105px">완료 액션 라벨</th>
+              <th>주요 내용 및 산출물 설명</th>
+              <th style="width:60px">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="tb-manual-editor"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ━━━━ 잠금 / 비밀번호 설정·변경 모달 (복호화 전에는 화면 전체를 가림) ━━━━ -->
+<div class="modal-backdrop lock-backdrop open" id="lock-modal">
+  <form class="modal-box" id="lock-form" autocomplete="off">
+    <h2 style="font-size:17px" id="lock-title">🔒 데이터 잠금 해제</h2>
+    <div style="font-size:12.5px;color:var(--mut);line-height:1.5" id="lock-desc">업무 데이터는 비밀번호로 암호화되어 있습니다.</div>
+    <div class="form-row" id="row-lock-pw">
+      <label for="lock-pw" id="lbl-lock-pw">비밀번호</label>
+      <input type="password" id="lock-pw" autocomplete="current-password">
+    </div>
+    <div class="form-row" id="row-lock-new" hidden>
+      <label for="lock-new">새 비밀번호 (10자 이상)</label>
+      <input type="password" id="lock-new" autocomplete="new-password">
+    </div>
+    <div class="form-row" id="row-lock-confirm" hidden>
+      <label for="lock-confirm">새 비밀번호 확인</label>
+      <input type="password" id="lock-confirm" autocomplete="new-password">
+    </div>
+    <div class="lock-msg" id="lock-msg"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" type="button" id="btn-lock-cancel" hidden>취소</button>
+      <button class="btn btn-primary" type="submit" id="btn-lock-ok">열기</button>
+    </div>
+    <div style="font-size:11px;color:var(--mut)">AES-256-GCM 암호화 · 비밀번호는 어디에도 저장되지 않으며 분실 시 데이터 복구 불가</div>
+  </form>
+</div>
+
+<!-- ━━━━ 업무 수정·메모 팝업 (이달의 일정) ━━━━
+     SPOT : 업무명·카테고리·날짜·완료·메모 수정 / 삭제
+     정례 : 업무명 읽기 전용 · 완료 · 이달 메모 · 이전 달 메모 조회 -->
+<div class="modal-backdrop" id="memo-modal">
+  <form class="modal-box" id="memo-form" autocomplete="off">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <h2 style="font-size:17px" id="mm-title">업무</h2>
+      <span class="chk-meta" id="mm-sub"></span>
+    </div>
+    <div id="mm-spot-fields" style="display:grid;gap:8px">
+      <div class="form-row"><label for="mm-name">업무명</label><input type="text" id="mm-name"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="form-row" style="flex:1;min-width:120px"><label for="mm-cat">카테고리</label>
+          <select id="mm-cat"><option>SPOT</option><option>실적</option><option>표준원가</option><option>회의체</option><option>분기</option><option>연간</option></select></div>
+        <div class="form-row" style="flex:1;min-width:140px"><label for="mm-date">날짜</label><input type="date" id="mm-date"></div>
+      </div>
+    </div>
+    <div class="mm-info" id="mm-reg-info"></div>
+    <label class="mm-done"><input type="checkbox" id="mm-done"> 완료</label>
+    <div class="form-row">
+      <label for="mm-memo" id="mm-memo-lbl">메모</label>
+      <textarea id="mm-memo" rows="4" placeholder="진행 상황, 특이사항, 다음 달 참고사항 등"></textarea>
+    </div>
+    <div id="mm-history-wrap">
+      <div class="mm-h-head">이전 메모</div>
+      <div class="mm-history" id="mm-history"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div><button class="btn btn-danger" type="button" id="btn-mm-del">삭제</button></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" type="button" id="btn-mm-cancel">취소</button>
+        <button class="btn btn-primary" type="submit">저장</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ━━━━ 날짜 상세 창: 업무 추가 · 내 연차 · 회사 휴무 ━━━━ -->
+<div class="modal-backdrop" id="day-modal">
+  <form class="modal-box" id="day-form" autocomplete="off">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <h2 style="font-size:17px" id="day-title">날짜</h2>
+      <span class="chk-meta" id="day-status"></span>
+    </div>
+    <div class="chk-list" id="day-existing" hidden></div>
+    <div class="seg" role="radiogroup" aria-label="등록 종류">
+      <label><input type="radio" name="day-kind" value="task" checked> 업무 추가</label>
+      <label><input type="radio" name="day-kind" value="leave"> 내 연차</label>
+      <label><input type="radio" name="day-kind" value="off"> 회사 휴무</label>
+    </div>
+    <div class="form-row" id="day-row-task">
+      <label for="day-task-name">업무</label>
+      <div style="display:flex;gap:6px">
+        <select id="day-task-cat" style="width:96px">
+          <option value="SPOT">SPOT</option><option value="실적">실적</option><option value="표준원가">표준원가</option>
+          <option value="회의체">회의체</option><option value="분기">분기</option><option value="연간">연간</option>
+        </select>
+        <input type="text" id="day-task-name" placeholder="업무명" style="flex:1;min-width:0">
+      </div>
+    </div>
+    <div class="form-row" id="day-row-leave" hidden>
+      <label for="day-leave-kind">종류 (회사 영업일 계산에는 영향 없음)</label>
+      <select id="day-leave-kind"><option>연차</option><option>오전반차</option><option>오후반차</option></select>
+    </div>
+    <div class="form-row" id="day-row-off" hidden>
+      <label for="day-off-name">휴무 명칭 (이 날은 영업일에서 제외)</label>
+      <input type="text" id="day-off-name" placeholder="예: 창립기념일, 일괄 휴무">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" type="button" id="btn-day-cancel">닫기</button>
+      <button class="btn btn-primary" type="submit">등록</button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="save-float" id="save-msg" role="status" title="클릭하면 닫힙니다" hidden></div>
+
+<!-- ━━━━ 정례 업무 편집 팝업 (표준 타임테이블에서 막대·업무명·빈칸 클릭) ━━━━ -->
+<div class="modal-backdrop" id="task-modal">
+  <form class="modal-box" id="task-form" autocomplete="off">
+    <h2 style="font-size:17px" id="tm-title">정례 업무 편집</h2>
+    <div class="tm-grid">
+      <div class="form-row"><label for="tm-cat">카테고리</label>
+        <select id="tm-cat"><option>선행</option><option>실적</option><option>표준원가</option><option>회의체</option></select></div>
+      <div class="form-row"><label for="tm-mode">진행 형태</label>
+        <select id="tm-mode">
+          <option value="work">직접수행 (진한 단색)</option>
+          <option value="prep_rep">취합·대기 후 액션 (빗금+강조)</option>
+          <option value="ext">타부서 선행 (회색 빗금)</option>
+        </select></div>
+      <div class="form-row tm-wide"><label for="tm-name">업무명</label><input type="text" id="tm-name" placeholder="업무명"></div>
+      <div class="form-row"><label for="tm-start">시작 영업일 (1~24)</label><input type="number" id="tm-start" min="1" max="24"></div>
+      <div class="form-row"><label for="tm-end">종료 영업일 (1~24)</label><input type="number" id="tm-end" min="1" max="24"></div>
+      <div class="form-row tm-wide"><label for="tm-label">완료 액션 라벨 (취합·대기 후 액션일 때 마지막 날 표시)</label><input type="text" id="tm-label" placeholder="보고 / 결재 / 확인 / 회의"></div>
+      <div class="form-row tm-wide"><label for="tm-desc">주요 내용 및 산출물 설명</label><textarea id="tm-desc" rows="3"></textarea></div>
+    </div>
+    <div class="lock-msg" id="tm-msg"></div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-danger" type="button" id="btn-tm-del">삭제</button>
+        <button class="btn" type="button" id="btn-tm-dup">복제</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" type="button" id="btn-tm-cancel">취소</button>
+        <button class="btn btn-primary" type="submit">저장</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ━━━━ GitHub 클라우드 연동 설정 모달 ━━━━ -->
+<div class="modal-backdrop" id="gh-modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:17px">☁️ GitHub 저장소 실시간 데이터 동기화 설정</h2>
+      <button class="btn" type="button" id="btn-close-modal">✕</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--mut);line-height:1.5">
+      이 웹앱이 배포된 GitHub 저장소의 데이터 파일(<code>docs/data.json</code> 등)에 수정 내역을 직접 저장(Commit)합니다. 한 번만 설정해 두면 회사 PC·집 PC·모바일 어디서 접속하든 동일한 일정과 매뉴얼이 유지됩니다.
+    </div>
+    <div class="form-row">
+      <label>GitHub 계정/소유자명 (Owner)</label>
+      <input type="text" id="gh-owner" placeholder="예: sebang0 (github.io 접속 시 자동 입력)">
+    </div>
+    <div class="form-row">
+      <label>저장소 이름 (Repository)</label>
+      <input type="text" id="gh-repo" placeholder="예: notion (github.io 접속 시 자동 입력)">
+    </div>
+    <div class="form-row">
+      <label>브랜치 (Branch)</label>
+      <input type="text" id="gh-branch" placeholder="비워두면 Pages 배포 브랜치 자동 감지">
+    </div>
+    <div class="form-row">
+      <label>데이터 파일 경로 (Path)</label>
+      <input type="text" id="gh-path" placeholder="비워두면 자동 감지 (예: docs/data.json)">
+    </div>
+    <div class="form-row">
+      <label>GitHub Personal Access Token (repo 권한 체크된 토큰)</label>
+      <input type="password" id="gh-token" placeholder="github_pat_xxxxxxxxxxxxxxxxxxxx">
+      <span style="font-size:11px;color:var(--mut)">※ 토큰은 api.github.com 호출에만 사용되며, 데이터 비밀번호로 <b>암호화</b>해 이 브라우저에 보관됩니다. 이 저장소 1개만 선택한 Fine-grained 토큰(Contents: Read and write · Pages: Read-only) 권장.</span>
+    </div>
+    <div class="form-row">
+      <label>GitHub API 사용량 (시간당 한도)</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="api-usage" id="gh-usage">미조회</span>
+        <button class="btn" type="button" id="btn-gh-usage">🔄 사용량 조회</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" type="button" id="btn-gh-pull">⬇️ GitHub에서 최신 데이터 가져오기</button>
+      <button class="btn btn-primary" type="button" id="btn-gh-save-cfg">설정 저장 & 연동</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   [0] 상수 정의
+   - ENC_KEY     : 브라우저 localStorage에 암호화된 매뉴얼·월별 체크 내역 저장 키
+   - GH_CFG_KEY  : GitHub 동기화 설정(owner/repo/branch/token) 저장 키
+   - MAX_BD      : 매뉴얼 기준 최대 영업일 (1~24)
+   ══════════════════════════════════════════════════════════════════════ */
+const LEGACY_KEY  = "SEBANG_CO_CYCLE_APP_V1";   // 구버전 평문 저장 키 (잠금 해제 시 삭제)
+const ENC_KEY     = "SEBANG_CO_ENC_V2";         // 암호화된 로컬 데이터 저장 키
+const GH_CFG_KEY  = "SEBANG_CO_GH_CONFIG_V1";
+const MAX_BD = 24;
+
+/* ══════════════════════════════════════════════════════════════════════
+   [1] 대한민국 공휴일·대체공휴일 사전 (2025 ~ 2028)
+   - 근로자의날(5/1)은 민간기업 유급휴일이므로 영업일에서 제외
+   - 선거일·임시공휴일은 정부 발표 시 이 표에 직접 추가
+   - 표에 없는 연도는 화면 상단에 경고 표시 (주말만 제외하고 계산)
+   ══════════════════════════════════════════════════════════════════════ */
+const KR_HOLIDAYS = {
+  "2025-01-01": "신정", "2025-01-27": "임시공휴일", "2025-01-28": "설날연휴", "2025-01-29": "설날", "2025-01-30": "설날연휴",
+  "2025-03-01": "삼일절", "2025-03-03": "대체공휴일", "2025-05-01": "근로자의날", "2025-05-05": "어린이날·부처님오신날", "2025-05-06": "대체공휴일",
+  "2025-06-03": "대통령선거", "2025-06-06": "현충일", "2025-08-15": "광복절", "2025-10-03": "개천절", "2025-10-05": "추석연휴", "2025-10-06": "추석",
+  "2025-10-07": "추석연휴", "2025-10-08": "대체공휴일", "2025-10-09": "한글날", "2025-12-25": "성탄절",
+  "2026-01-01": "신정", "2026-02-16": "설날연휴", "2026-02-17": "설날", "2026-02-18": "설날연휴",
+  "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "근로자의날", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일",
+  "2026-06-03": "지방선거", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-08-17": "대체공휴일",
+  "2026-09-24": "추석연휴", "2026-09-25": "추석", "2026-09-26": "추석연휴",
+  "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
+  "2027-01-01": "신정", "2027-02-06": "설날연휴", "2027-02-07": "설날", "2027-02-08": "설날연휴", "2027-02-09": "대체공휴일",
+  "2027-03-01": "삼일절", "2027-05-01": "근로자의날", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일",
+  "2027-08-15": "광복절", "2027-08-16": "대체공휴일", "2027-09-14": "추석연휴", "2027-09-15": "추석", "2027-09-16": "추석연휴",
+  "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날", "2027-10-11": "대체공휴일", "2027-12-25": "성탄절", "2027-12-27": "대체공휴일",
+  "2028-01-01": "신정", "2028-01-25": "설날연휴", "2028-01-26": "설날", "2028-01-27": "설날연휴",
+  "2028-03-01": "삼일절", "2028-04-12": "국회의원선거", "2028-05-01": "근로자의날", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일",
+  "2028-08-15": "광복절", "2028-10-02": "추석연휴", "2028-10-03": "추석·개천절", "2028-10-04": "추석연휴", "2028-10-05": "대체공휴일",
+  "2028-10-09": "한글날", "2028-12-25": "성탄절"
+};
+const HOLIDAY_YEARS = [2025, 2026, 2027, 2028];
+
+/* 빈 템플릿: 업무 원문은 코드에 두지 않고 암호화된 data.json에만 보관 */
+const EMPTY_STATE = { tasks: [], guides: { spot: [], qtr: [], yr: [] }, monthlyLogs: {}, meta: { updatedAt: "" } };
+
+const CAT_KEY = { "선행": "ext", "실적": "perf", "표준원가": "std", "회의체": "meet", "SPOT": "spot", "분기": "qtr", "연간": "yr" };
+const CAT_ORDER = ["선행", "실적", "표준원가", "회의체"];
+const CAT_META = {
+  "선행":     { key: "ext",  label: "선행 일정 (타부서 주관)" },
+  "실적":     { key: "perf", label: "실적" },
+  "표준원가": { key: "std",  label: "표준원가" },
+  "회의체":   { key: "meet", label: "회의체" }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   [2] 공통 유틸
+   - esc()      : 사용자 입력값을 HTML에 넣기 전 특수문자 이스케이프 (따옴표 깨짐·스크립트 삽입 방지)
+   - kstToday() : 접속 PC 시간대와 무관하게 한국시간(KST) 기준 오늘 날짜 문자열 반환
+   ══════════════════════════════════════════════════════════════════════ */
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+function kstToday() {
+  const k = new Date(Date.now() + 9 * 3600 * 1000);
+  return k.toISOString().slice(0, 10);
+}
+function clampBD(v, fallback) {
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.min(MAX_BD, n));
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [3] 상태(state) 정규화·저장
+   - normalizeState() : 불러온 데이터의 누락 필드 보정 (백업 파일·구버전 데이터 호환)
+   - saveState()      : meta.updatedAt 갱신 후 암호화하여 localStorage 저장
+   ══════════════════════════════════════════════════════════════════════ */
+const TODAY = kstToday();
+let state = normalizeState(JSON.parse(JSON.stringify(EMPTY_STATE)));
+let ghConfig = loadGhConfig();
+let curYM = TODAY.slice(0, 7);
+let ganttMode = "cat";
+
+function normalizeState(s) {
+  if (!s || !Array.isArray(s.tasks)) throw new Error("tasks 항목이 없습니다.");
+  s.guides = s.guides || {};
+  ["spot", "qtr", "yr"].forEach(k => { if (!Array.isArray(s.guides[k])) s.guides[k] = []; });
+  s.monthlyLogs = s.monthlyLogs || {};
+  s.companyOff = s.companyOff || {};   // { "YYYY-MM-DD": "휴무 명칭" } → 영업일에서 제외
+  s.myLeave = s.myLeave || {};         // { "YYYY-MM-DD": "연차" | "오전반차" | "오후반차" } → 표시·경고만
+  s.meta = s.meta || { updatedAt: "" };
+  s.tasks.forEach(t => {
+    t.start = clampBD(t.start, 1);
+    t.end = Math.max(t.start, clampBD(t.end, t.start));
+  });
+  return s;
+}
+
+/* GitHub 설정 기본값: <owner>.github.io/<repo>/ 로 접속하면 owner·repo 자동 채움 */
+function defaultGhConfig() {
+  const host = location.hostname || "";
+  const owner = host.endsWith(".github.io") ? host.replace(".github.io", "") : "";
+  const repo = owner ? (location.pathname.split("/").filter(Boolean)[0] || "") : "";
+  return { owner, repo, branch: "", path: "", token: "" };
+}
+function loadGhConfig() {
+  const def = defaultGhConfig();
+  try {
+    const raw = localStorage.getItem(GH_CFG_KEY);
+    return raw ? { ...def, ...JSON.parse(raw) } : def;
+  } catch (e) {
+    return def;
+  }
+}
+
+/* 변경 저장: 내용이 바뀐 경우에만 기록(되돌리기 이력) → 암호화 저장 → 우측 하단 알림 */
+function saveState() {
+  if (!recordHistory()) return;
+  state.meta = state.meta || {};
+  state.meta.updatedAt = new Date().toISOString();
+  persistLocal();
+  const now = new Date();
+  const tStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+  setSaveMsg(`🔐 암호화 저장됨 (${tStr})`);
+}
+
+/* 우측 하단 플로팅 알림
+   - kind: "" 정상 / "syncing" 진행 중(자동으로 닫히지 않음) / "err" 오류
+   - 클릭하거나 2.5초(오류 6초) 지나면 사라짐 */
+let saveMsgTimer = null;
+function setSaveMsg(text, kind = "") {
+  const el = document.getElementById("save-msg");
+  el.textContent = text;
+  el.className = "save-float " + kind;
+  el.hidden = false;
+  clearTimeout(saveMsgTimer);
+  if (kind !== "syncing") saveMsgTimer = setTimeout(() => { el.hidden = true; }, kind === "err" ? 6000 : 2500);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [3-0] 되돌리기 / 다시 실행 (모든 메뉴 공통)
+   - 변경할 때마다 상태 스냅샷을 이력에 쌓음 (최대 100단계, 메모리에만 보관)
+   - ↶ / Ctrl+Z : 이전 상태로 · ↷ / Ctrl+Y · Ctrl+Shift+Z : 다음 상태로
+   - 입력칸에서 글자를 쓰는 중에는 브라우저 기본 되돌리기 사용
+   ══════════════════════════════════════════════════════════════════════ */
+const HIST_MAX = 100;
+let hist = [], hIdx = -1;
+function snapState() {
+  const c = JSON.parse(JSON.stringify(state));
+  delete c.meta;
+  return JSON.stringify(c);
+}
+function resetHistory() {
+  hist = [snapState()];
+  hIdx = 0;
+  updateUndoUI();
+}
+function recordHistory() {
+  const s = snapState();
+  if (hIdx >= 0 && hist[hIdx] === s) return false;
+  hist = hist.slice(0, hIdx + 1);
+  hist.push(s);
+  if (hist.length > HIST_MAX) hist.shift();
+  hIdx = hist.length - 1;
+  updateUndoUI();
+  return true;
+}
+function applyHistory(i) {
+  const meta = state.meta || {};
+  state = normalizeState(JSON.parse(hist[i]));
+  state.meta = meta;
+  state.meta.updatedAt = new Date().toISOString();
+  hIdx = i;
+  persistLocal();
+  rerenderAll();
+  updateUndoUI();
+}
+function undo() {
+  if (hIdx <= 0) { showToast("더 되돌릴 작업이 없습니다."); return; }
+  applyHistory(hIdx - 1);
+  showToast(`↶ 되돌리기 (남은 ${hIdx}단계)`);
+}
+function redo() {
+  if (hIdx >= hist.length - 1) { showToast("다시 실행할 작업이 없습니다."); return; }
+  applyHistory(hIdx + 1);
+  showToast("↷ 다시 실행");
+}
+function updateUndoUI() {
+  const u = document.getElementById("btn-undo"), r = document.getElementById("btn-redo");
+  if (u) u.disabled = hIdx <= 0;
+  if (r) r.disabled = hIdx < 0 || hIdx >= hist.length - 1;
+}
+
+function rerenderAll() {
+  renderCalendarTab();
+  renderManualTab();
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [3-1] 암호화 엔진 (브라우저 내장 Web Crypto API · 외부 전송 없음)
+   - 키 생성 : 비밀번호 + 16바이트 salt → PBKDF2-SHA256 600,000회 → AES-256 키
+   - 암호화  : AES-256-GCM (12바이트 무작위 IV, 위·변조 시 복호화 실패)
+   - 봉투(envelope) 형식 : { format, v, cipher, kdf, iter, salt, iv, ct, updatedAt }
+     updatedAt만 평문 (기기 간 최신본 비교용), 나머지 업무 내용은 전부 ct 안에 암호화
+   - 비밀번호는 메모리(sessionPw)에만 보관 → 새로고침·잠금 시 소멸
+   ══════════════════════════════════════════════════════════════════════ */
+const ENC_FORMAT = "sebang-co-enc";
+const ENC_ITER = 600000;
+let sessionPw = null;
+let curSalt = null;
+const keyCache = new Map();
+
+function bytesToB64(buf) {
+  const u = new Uint8Array(buf);
+  let s = "";
+  for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function b64ToBytes(b64) {
+  const s = atob(b64);
+  const u = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+  return u;
+}
+function newSalt() {
+  return bytesToB64(crypto.getRandomValues(new Uint8Array(16)));
+}
+async function getKey(pw, saltB64, iter) {
+  const ck = `${iter}:${saltB64}`;
+  const cacheable = pw === sessionPw;
+  if (cacheable && keyCache.has(ck)) return keyCache.get(ck);
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: b64ToBytes(saltB64), iterations: iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  if (cacheable) keyCache.set(ck, key);
+  return key;
+}
+async function encryptText(text, pw, saltB64) {
+  const key = await getKey(pw, saltB64, ENC_ITER);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(text));
+  return { iv: bytesToB64(iv), ct: bytesToB64(ct) };
+}
+async function decryptText(env, pw) {
+  const key = await getKey(pw, env.salt, env.iter || ENC_ITER);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToBytes(env.iv) }, key, b64ToBytes(env.ct));
+  return new TextDecoder().decode(pt);
+}
+function isEnvelope(o) {
+  return Boolean(o && o.format === ENC_FORMAT && o.salt && o.iv && o.ct);
+}
+async function buildEnvelope() {
+  const { iv, ct } = await encryptText(JSON.stringify(state), sessionPw, curSalt);
+  return { format: ENC_FORMAT, v: 1, cipher: "AES-256-GCM", kdf: "PBKDF2-SHA256", iter: ENC_ITER,
+           salt: curSalt, iv, ct, updatedAt: (state.meta && state.meta.updatedAt) || "" };
+}
+async function openEnvelope(env, pw) {
+  return normalizeState(JSON.parse(await decryptText(env, pw)));
+}
+
+/* 로컬 암호화 저장: 연속 저장 시 마지막 호출만 기록 */
+let persistSeq = 0;
+async function persistLocal() {
+  if (!sessionPw || !curSalt) return;
+  const my = ++persistSeq;
+  try {
+    const env = await buildEnvelope();
+    if (my !== persistSeq) return;
+    localStorage.setItem(ENC_KEY, JSON.stringify(env));
+  } catch (e) { /* 저장소 차단 환경 */ }
+}
+
+/* GitHub 설정 저장: 토큰은 데이터 비밀번호로 암호화(tokenEnc)해서만 보관 */
+async function saveGhConfig() {
+  const { token, tokenEnc, ...rest } = ghConfig;
+  const out = { ...rest };
+  if (token && sessionPw) {
+    const salt = newSalt();
+    out.tokenEnc = { salt, iter: ENC_ITER, ...(await encryptText(token, sessionPw, salt)) };
+  }
+  try { localStorage.setItem(GH_CFG_KEY, JSON.stringify(out)); } catch (e) { /* 무시 */ }
+}
+async function unlockGhToken() {
+  if (ghConfig.tokenEnc) {
+    try { ghConfig.token = await decryptText(ghConfig.tokenEnc, sessionPw); } catch (e) { ghConfig.token = ""; }
+  } else if (ghConfig.token) {
+    await saveGhConfig(); // 구버전 평문 토큰 → 암호화 보관으로 전환
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [4] 잠금 화면 & 시작 흐름
+   - 시작 시 로컬 암호문(ENC_KEY)·배포 폴더 data.json 암호문을 읽고 잠금 화면 표시
+   - unlock : 두 암호문 중 updatedAt이 최신인 것부터 복호화 시도
+   - setup  : 암호문이 없으면 새 비밀번호 설정 (구버전 평문 데이터가 있으면 그대로 암호화 이전)
+   - change : 현재 비밀번호 확인 → 새 salt로 재암호화 (토큰 포함)
+   ══════════════════════════════════════════════════════════════════════ */
+let lockCtx = { mode: "unlock", local: null, remote: null, legacy: null };
+
+function readLocalEnvelope() {
+  try {
+    const o = JSON.parse(localStorage.getItem(ENC_KEY) || "null");
+    return isEnvelope(o) ? o : null;
+  } catch (e) { return null; }
+}
+function readLegacyPlain() {
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    return raw ? normalizeState(JSON.parse(raw)) : null;
+  } catch (e) { return null; }
+}
+async function fetchRemoteEnvelope() {
+  try {
+    const res = await fetch("./data.json?t=" + Date.now());
+    if (!res.ok) return null;
+    const o = await res.json();
+    return isEnvelope(o) ? o : null;
+  } catch (e) { return null; }
+}
+
+function showLock(mode, msg) {
+  lockCtx.mode = mode;
+  const $ = id => document.getElementById(id);
+  const T = {
+    unlock: ["🔒 데이터 잠금 해제", "업무 데이터는 비밀번호로 암호화되어 있습니다.", "비밀번호", "열기"],
+    setup:  ["🔑 새 비밀번호 설정", "저장된 암호화 데이터가 없습니다. 비밀번호를 정하면 이후 모든 데이터가 이 비밀번호로 암호화됩니다.", "", "설정"],
+    change: ["🔑 비밀번호 변경", "변경 후 [⬆️ 저장]을 눌러야 다른 PC에도 새 비밀번호가 적용됩니다.", "현재 비밀번호", "변경"]
+  }[mode];
+  $("lock-title").textContent = T[0];
+  $("lock-desc").textContent = T[1];
+  $("lbl-lock-pw").textContent = T[2];
+  $("btn-lock-ok").textContent = T[3];
+  $("row-lock-pw").hidden = mode === "setup";
+  $("row-lock-new").hidden = mode === "unlock";
+  $("row-lock-confirm").hidden = mode === "unlock";
+  $("btn-lock-cancel").hidden = mode !== "change";
+  ["lock-pw", "lock-new", "lock-confirm"].forEach(id => { $(id).value = ""; });
+  $("lock-msg").textContent = msg || "";
+  $("lock-modal").classList.add("open");
+  setTimeout(() => $(mode === "setup" ? "lock-new" : "lock-pw").focus(), 0);
+}
+
+function readNewPw() {
+  const nw = document.getElementById("lock-new").value;
+  if (nw.length < 10) throw new Error("새 비밀번호는 10자 이상으로 정해 주세요.");
+  if (nw !== document.getElementById("lock-confirm").value) throw new Error("새 비밀번호 확인이 일치하지 않습니다.");
+  return nw;
+}
+
+async function submitLock(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById("btn-lock-ok");
+  const msgEl = document.getElementById("lock-msg");
+  const pw = document.getElementById("lock-pw").value;
+  btn.disabled = true;
+  msgEl.textContent = "확인 중...";
+  try {
+    let note = "";
+    if (lockCtx.mode === "setup") {
+      sessionPw = readNewPw();
+      curSalt = newSalt();
+      state = lockCtx.legacy || normalizeState(JSON.parse(JSON.stringify(EMPTY_STATE)));
+      if (!state.meta.updatedAt) state.meta.updatedAt = new Date().toISOString();
+    } else if (lockCtx.mode === "unlock") {
+      if (!pw) throw new Error("비밀번호를 입력해 주세요.");
+      const cands = [lockCtx.local, lockCtx.remote].filter(Boolean)
+        .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+      let opened = null, used = null;
+      for (const env of cands) {
+        try { opened = await openEnvelope(env, pw); used = env; break; } catch (e) { /* 다음 후보 */ }
+      }
+      if (!opened) throw new Error("비밀번호가 틀렸습니다.");
+      state = opened;
+      sessionPw = pw;
+      curSalt = used.salt;
+      if (used === lockCtx.remote && lockCtx.local) note = "서버(data.json)의 최신 데이터로 열었습니다.";
+    } else {
+      if (pw !== sessionPw) throw new Error("현재 비밀번호가 틀렸습니다.");
+      sessionPw = readNewPw();
+      curSalt = newSalt();
+      keyCache.clear();
+      note = "비밀번호를 변경했습니다. [⬆️ 저장]으로 서버에도 반영하세요.";
+    }
+    try { localStorage.removeItem(LEGACY_KEY); } catch (e) { /* 무시 */ }
+    if (lockCtx.mode === "change") await saveGhConfig(); else await unlockGhToken();
+    await persistLocal();
+    document.getElementById("lock-modal").classList.remove("open");
+    msgEl.textContent = "";
+    refreshGhButtonUI();
+    rerenderAll();
+    if (lockCtx.mode !== "change") resetHistory();
+    setSaveMsg("🔓 잠금 해제됨");
+    if (note) alert(note);
+  } catch (err) {
+    msgEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function startApp() {
+  rerenderAll();
+  const [remote] = await Promise.all([fetchRemoteEnvelope()]);
+  lockCtx.local = readLocalEnvelope();
+  lockCtx.remote = remote;
+  lockCtx.legacy = readLegacyPlain();
+  showLock(lockCtx.local || lockCtx.remote ? "unlock" : "setup");
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [5] GitHub REST API 연동 (data.json 읽기/쓰기) + API 사용량 확인
+   - ghFetch()       : 모든 GitHub 호출의 공통 래퍼. 응답 헤더의 X-RateLimit-* 값을 읽어 사용량 표시 갱신
+   - checkGhUsage()  : /rate_limit 조회 (이 호출 자체는 한도 차감 없음)
+   - pushToGitHub()  : 기존 sha 조회 → PUT 커밋. 409(동시 수정 충돌) 시 안내
+   - pullFromGitHub(): 저장소 data.json 내려받아 현재 상태 교체
+   ══════════════════════════════════════════════════════════════════════ */
+function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function base64ToUtf8(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\s/g, ""))));
+}
+
+let ghCallCount = 0; // 이 페이지를 연 뒤 호출한 GitHub API 횟수
+function updateUsageUI(limit, remaining, resetEpoch) {
+  const el = document.getElementById("gh-usage");
+  if (!el) return;
+  const reset = resetEpoch ? new Date(Number(resetEpoch) * 1000) : null;
+  const rStr = reset ? `${String(reset.getHours()).padStart(2,"0")}:${String(reset.getMinutes()).padStart(2,"0")}` : "-";
+  el.textContent = `남은 호출 ${remaining ?? "?"} / ${limit ?? "?"}회 · 초기화 ${rStr} · 이번 세션 호출 ${ghCallCount}회`;
+}
+function ghHeaders(json) {
+  const h = { "Accept": "application/vnd.github+json" };
+  if (ghConfig.token) h["Authorization"] = `Bearer ${ghConfig.token}`;
+  if (json) h["Content-Type"] = "application/json";
+  return h;
+}
+async function ghFetch(url, opts = {}) {
+  ghCallCount++;
+  // cache: "no-store" → GitHub API의 60초 캐시를 쓰지 않음 (오래된 sha로 저장 충돌(409) 나는 문제 방지)
+  const res = await fetch(url, { cache: "no-store", ...opts });
+  const lim = res.headers.get("x-ratelimit-limit");
+  if (lim) updateUsageUI(lim, res.headers.get("x-ratelimit-remaining"), res.headers.get("x-ratelimit-reset"));
+  return res;
+}
+async function checkGhUsage() {
+  try {
+    const res = await fetch("https://api.github.com/rate_limit", { headers: ghHeaders(false) });
+    const j = await res.json();
+    const c = j.resources && j.resources.core;
+    if (c) updateUsageUI(c.limit, c.remaining, c.reset);
+  } catch (e) {
+    document.getElementById("gh-usage").textContent = "조회 실패 (네트워크 확인)";
+  }
+}
+
+/* 저장 대상 브랜치·경로 결정
+   - 사용자가 비워두면 GET /repos/{owner}/{repo}/pages 의 source(branch, path)로 자동 감지
+   - Pages 폴더가 /docs 이면 docs/data.json, 루트면 data.json */
+async function resolveGhTarget() {
+  let branch = ghConfig.branch, path = ghConfig.path;
+  if (!branch || !path) {
+    const res = await ghFetch(`https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/pages`, { headers: ghHeaders(false) });
+    if (res.ok) {
+      const src = (await res.json()).source || {};
+      if (!branch) branch = src.branch;
+      if (!path) path = (src.path && src.path !== "/" ? src.path.replace(/^\//, "") + "/" : "") + "data.json";
+    } else {
+      throw new Error(`Pages 배포 설정 자동 감지 실패(${res.status}). 설정창에 브랜치와 데이터 파일 경로를 직접 입력하거나 토큰에 Pages: Read 권한을 추가해 주세요.`);
+    }
+  }
+  return { branch, path };
+}
+function contentsUrl(path) {
+  return `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+async function pushToGitHub() {
+  if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token) {
+    document.getElementById("gh-modal").classList.add("open");
+    return;
+  }
+  setSaveMsg("⏳ GitHub에 저장 중...", "syncing");
+
+  try {
+    const { branch, path } = await resolveGhTarget();
+    const apiUrl = contentsUrl(path);
+
+    // 1. 저장 시각 갱신 후 암호문 생성
+    saveState();
+    const content = utf8ToBase64(JSON.stringify(await buildEnvelope(), null, 2));
+
+    // 2. 최신 sha 조회 → PUT 커밋. 409(sha 불일치)면 sha 재조회 후 최대 2회 재시도
+    let putRes;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      let sha;
+      const getRes = await ghFetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, { headers: ghHeaders(false) });
+      if (getRes.ok) sha = (await getRes.json()).sha;
+      else if (getRes.status === 401 || getRes.status === 403) throw new Error(`권한 오류(${getRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
+
+      const body = { message: `Update schedule & manual data (${new Date().toISOString().slice(0,16)})`, content, branch };
+      if (sha) body.sha = sha;
+      putRes = await ghFetch(apiUrl, { method: "PUT", headers: ghHeaders(true), body: JSON.stringify(body) });
+      if (putRes.status !== 409) break;
+      await new Promise(r => setTimeout(r, 800));
+    }
+    if (putRes.status === 409) throw new Error("저장 충돌이 반복됩니다. 잠시 후 다시 저장해 주세요.");
+    if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
+    if (putRes.status === 404) throw new Error(`저장소 또는 브랜치(${branch})를 찾을 수 없습니다. 저장소명과 토큰의 저장소 선택을 확인해 주세요.`);
+    if (!putRes.ok) throw new Error("GitHub API 응답 오류: " + putRes.status);
+    setSaveMsg("☁️ 저장 완료 (Pages 반영 1~2분 소요)");
+  } catch (err) {
+    setSaveMsg("⚠️ 저장 실패", "err");
+    alert("GitHub 저장 실패\n\n" + err.message);
+  }
+}
+
+async function pullFromGitHub() {
+  if (!ghConfig.owner || !ghConfig.repo) {
+    alert("GitHub 계정명과 저장소 이름을 먼저 입력해 주세요.");
+    return;
+  }
+  try {
+    const { branch, path } = await resolveGhTarget();
+    const apiUrl = `${contentsUrl(path)}?ref=${encodeURIComponent(branch)}`;
+    const res = await ghFetch(apiUrl, { headers: ghHeaders(false) });
+    if (!res.ok) throw new Error("파일을 찾을 수 없거나 접근 권한이 없습니다. (" + res.status + ")");
+    const data = await res.json();
+    const parsed = JSON.parse(base64ToUtf8(data.content));
+    if (isEnvelope(parsed)) {
+      try { state = await openEnvelope(parsed, sessionPw); }
+      catch (e) { throw new Error("서버 데이터의 비밀번호가 현재 비밀번호와 다릅니다. 다른 PC에서 비밀번호를 바꿨다면 [🔒 잠금] 후 새 비밀번호로 여세요."); }
+    } else {
+      state = normalizeState(parsed); // 구버전 평문 → 다음 저장부터 암호화
+    }
+    recordHistory();
+    await persistLocal();
+    rerenderAll();
+    alert("GitHub 저장소의 최신 data.json 데이터를 불러왔습니다.");
+    document.getElementById("gh-modal").classList.remove("open");
+  } catch (err) {
+    alert("불러오기 실패: " + err.message);
+  }
+}
+
+function ensureMonthLog(ym) {
+  if (!state.monthlyLogs[ym]) {
+    state.monthlyLogs[ym] = { doneRegIds: [], spotTasks: [] };
+  }
+  const m = state.monthlyLogs[ym];
+  m.doneRegIds = m.doneRegIds || [];
+  m.spotTasks = m.spotTasks || [];
+  m.overrides = m.overrides || {};     // 드래그 일정 조정 { taskId: { s: 시작일, e: 종료일 } } (이번 달만)
+  m.memos = m.memos || {};             // 정례 업무 이달 메모 { taskId: "메모" } (SPOT 메모는 각 항목의 memo 필드)
+  return m;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [6] 한국 달력 및 영업일(BD) 계산 엔진
+   - 주말·공휴일·회사 휴무(state.companyOff) 제외 평일을 1영업일부터 순서대로 부여
+   - 내 연차(state.myLeave)는 회사 영업일에 영향 없음 → 표시·경고만
+   - resolveBD() : 매뉴얼 영업일이 그달 총 영업일보다 크면 말일 영업일로 당겨 배치 (누락 방지)
+   ══════════════════════════════════════════════════════════════════════ */
+function buildMonthCalendarData(ym) {
+  const [year, month] = ym.split("-").map(Number);
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDate = new Date(year, month, 0).getDate();
+  const startDow = firstDay.getDay();
+  const companyOff = state.companyOff || {};
+  const myLeave = state.myLeave || {};
+
+  let bdCount = 0;
+  const bdToDate = {};
+  const dayMap = {};
+
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dow = new Date(year, month - 1, d).getDay();
+    const holName = KR_HOLIDAYS[ds] || "";
+    const offName = companyOff[ds] || "";
+    const leave = myLeave[ds] || "";
+    const isWeekend = (dow === 0 || dow === 6);
+    const isWorkday = !isWeekend && !holName && !offName;
+    let bd = null;
+    if (isWorkday) { bdCount++; bdToDate[bdCount] = ds; bd = bdCount; }
+    dayMap[ds] = { day: d, dow, bd, holName, offName, leave, isWorkday };
+  }
+
+  const cells = [];
+  const prevLastDate = new Date(year, month - 1, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    cells.push({ other: true, day: prevLastDate - i });
+  }
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells.push({ other: false, dateStr: ds, ...dayMap[ds] });
+  }
+  let nextDay = 1;
+  while (cells.length % 7 !== 0) {
+    cells.push({ other: true, day: nextDay++ });
+  }
+
+  return { year, month, cells, bdToDate, dayMap, totalBD: bdCount };
+}
+
+function resolveBD(b, totalBD) {
+  return Math.min(b, totalBD);
+}
+
+/* 정례 업무 1건을 이번 달 실제 날짜로 변환
+   - 기본: 매뉴얼 영업일(start~end) → 날짜
+   - 드래그 조정(mLog.overrides[id] = {s, e} 날짜)이 있으면 그 기간 안의 영업일로 배치
+   - 반환: 영업일 범위(rs~re), 날짜, 말일조정·일정조정·지연·진행중·연차 마감 여부 */
+function mapTaskToMonth(t, cal, isDone, mLog) {
+  const s = Number(t.start), e = Number(t.end);
+  let rs = resolveBD(s, cal.totalBD), re = resolveBD(e, cal.totalBD);
+  let adjusted = (s !== rs || e !== re);
+  const ov = mLog && mLog.overrides && mLog.overrides[t.id];
+  let moved = false;
+  if (ov) {
+    const bds = Object.keys(cal.bdToDate).map(Number);
+    const os = bds.find(b => cal.bdToDate[b] >= ov.s);
+    const oe = [...bds].reverse().find(b => cal.bdToDate[b] <= ov.e);
+    if (os && oe && os <= oe) { rs = os; re = oe; moved = true; adjusted = false; }
+  }
+  const sDate = cal.bdToDate[rs] || "";
+  const eDate = cal.bdToDate[re] || "";
+  const late = !isDone && t.mode !== "ext" && eDate && eDate < TODAY;
+  const isToday = sDate <= TODAY && TODAY <= eDate;
+  const leaveHit = t.mode !== "ext" && eDate && (state.myLeave || {})[eDate] ? state.myLeave[eDate] : "";
+  return { s, e, rs, re, sDate, eDate, adjusted, moved, late, isToday, leaveHit };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7] [탭 1] 이달의 일정: 달력 & 체크리스트 & KPI 렌더링
+   - 셀 배경: 흰색 = 영업일 / 분홍 = 일요일·공휴일 / 회청 = 토요일 / 회색 빗금 = 회사 휴무 / 초록 = 내 연차
+   ══════════════════════════════════════════════════════════════════════ */
+function renderCalendarTab() {
+  const cal = buildMonthCalendarData(curYM);
+  const { year, month, cells, bdToDate, totalBD } = cal;
+  const mLog = ensureMonthLog(curYM);
+  const showSpan = document.getElementById("chk-show-span").checked;
+
+  document.getElementById("ym-label").textContent = `${year}년 ${month}월`;
+  document.getElementById("cal-title").textContent = `${month}월 달력`;
+  document.getElementById("in-ym-picker").value = curYM;
+
+  // 공휴일 사전 범위 밖 연도 경고
+  const warnEl = document.getElementById("cal-warn");
+  if (!HOLIDAY_YEARS.includes(year)) {
+    warnEl.style.display = "block";
+    warnEl.textContent = `⚠️ ${year}년 공휴일이 등록되지 않아 주말만 제외하고 영업일을 계산했습니다. 코드의 KR_HOLIDAYS에 공휴일을 추가하세요.`;
+  } else {
+    warnEl.style.display = "none";
+  }
+
+  // 날짜별 이벤트 목록 구성
+  const evByDate = {};
+  const pushEv = (ds, ev) => { (evByDate[ds] = evByDate[ds] || []).push(ev); };
+  const taskInfo = {};
+
+  state.tasks.forEach(t => {
+    const isDone = mLog.doneRegIds.includes(t.id);
+    const info = mapTaskToMonth(t, cal, isDone, mLog);
+    taskInfo[t.id] = info;
+    const ck = CAT_KEY[t.cat] || "perf";
+    const { rs, re } = info;
+    const adjMark = info.adjusted ? " (말일조정)" : "";
+    const leave = info.leaveHit;
+
+    if (t.mode === "prep_rep" && re > rs) {
+      for (let b = rs; b <= re; b++) {
+        const ds = bdToDate[b];
+        if (!ds) continue;
+        if (b === re) {
+          pushEv(ds, { id: t.id, type: "reg", done: isDone, late: info.late, leave, cls: `ev-ms-${ck}`, label: `★[${t.endLabel || "완료"}] ${t.name}${adjMark}` });
+        } else if (showSpan || b === rs) {
+          pushEv(ds, { id: t.id, type: "reg", done: isDone, late: false, cls: `ev-prep-${ck}`, label: b === rs ? `[착수] ${t.name}` : `· ${t.name}` });
+        }
+      }
+    } else {
+      for (let b = rs; b <= re; b++) {
+        const ds = bdToDate[b];
+        if (!ds) continue;
+        const cls = t.mode === "ext" ? "ev-ext" : `ev-ms-${ck}`;
+        pushEv(ds, { id: t.id, type: "reg", done: isDone, late: b === re && info.late, leave: b === re ? leave : "", cls, label: t.name + (b === re ? adjMark : "") });
+      }
+    }
+  });
+
+  mLog.spotTasks.forEach(sp => {
+    const late = !sp.done && sp.date < TODAY;
+    pushEv(sp.date, { id: sp.id, type: "spot", done: sp.done, late, cls: "ev-spot", label: `[${sp.cat}] ${sp.name}` });
+  });
+
+  // 달력 그리드 HTML
+  const dows = ["일", "월", "화", "수", "목", "금", "토"];
+  let html = dows.map((w, i) => {
+    const col = i === 0 ? "#dc2626" : (i === 6 ? "#2563eb" : "#374151");
+    return `<div class="cal-th" style="color:${col}">${w}</div>`;
+  }).join("");
+
+  cells.forEach(c => {
+    if (c.other) {
+      html += `<div class="cal-cell other-month"><div class="c-day">${c.day}</div></div>`;
+      return;
+    }
+    const isSunOrHol = (c.dow === 0) || Boolean(c.holName);
+    const dayCol = isSunOrHol ? "#dc2626" : (c.dow === 6 ? "#2563eb" : "#1d2128");
+    let bg = "";
+    if (isSunOrHol) bg = "hol-bg";
+    else if (c.dow === 6) bg = "sat-bg";
+    else if (c.offName) bg = "off-bg";
+    else if (c.leave) bg = c.leave === "연차" ? "leave-bg" : "half-bg";
+    const cellCls = `cal-cell ${bg} ${c.dow === 0 || c.dow === 6 ? "wkend" : ""} ${c.dateStr === TODAY ? "today-ring" : ""}`;
+
+    let badges = "";
+    if (c.holName) badges += `<span class="hol-pill">${esc(c.holName)}</span>`;
+    if (c.offName) badges += `<span class="off-pill">휴무 · ${esc(c.offName)}</span>`;
+    if (c.leave && c.isWorkday) badges += `<span class="leave-pill">${esc(c.leave)}</span>`;
+
+    const evs = (evByDate[c.dateStr] || []).map(ev => {
+      const memo = ev.type === "reg" ? mLog.memos[ev.id] : (mLog.spotTasks.find(s => s.id === ev.id) || {}).memo;
+      const tip = esc(ev.label) + (ev.late ? " · 지연" : "") + (ev.leave ? ` · 내 ${ev.leave}일 마감` : "") + (memo ? ` · 메모: ${esc(memo).slice(0, 60)}` : "") + " (클릭: 완료 토글 · 드래그: 일자 이동 · ✎: 수정·메모)";
+      return `<div class="c-ev ${ev.cls} ${ev.done ? "done" : ""} ${ev.late ? "late" : ""} ${ev.leave ? "leave-hit" : ""}" data-type="${ev.type}" data-id="${esc(ev.id)}" title="${tip}">
+        <span>${ev.done ? "✓" : (ev.late ? "!" : (ev.leave ? "🌴" : "•"))}</span><span class="ev-lb">${esc(ev.label)}</span>${memo ? `<span class="ev-memo" aria-label="메모 있음">📝</span>` : ""}<button class="ev-edit" type="button" tabindex="-1" aria-label="수정·메모">✎</button>
+      </div>`;
+    }).join("");
+
+    html += `<div class="${cellCls}" data-date="${c.dateStr}" data-workday="${c.isWorkday ? 1 : 0}">
+      <div class="c-top">
+        <span class="c-day" style="color:${dayCol}">${c.day}</span>
+        <div class="c-badges">${badges}</div>
+      </div>
+      <div class="c-ev-list">${evs}</div>
+    </div>`;
+  });
+
+  document.getElementById("kr-cal-grid").innerHTML = html;
+
+  // 정례 업무 체크리스트 (이번 달 실제 시작일 순)
+  const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
+  const sorted = [...state.tasks].sort((a, b) => (taskInfo[a.id].rs - taskInfo[b.id].rs) || (taskInfo[a.id].re - taskInfo[b.id].re));
+  document.getElementById("list-reg-tasks").innerHTML = sorted.map(t => {
+    const isDone = mLog.doneRegIds.includes(t.id);
+    const info = taskInfo[t.id];
+    const ck = CAT_KEY[t.cat] || "perf";
+    const dateRange = info.sDate === info.eDate ? md(info.sDate) : `${md(info.sDate)}~${md(info.eDate)}`;
+    const bdRange = info.rs === info.re ? `${info.rs}영업일` : `${info.rs}~${info.re}영업일`;
+    const actTxt = t.endLabel ? ` · <b>${esc(t.endLabel)}</b>` : "";
+    let flags = "";
+    if (info.late) flags += `<span class="late-pill">지연</span>`;
+    else if (!isDone && info.isToday) flags += `<span class="today-pill">진행중</span>`;
+    if (info.leaveHit && !isDone) flags += `<span class="leave-warn-pill" title="마감일(${md(info.eDate)})이 내 ${info.leaveHit}일입니다">${esc(info.leaveHit)}일 마감</span>`;
+    if (info.adjusted) flags += `<span class="adj-pill" title="이달 총 영업일(${totalBD}일) 초과 → 말일 영업일로 조정">말일조정</span>`;
+    if (info.moved) flags += `<span class="adj-pill" title="매뉴얼 기준: ${t.start}~${t.end}영업일">일정조정</span><button class="btn mini-btn" type="button" onclick="resetOverride('${esc(t.id)}')" title="매뉴얼 기준 일정으로 되돌리기">↺</button>`;
+
+    const memo = mLog.memos[t.id];
+    return `<div class="chk-row ${isDone ? "done" : ""} ${info.late ? "late" : ""}">
+      <div class="chk-left">
+        <input type="checkbox" ${isDone ? "checked" : ""} onchange="toggleTaskFromCal('reg','${esc(t.id)}')" aria-label="${esc(t.name)} 완료">
+        <span class="badge bg-${ck}">${esc(t.cat)}</span>
+        <button class="chk-title" type="button" data-open="reg" data-id="${esc(t.id)}" title="클릭: 이달 메모 · 이전 메모 보기">${esc(t.name)}</button>
+        ${memo ? `<span class="memo-prev" title="${esc(memo)}">📝 ${esc(memo.split("\n")[0])}</span>` : ""}
+      </div>
+      <span class="chk-flags">${flags}</span>
+      <span class="chk-meta">${bdRange} (${dateRange})${actTxt}</span>
+    </div>`;
+  }).join("");
+
+  // SPOT/추가 업무 목록 (날짜순)
+  const spotListEl = document.getElementById("list-spot-tasks");
+  if (mLog.spotTasks.length === 0) {
+    spotListEl.innerHTML = `<div style="padding:14px;color:var(--mut);font-size:12px;text-align:center">등록된 이달의 추가/SPOT 업무가 없습니다. 달력의 빈 곳을 클릭해도 추가할 수 있습니다.</div>`;
+  } else {
+    spotListEl.innerHTML = [...mLog.spotTasks].sort((a, b) => a.date.localeCompare(b.date)).map(sp => {
+      const ck = CAT_KEY[sp.cat] || "spot";
+      const late = !sp.done && sp.date < TODAY;
+      const lv = (state.myLeave || {})[sp.date];
+      return `<div class="chk-row ${sp.done ? "done" : ""} ${late ? "late" : ""}">
+        <div class="chk-left">
+          <input type="checkbox" ${sp.done ? "checked" : ""} onchange="toggleTaskFromCal('spot','${esc(sp.id)}')" aria-label="${esc(sp.name)} 완료">
+          <span class="badge bg-${ck}">${esc(sp.cat)}</span>
+          <button class="chk-title" type="button" data-open="spot" data-id="${esc(sp.id)}" title="클릭: 업무명 수정 · 메모">${esc(sp.name)}</button>
+          ${sp.memo ? `<span class="memo-prev" title="${esc(sp.memo)}">📝 ${esc(sp.memo.split("\n")[0])}</span>` : ""}
+        </div>
+        <span class="chk-flags">${late ? `<span class="late-pill">지연</span>` : ""}${lv && !sp.done ? `<span class="leave-warn-pill">${esc(lv)}일</span>` : ""}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="chk-meta">${md(sp.date)}</span>
+          <button class="btn btn-danger" type="button" onclick="deleteSpotTask('${esc(sp.id)}')">삭제</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // KPI (삭제된 업무의 완료기록은 집계 제외)
+  const taskIds = new Set(state.tasks.map(t => t.id));
+  const regTotal = state.tasks.length;
+  const regDone = mLog.doneRegIds.filter(id => taskIds.has(id)).length;
+  const spotTotal = mLog.spotTasks.length;
+  const spotDone = mLog.spotTasks.filter(s => s.done).length;
+  const lateCnt = Object.values(taskInfo).filter(i => i.late).length + mLog.spotTasks.filter(s => !s.done && s.date < TODAY).length;
+  const allTotal = regTotal + spotTotal;
+  const allDone = regDone + spotDone;
+  const pct = allTotal > 0 ? Math.round((allDone / allTotal) * 100) : 0;
+  const todayBD = cal.dayMap[TODAY] && cal.dayMap[TODAY].bd;
+  const days = Object.values(cal.dayMap);
+  const offCnt = days.filter(d => d.offName && d.dow !== 0 && d.dow !== 6 && !d.holName).length;
+  const leaveDays = days.filter(d => d.leave && d.isWorkday).reduce((n, d) => n + (d.leave === "연차" ? 1 : 0.5), 0);
+  const leaveHitCnt = state.tasks.filter(t => taskInfo[t.id].leaveHit && !mLog.doneRegIds.includes(t.id)).length;
+
+  document.getElementById("cal-kpi-area").innerHTML = `
+    <div class="cal-kpi-pill">📆 총 영업일: <b style="color:var(--fg)">${totalBD}일</b>${todayBD ? ` · 오늘 <b style="color:var(--c-perf)">${todayBD}영업일</b>` : ""}</div>
+    <div class="cal-kpi-pill">📌 정례 완료: <b style="color:var(--c-perf)">${regDone} / ${regTotal}건</b></div>
+    <div class="cal-kpi-pill">⚡ SPOT/추가: <b style="color:var(--c-spot)">${spotDone} / ${spotTotal}건</b></div>
+    <div class="cal-kpi-pill" style="${lateCnt ? "border-color:#fecaca;background:#fef2f2" : ""}">⏰ 지연: <b style="color:${lateCnt ? "#dc2626" : "var(--mut)"}">${lateCnt}건</b></div>
+    <div class="cal-kpi-pill" style="${leaveHitCnt ? "border-color:#fcd34d;background:#fffbeb" : ""}">🌴 내 연차 <b>${leaveDays}일</b> · 🏢 회사 휴무 <b>${offCnt}일</b>${leaveHitCnt ? ` · <b style="color:#b45309">연차일 마감 ${leaveHitCnt}건</b>` : ""}</div>
+    <div class="cal-kpi-pill">
+      <span>진행률 <b style="color:var(--c-std)">${pct}%</b></span>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  `;
+}
+
+window.toggleTaskFromCal = function(type, id) {
+  const mLog = ensureMonthLog(curYM);
+  if (type === "reg") {
+    const idx = mLog.doneRegIds.indexOf(id);
+    if (idx >= 0) mLog.doneRegIds.splice(idx, 1);
+    else mLog.doneRegIds.push(id);
+  } else {
+    const item = mLog.spotTasks.find(s => s.id === id);
+    if (item) item.done = !item.done;
+  }
+  saveState();
+  renderCalendarTab();
+};
+
+window.deleteSpotTask = function(id) {
+  const mLog = ensureMonthLog(curYM);
+  mLog.spotTasks = mLog.spotTasks.filter(s => s.id !== id);
+  saveState();
+  renderCalendarTab();
+};
+
+/* 드래그로 조정한 정례 업무 일정을 매뉴얼 기준으로 되돌림 (이번 달만) */
+window.resetOverride = function(id) {
+  const mLog = ensureMonthLog(curYM);
+  delete mLog.overrides[id];
+  saveState();
+  renderCalendarTab();
+  showToast("매뉴얼 기준 일정으로 되돌렸습니다.");
+};
+
+/* 하단 알림 메시지 (2.5초 후 사라짐) */
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2500);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7-1] 캘린더 드래그 이동
+   - 마우스: 업무를 누른 채 5px 이상 움직이면 드래그 시작 / 그냥 클릭하면 완료 토글
+   - 터치: 0.35초 길게 누르면 드래그 시작 / 짧게 탭하면 완료 토글 / 바로 움직이면 스크롤
+   - 정례 업무: 놓은 날과 잡은 날의 영업일 차이만큼 기간 전체 이동 (영업일에만 놓기 가능, 이번 달만 적용)
+   - SPOT 업무: 놓은 날짜로 이동 (주말·휴무일도 가능)
+   ══════════════════════════════════════════════════════════════════════ */
+const calGrid = document.getElementById("kr-cal-grid");
+let press = null;
+let lastTouchAt = 0;
+let suppressClickUntil = 0;
+
+function cellAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  return el ? el.closest(".cal-cell[data-date]") : null;
+}
+function beginPress(evEl, x, y, isTouch) {
+  const cell = evEl.closest(".cal-cell[data-date]");
+  if (!cell) return;
+  press = { el: evEl, type: evEl.dataset.type, id: evEl.dataset.id, from: cell.dataset.date, x0: x, y0: y, active: false, isTouch, ghost: null, over: null, timer: null };
+  if (isTouch) press.timer = setTimeout(() => activateDrag(x, y), 350);
+}
+function activateDrag(x, y) {
+  if (!press) return;
+  press.active = true;
+  const g = press.el.cloneNode(true);
+  g.classList.add("drag-ghost");
+  g.style.width = press.el.offsetWidth + "px";
+  document.body.appendChild(g);
+  press.ghost = g;
+  press.el.classList.add("drag-src");
+  document.body.classList.add("dragging");
+  moveGhost(x, y);
+}
+function moveGhost(x, y) {
+  if (!press || !press.ghost) return;
+  press.ghost.style.left = (x + 8) + "px";
+  press.ghost.style.top = (y + 8) + "px";
+  const c = cellAt(x, y);
+  if (press.over && press.over !== c) press.over.classList.remove("drop-ok", "drop-no");
+  if (c) {
+    const okDrop = press.type === "spot" || c.dataset.workday === "1";
+    c.classList.add(okDrop ? "drop-ok" : "drop-no");
+  }
+  press.over = c;
+}
+function movePress(x, y, e) {
+  if (!press) return;
+  if (!press.active) {
+    const dist = Math.hypot(x - press.x0, y - press.y0);
+    if (press.isTouch) { if (dist > 8) { clearTimeout(press.timer); press = null; } return; }
+    if (dist < 5) return;
+    activateDrag(x, y);
+  }
+  if (e && e.cancelable) e.preventDefault();
+  if (Math.hypot(x - press.x0, y - press.y0) > 10) press.moved = true;
+  moveGhost(x, y);
+}
+function endPress(x, y) {
+  if (!press) return;
+  const p = press;
+  press = null;
+  clearTimeout(p.timer);
+  if (p.ghost) p.ghost.remove();
+  if (p.over) p.over.classList.remove("drop-ok", "drop-no");
+  p.el.classList.remove("drag-src");
+  document.body.classList.remove("dragging");
+  if (!p.active) { toggleTaskFromCal(p.type, p.id); return; }
+  suppressClickUntil = Date.now() + 400;
+  if (p.isTouch && !p.moved) { openMemoDialog(p.type, p.id); return; }   // 모바일: 길게 눌렀다 그대로 떼면 수정·메모
+  const c = cellAt(x, y);
+  if (c) moveTaskToDate(p.type, p.id, p.from, c.dataset.date);
+}
+
+function moveTaskToDate(type, id, from, to) {
+  if (from === to) return;
+  const mLog = ensureMonthLog(curYM);
+  if (type === "spot") {
+    const sp = mLog.spotTasks.find(s => s.id === id);
+    if (!sp) return;
+    sp.date = to;
+    saveState(); renderCalendarTab();
+    showToast(`'${sp.name}' → ${to.slice(5).replace("-", "/")} 이동`);
+    return;
+  }
+  const cal = buildMonthCalendarData(curYM);
+  const fromBD = cal.dayMap[from] && cal.dayMap[from].bd;
+  const toBD = cal.dayMap[to] && cal.dayMap[to].bd;
+  if (!toBD) { showToast("정례 업무는 영업일(흰 칸)에만 놓을 수 있습니다."); return; }
+  const t = state.tasks.find(x => x.id === id);
+  if (!t || !fromBD) return;
+  const info = mapTaskToMonth(t, cal, false, mLog);
+  const delta = toBD - fromBD;
+  const ns = Math.max(1, Math.min(cal.totalBD, info.rs + delta));
+  const ne = Math.max(1, Math.min(cal.totalBD, info.re + delta));
+  mLog.overrides[id] = { s: cal.bdToDate[ns], e: cal.bdToDate[ne] };
+  saveState(); renderCalendarTab();
+  const md = ds => ds.slice(5).replace("-", "/");
+  showToast(`'${t.name}' → ${ns === ne ? md(cal.bdToDate[ns]) : md(cal.bdToDate[ns]) + "~" + md(cal.bdToDate[ne])} (이번 달만 적용)`);
+}
+
+calGrid.addEventListener("mousedown", e => {
+  if (e.button !== 0 || Date.now() - lastTouchAt < 800) return;
+  if (e.target.closest(".ev-edit")) return;   // ✎ 버튼은 드래그·토글 대상 아님 (click에서 팝업)
+  const evEl = e.target.closest(".c-ev");
+  if (!evEl) return;
+  e.preventDefault();
+  beginPress(evEl, e.clientX, e.clientY, false);
+});
+document.addEventListener("mousemove", e => { if (press && !press.isTouch) movePress(e.clientX, e.clientY, e); });
+document.addEventListener("mouseup", e => { if (press && !press.isTouch) endPress(e.clientX, e.clientY); });
+calGrid.addEventListener("touchstart", e => {
+  lastTouchAt = Date.now();
+  if (e.target.closest(".ev-edit")) return;
+  const evEl = e.target.closest(".c-ev");
+  if (!evEl || e.touches.length !== 1) return;
+  beginPress(evEl, e.touches[0].clientX, e.touches[0].clientY, true);
+}, { passive: true });
+document.addEventListener("touchmove", e => { if (press && press.isTouch) movePress(e.touches[0].clientX, e.touches[0].clientY, e); }, { passive: false });
+document.addEventListener("touchend", e => {
+  lastTouchAt = Date.now();
+  if (press && press.isTouch) { const t = e.changedTouches[0]; endPress(t.clientX, t.clientY); }
+});
+document.addEventListener("touchcancel", () => { if (press) { press.active = false; press = null; document.querySelectorAll(".drag-ghost").forEach(g => g.remove()); document.body.classList.remove("dragging"); } });
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7-1b] 업무 수정·메모 팝업 (이달의 일정)
+   - 여는 방법 : 달력 칩의 ✎ (PC, 마우스를 올리면 표시) · 모바일은 길게 눌렀다 그대로 떼기
+                 · 체크리스트의 업무명 클릭 (PC·모바일 공통)
+   - SPOT : 업무명·카테고리·날짜·완료·메모 수정, 삭제 (날짜를 다른 달로 바꾸면 그 달로 이동)
+   - 정례 : 업무명 수정 불가 · 이달 일정·매뉴얼 설명 표시 · 완료 · 이달 메모 · 이전 달 메모 조회
+   ══════════════════════════════════════════════════════════════════════ */
+let memoCtx = null;   // { type, id, ym }
+
+function ymLabel(ym) { const [y, m] = ym.split("-"); return `${y}년 ${Number(m)}월`; }
+
+function openMemoDialog(type, id) {
+  const ym = curYM;
+  const mLog = ensureMonthLog(ym);
+  const $ = x => document.getElementById(x);
+  memoCtx = { type, id, ym };
+  const isSpot = type === "spot";
+  $("mm-spot-fields").hidden = !isSpot;
+  $("mm-reg-info").hidden = isSpot;
+  $("mm-history-wrap").hidden = isSpot;
+  $("btn-mm-del").hidden = !isSpot;
+
+  if (isSpot) {
+    const sp = mLog.spotTasks.find(s => s.id === id);
+    if (!sp) return;
+    $("mm-title").textContent = "SPOT·추가 업무";
+    $("mm-sub").textContent = ymLabel(ym);
+    $("mm-name").value = sp.name;
+    $("mm-cat").value = sp.cat;
+    $("mm-date").value = sp.date;
+    $("mm-done").checked = Boolean(sp.done);
+    $("mm-memo").value = sp.memo || "";
+    $("mm-memo-lbl").textContent = "메모";
+  } else {
+    const t = state.tasks.find(x => x.id === id);
+    if (!t) return;
+    const cal = buildMonthCalendarData(ym);
+    const info = mapTaskToMonth(t, cal, false, mLog);
+    const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
+    const ck = CAT_KEY[t.cat] || "perf";
+    $("mm-title").textContent = t.name;
+    $("mm-sub").textContent = `${ymLabel(ym)} · 정례`;
+    $("mm-reg-info").innerHTML = `
+      <div><span class="badge bg-${ck}">${esc(t.cat)}</span>
+        <b>${info.rs === info.re ? info.rs : info.rs + "~" + info.re}영업일</b>
+        (${info.sDate === info.eDate ? md(info.sDate) : md(info.sDate) + "~" + md(info.eDate)})${t.endLabel ? ` · 완료 액션 <b>${esc(t.endLabel)}</b>` : ""}
+        ${info.moved ? `<span class="adj-pill">일정조정</span>` : ""}</div>
+      ${t.desc ? `<div class="mm-desc">${esc(t.desc)}</div>` : ""}
+      <div class="mm-desc">업무명·기본 일정은 [표준 타임테이블]에서 수정합니다.</div>`;
+    $("mm-done").checked = mLog.doneRegIds.includes(id);
+    $("mm-memo").value = mLog.memos[id] || "";
+    $("mm-memo-lbl").textContent = `${ymLabel(ym)} 메모`;
+    // 이전 메모: 다른 달 기록 중 이 업무의 메모 (최신 달부터)
+    const past = Object.keys(state.monthlyLogs)
+      .filter(k => k !== ym && state.monthlyLogs[k].memos && state.monthlyLogs[k].memos[id])
+      .sort((a, b) => b.localeCompare(a));
+    $("mm-history").innerHTML = past.length
+      ? past.map(k => `<div class="mm-h-item"><b>${ymLabel(k)}</b><div>${esc(state.monthlyLogs[k].memos[id])}</div></div>`).join("")
+      : `<div class="mm-h-empty">이전 달에 작성한 메모가 없습니다.</div>`;
+  }
+  $("memo-modal").classList.add("open");
+  setTimeout(() => $(isSpot ? "mm-name" : "mm-memo").focus(), 0);
+}
+
+function closeMemoDialog() {
+  document.getElementById("memo-modal").classList.remove("open");
+  memoCtx = null;
+}
+
+document.getElementById("memo-form").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!memoCtx) return;
+  const $ = x => document.getElementById(x);
+  const { type, id, ym } = memoCtx;
+  const mLog = ensureMonthLog(ym);
+  const memo = $("mm-memo").value.trim();
+  if (type === "spot") {
+    const sp = mLog.spotTasks.find(s => s.id === id);
+    const name = $("mm-name").value.trim();
+    if (!name) { $("mm-name").focus(); showToast("업무명을 입력해 주세요."); return; }
+    const date = $("mm-date").value || sp.date;
+    Object.assign(sp, { name, cat: $("mm-cat").value, date, done: $("mm-done").checked });
+    if (memo) sp.memo = memo; else delete sp.memo;
+    // 다른 달로 날짜를 바꾸면 그 달 기록으로 이동
+    if (date.slice(0, 7) !== ym) {
+      mLog.spotTasks = mLog.spotTasks.filter(s => s.id !== id);
+      ensureMonthLog(date.slice(0, 7)).spotTasks.push(sp);
+    }
+  } else {
+    const done = $("mm-done").checked;
+    const i = mLog.doneRegIds.indexOf(id);
+    if (done && i < 0) mLog.doneRegIds.push(id);
+    if (!done && i >= 0) mLog.doneRegIds.splice(i, 1);
+    if (memo) mLog.memos[id] = memo; else delete mLog.memos[id];
+  }
+  closeMemoDialog();
+  saveState();
+  renderCalendarTab();
+  showToast("저장했습니다.");
+});
+document.getElementById("btn-mm-cancel").addEventListener("click", closeMemoDialog);
+document.getElementById("btn-mm-del").addEventListener("click", () => {
+  if (!memoCtx) return;
+  const { id, ym } = memoCtx;
+  const sp = ensureMonthLog(ym).spotTasks.find(s => s.id === id);
+  closeMemoDialog();
+  deleteSpotTask(id);
+  showToast(`'${sp ? sp.name : "업무"}' 삭제 · ↶ 또는 Ctrl+Z로 되돌리기`);
+});
+/* 체크리스트 업무명 클릭 → 팝업 */
+["list-reg-tasks", "list-spot-tasks"].forEach(lid => {
+  document.getElementById(lid).addEventListener("click", e => {
+    const b = e.target.closest("[data-open]");
+    if (b) openMemoDialog(b.dataset.open, b.dataset.id);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7-2] 빈 곳 클릭 → 날짜 상세 창 (업무 추가 · 내 연차 · 회사 휴무 등록/삭제)
+   ══════════════════════════════════════════════════════════════════════ */
+let dayDate = "";
+calGrid.addEventListener("click", e => {
+  const ed = e.target.closest(".ev-edit");
+  if (ed) { const ev = ed.closest(".c-ev"); openMemoDialog(ev.dataset.type, ev.dataset.id); return; }
+  if (e.target.closest(".c-ev") || Date.now() < suppressClickUntil) return;
+  const cell = e.target.closest(".cal-cell[data-date]");
+  if (cell) openDayDialog(cell.dataset.date);
+});
+
+function setDayKind(kind) {
+  document.querySelectorAll("#day-form [name=day-kind]").forEach(r => { r.checked = r.value === kind; });
+  document.getElementById("day-row-task").hidden = kind !== "task";
+  document.getElementById("day-row-leave").hidden = kind !== "leave";
+  document.getElementById("day-row-off").hidden = kind !== "off";
+}
+function openDayDialog(ds) {
+  dayDate = ds;
+  const cal = buildMonthCalendarData(ds.slice(0, 7));
+  const d = cal.dayMap[ds];
+  const dow = ["일", "월", "화", "수", "목", "금", "토"][d.dow];
+  document.getElementById("day-title").textContent = `${Number(ds.slice(5, 7))}월 ${d.day}일 (${dow})`;
+  const status = d.holName ? `공휴일 · ${d.holName}` : d.offName ? `회사 휴무 · ${d.offName}` : (d.dow === 0 || d.dow === 6) ? "주말" : `${d.bd}영업일`;
+  document.getElementById("day-status").textContent = status + (d.leave ? ` · 내 ${d.leave}` : "");
+
+  // 등록된 휴무·연차 (삭제 가능)
+  let ex = "";
+  if (d.offName) ex += `<div class="chk-row"><span><span class="off-pill">회사 휴무</span> ${esc(d.offName)}</span><button class="btn btn-danger" type="button" onclick="removeDayMark('off')">삭제</button></div>`;
+  if (d.leave) ex += `<div class="chk-row"><span><span class="leave-pill">내 ${esc(d.leave)}</span></span><button class="btn btn-danger" type="button" onclick="removeDayMark('leave')">삭제</button></div>`;
+  document.getElementById("day-existing").innerHTML = ex;
+  document.getElementById("day-existing").hidden = !ex;
+
+  document.getElementById("day-task-name").value = "";
+  document.getElementById("day-off-name").value = d.offName || "";
+  document.getElementById("day-leave-kind").value = d.leave || "연차";
+  setDayKind("task");
+  document.getElementById("day-modal").classList.add("open");
+  setTimeout(() => document.getElementById("day-task-name").focus(), 0);
+}
+function closeDayDialog() {
+  document.getElementById("day-modal").classList.remove("open");
+}
+window.removeDayMark = function(kind) {
+  if (kind === "off") delete state.companyOff[dayDate];
+  else delete state.myLeave[dayDate];
+  saveState(); rerenderAll();
+  showToast(kind === "off" ? "회사 휴무를 삭제했습니다." : "연차를 삭제했습니다.");
+  openDayDialog(dayDate);
+};
+
+document.querySelectorAll("#day-form [name=day-kind]").forEach(r => r.addEventListener("change", () => setDayKind(r.value)));
+document.getElementById("btn-day-cancel").addEventListener("click", closeDayDialog);
+document.getElementById("day-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const kind = document.querySelector("#day-form [name=day-kind]:checked").value;
+  if (kind === "task") {
+    const name = document.getElementById("day-task-name").value.trim();
+    if (!name) { document.getElementById("day-task-name").focus(); return; }
+    const ym = dayDate.slice(0, 7);
+    ensureMonthLog(ym).spotTasks.push({ id: "SP_" + Date.now(), date: dayDate, cat: document.getElementById("day-task-cat").value, name, done: false });
+    showToast(`업무 추가: ${name}`);
+  } else if (kind === "leave") {
+    state.myLeave[dayDate] = document.getElementById("day-leave-kind").value;
+    showToast(`내 ${state.myLeave[dayDate]} 등록`);
+  } else {
+    state.companyOff[dayDate] = document.getElementById("day-off-name").value.trim() || "회사 휴무";
+    showToast("회사 휴무 등록 · 이달 영업일이 다시 계산됩니다.");
+  }
+  saveState(); rerenderAll();
+  closeDayDialog();
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [8] [탭 2] 표준 타임테이블: 간트 & 가이드 카드 & 편집기 렌더링
+   ══════════════════════════════════════════════════════════════════════ */
+function renderManualTab() {
+  document.getElementById("kpi-cnt-perf").textContent = state.tasks.filter(t => t.cat === "실적").length;
+  document.getElementById("kpi-cnt-std").textContent  = state.tasks.filter(t => t.cat === "표준원가").length;
+  document.getElementById("kpi-cnt-meet").textContent = state.tasks.filter(t => t.cat === "회의체").length;
+  document.getElementById("kpi-cnt-spot").textContent = state.guides.spot.length;
+  const names = list => list.slice(0, 4).join(" · ") + (list.length > 4 ? " 외" : "");
+  [["perf", "실적"], ["std", "표준원가"], ["meet", "회의체"]].forEach(([k, c]) => {
+    document.getElementById(`kpi-sub-${k}`).textContent = names(state.tasks.filter(t => t.cat === c).map(t => t.name)) || "등록된 업무 없음";
+  });
+  document.getElementById("kpi-sub-spot").textContent = names(state.guides.spot.map(g => g.title)) || "등록된 항목 없음";
+
+  renderGantt();
+
+  renderGuideCards("spot", "grid-spot-guide", "spot-card", "bg-spot");
+  renderGuideCards("qtr",  "grid-qtr-guide",  "qtr-card",  "bg-qtr");
+  renderGuideCards("yr",   "grid-yr-guide",   "yr-card",   "bg-yr");
+  renderEditorTable();
+}
+
+/* 간트 타임라인만 다시 그림 (드래그 중 실시간 미리보기에 사용) */
+function renderGantt() {
+  const gantt = document.getElementById("gantt");
+  let html = `<div class="th-cat">구분</div><div class="th-nm">업무명</div>`;
+  for (let d = 1; d <= MAX_BD; d++) {
+    const wSep = (d === 6 || d === 11 || d === 16 || d === 21) ? "w-sep" : "";
+    const finZone = (d <= 5) ? "fin-zone" : "";
+    html += `<div class="day ${wSep} ${finZone}" title="${d}영업일">${d}</div>`;
+  }
+
+  let rowIdx = 2;
+  if (ganttMode === "cat") {
+    CAT_ORDER.forEach(catName => {
+      const items = state.tasks.filter(t => t.cat === catName).sort((a, b) => a.start - b.start || a.end - b.end);
+      if (items.length === 0) return;
+      const meta = CAT_META[catName];
+      html += `<div class="grp-hdr grp-${meta.key}" style="grid-row:${rowIdx}">● ${meta.label} — ${items.length}건<button class="grp-add" type="button" data-add-cat="${catName}">+ 업무 추가</button></div>`;
+      rowIdx++;
+      items.forEach(t => {
+        html += buildGanttRow(t, rowIdx);
+        rowIdx++;
+      });
+    });
+  } else {
+    const items = [...state.tasks].sort((a, b) => a.start - b.start || a.end - b.end);
+    items.forEach(t => {
+      html += buildGanttRow(t, rowIdx);
+      rowIdx++;
+    });
+  }
+  gantt.innerHTML = html;
+}
+
+/* 하단 매뉴얼 편집기 표 */
+function renderEditorTable() {
+  const tb = document.getElementById("tb-manual-editor");
+  tb.innerHTML = state.tasks.map((t, idx) => {
+    return `<tr>
+      <td>
+        <select onchange="updateManualTask(${idx}, 'cat', this.value)">
+          ${CAT_ORDER.map(c => `<option value="${c}" ${t.cat === c ? "selected" : ""}>${c}</option>`).join("")}
+        </select>
+      </td>
+      <td><input type="text" value="${esc(t.name)}" onchange="updateManualTask(${idx}, 'name', this.value)" style="font-weight:600"></td>
+      <td><input type="number" min="1" max="24" value="${t.start}" onchange="updateManualTask(${idx}, 'start', this.value)"></td>
+      <td><input type="number" min="1" max="24" value="${t.end}" onchange="updateManualTask(${idx}, 'end', this.value)"></td>
+      <td>
+        <select onchange="updateManualTask(${idx}, 'mode', this.value)">
+          <option value="work" ${t.mode === "work" ? "selected" : ""}>직접수행 (진한 단색)</option>
+          <option value="prep_rep" ${t.mode === "prep_rep" ? "selected" : ""}>취합·대기 후 액션 (빗금+강조)</option>
+          <option value="ext" ${t.mode === "ext" ? "selected" : ""}>타부서 선행 (회색 빗금)</option>
+        </select>
+      </td>
+      <td><input type="text" value="${esc(t.endLabel)}" placeholder="보고/결재/확인/회의" onchange="updateManualTask(${idx}, 'endLabel', this.value)"></td>
+      <td><input type="text" value="${esc(t.desc)}" onchange="updateManualTask(${idx}, 'desc', this.value)"></td>
+      <td style="text-align:center"><button class="btn btn-danger" type="button" onclick="removeManualTask(${idx})">삭제</button></td>
+    </tr>`;
+  }).join("");
+}
+
+function buildGanttRow(t, rowIdx) {
+  const ck = CAT_KEY[t.cat] || "perf";
+  const s = clampBD(t.start, 1);
+  const e = Math.max(s, clampBD(t.end, s));
+  const nm = esc(t.name), lb = esc(t.endLabel);
+
+  const id = esc(t.id);
+  const tip = "드래그: 이동 · 양 끝: 기간 조정 · 클릭: 편집";
+  let r = `<div class="cell-cat" data-id="${id}" style="grid-row:${rowIdx};grid-column:1" title="클릭: 편집"><span class="badge bg-${ck}">${esc(t.cat)}</span></div>`;
+  r += `<div class="cell-nm" data-id="${id}" style="grid-row:${rowIdx};grid-column:2" title="${esc(t.desc) || nm} (클릭: 편집)"><span>${nm}</span></div>`;
+
+  for (let d = 1; d <= MAX_BD; d++) {
+    const wSep = (d === 6 || d === 11 || d === 16 || d === 21) ? "w-sep" : "";
+    const finBg = (d <= 5) ? "fin-bg" : "";
+    r += `<div class="grid-bg ${wSep} ${finBg}" data-bd="${d}" data-cat="${esc(t.cat)}" style="grid-row:${rowIdx};grid-column:${d + 2}" title="${d}영업일 · 클릭: 새 업무 추가"></div>`;
+  }
+
+  const hl = `<span class="gh gh-l" data-h="start" title="시작 영업일 조정"></span>`;
+  const hr = `<span class="gh gh-r" data-h="end" title="종료 영업일 조정"></span>`;
+  if (t.mode === "prep_rep" && e > s) {
+    const prepEnd = e - 1;
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${s + 2} / ${prepEnd + 3};padding-right:0" title="[${nm}] 진행 기간 (${s}~${prepEnd}영업일) · ${tip}">
+            <div class="bar b-prep-${ck}"></div>${hl}
+          </div>`;
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${e + 2} / ${e + 3};padding-left:0" title="[${nm}] ${e}영업일 ${lb} · ${tip}">
+            <div class="bar b-milestone-${ck}">${lb}</div>${hr}
+          </div>`;
+  } else {
+    const barClass = t.mode === "ext" ? "b-ext" : `b-${ck}`;
+    r += `<div class="bar-wrap" data-id="${id}" style="grid-row:${rowIdx};grid-column:${s + 2} / ${e + 3}" title="[${esc(t.cat)}] ${nm} (${s}~${e}영업일) · ${tip}">
+            <div class="bar ${barClass}"></div>${hl}${hr}
+          </div>`;
+  }
+  return r;
+}
+
+function renderGuideCards(groupKey, containerId, cardCls, badgeCls) {
+  const el = document.getElementById(containerId);
+  const items = state.guides[groupKey] || [];
+  el.innerHTML = items.map((g, idx) => `
+    <div class="info-card ${cardCls}">
+      <div class="ic-top">
+        <span class="ic-title editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'title',this.innerText)">${esc(g.title)}</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span class="badge ${badgeCls} editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'badge',this.innerText)">${esc(g.badge)}</span>
+          <button class="btn btn-danger" type="button" onclick="deleteGuideCard('${groupKey}',${idx})" style="padding:1px 5px">×</button>
+        </div>
+      </div>
+      <div class="ic-desc editable-box" contenteditable="true" onblur="updateGuideCard('${groupKey}',${idx},'desc',this.innerText)">${esc(g.desc)}</div>
+    </div>
+  `).join("");
+}
+
+/* 편집기 입력 반영: 영업일은 1~24 범위로 보정, 종료 ≥ 시작 유지 */
+window.updateManualTask = function(idx, key, val) {
+  const t = state.tasks[idx];
+  if (key === "start") {
+    t.start = clampBD(val, t.start);
+    if (t.end < t.start) t.end = t.start;
+  } else if (key === "end") {
+    t.end = Math.max(t.start, clampBD(val, t.end));
+  } else {
+    t[key] = val;
+  }
+  saveState();
+  rerenderAll();
+};
+
+window.removeManualTask = function(idx) {
+  const name = state.tasks[idx].name;
+  state.tasks.splice(idx, 1);
+  saveState();
+  rerenderAll();
+  showToast(`'${name}' 삭제 · ↶ 또는 Ctrl+Z로 되돌리기`);
+};
+
+window.updateGuideCard = function(groupKey, idx, field, val) {
+  state.guides[groupKey][idx][field] = val.trim();
+  saveState();
+};
+
+window.addGuideCard = function(groupKey) {
+  state.guides[groupKey].push({
+    id: "G" + Date.now(),
+    title: "신규 업무 항목 (클릭하여 수정)",
+    badge: "주기 입력",
+    desc: "상세 업무 설명을 클릭하여 입력하세요."
+  });
+  saveState();
+  renderManualTab();
+};
+
+window.deleteGuideCard = function(groupKey, idx) {
+  state.guides[groupKey].splice(idx, 1);
+  saveState();
+  renderManualTab();
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   [9] 이벤트 리스너 바인딩 (탭 전환·월 이동·SPOT 등록·정렬 전환)
+   ══════════════════════════════════════════════════════════════════════ */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view-sec").forEach(s => s.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* 월 이동 시 SPOT 입력 기본 날짜: 이번 달이면 오늘, 다른 달이면 1일 */
+function defaultSpotDate() {
+  return curYM === TODAY.slice(0, 7) ? TODAY : `${curYM}-01`;
+}
+function shiftMonth(delta) {
+  let [y, m] = curYM.split("-").map(Number);
+  m += delta;
+  if (m < 1) { m = 12; y--; }
+  if (m > 12) { m = 1; y++; }
+  curYM = `${y}-${String(m).padStart(2, "0")}`;
+  document.getElementById("in-spot-date").value = defaultSpotDate();
+  renderCalendarTab();
+}
+document.getElementById("btn-prev-m").addEventListener("click", () => shiftMonth(-1));
+document.getElementById("btn-next-m").addEventListener("click", () => shiftMonth(1));
+document.getElementById("in-ym-picker").addEventListener("change", e => {
+  if (e.target.value) {
+    curYM = e.target.value;
+    document.getElementById("in-spot-date").value = defaultSpotDate();
+    renderCalendarTab();
+  }
+});
+document.getElementById("chk-show-span").addEventListener("change", renderCalendarTab);
+
+/* SPOT 등록: 입력한 날짜가 속한 달의 기록에 저장하고, 그 달로 화면 이동 */
+document.getElementById("btn-add-spot").addEventListener("click", () => {
+  const dateVal = document.getElementById("in-spot-date").value || defaultSpotDate();
+  const catVal  = document.getElementById("in-spot-cat").value;
+  const nameInput = document.getElementById("in-spot-name");
+  const nameVal = nameInput.value.trim();
+  if (!nameVal) { nameInput.focus(); return; }
+
+  const ym = dateVal.slice(0, 7);
+  ensureMonthLog(ym).spotTasks.push({ id: "SP_" + Date.now(), date: dateVal, cat: catVal, name: nameVal, done: false });
+  curYM = ym;
+  nameInput.value = "";
+  saveState();
+  renderCalendarTab();
+});
+document.getElementById("in-spot-name").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btn-add-spot").click();
+});
+
+document.getElementById("btn-add-manual").addEventListener("click", () => openTaskDialog(null, { cat: "실적", start: 1, end: 3, mode: "prep_rep", endLabel: "보고" }));
+
+document.querySelectorAll("[data-gmode]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    ganttMode = btn.dataset.gmode;
+    document.querySelectorAll("[data-gmode]").forEach(b => b.setAttribute("aria-pressed", b === btn));
+    renderManualTab();
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [10] GitHub 동기화 모달 제어
+   ══════════════════════════════════════════════════════════════════════ */
+/* [⬆️ 저장] 버튼은 항상 표시
+   - 토큰 설정 전: 흐리게 표시, 클릭 시 동기화 설정창 열림 (pushToGitHub 내부 처리)
+   - 토큰 설정 후: 정상 표시, 클릭 시 즉시 커밋 */
+function refreshGhButtonUI() {
+  const pushBtn = document.getElementById("btn-gh-push");
+  const ready = Boolean(ghConfig.owner && ghConfig.repo && ghConfig.token);
+  pushBtn.style.opacity = ready ? "1" : "0.55";
+  pushBtn.title = ready ? "현재 변경사항을 GitHub data.json에 암호화하여 즉시 커밋합니다"
+                        : "GitHub 토큰 설정이 필요합니다 (클릭 시 설정창 열림)";
+}
+function readGhForm() {
+  ghConfig = {
+    owner:  document.getElementById("gh-owner").value.trim(),
+    repo:   document.getElementById("gh-repo").value.trim(),
+    branch: document.getElementById("gh-branch").value.trim(),
+    path:   document.getElementById("gh-path").value.trim(),
+    token:  document.getElementById("gh-token").value.trim()
+  };
+  saveGhConfig();
+  refreshGhButtonUI();
+}
+
+document.getElementById("btn-gh-modal").addEventListener("click", () => {
+  document.getElementById("gh-owner").value  = ghConfig.owner || "";
+  document.getElementById("gh-repo").value   = ghConfig.repo || "";
+  document.getElementById("gh-branch").value = ghConfig.branch || "";
+  document.getElementById("gh-path").value   = ghConfig.path || "";
+  document.getElementById("gh-token").value  = ghConfig.token || "";
+  document.getElementById("gh-modal").classList.add("open");
+});
+document.getElementById("btn-close-modal").addEventListener("click", () => {
+  document.getElementById("gh-modal").classList.remove("open");
+});
+document.getElementById("btn-gh-save-cfg").addEventListener("click", () => {
+  readGhForm();
+  document.getElementById("gh-modal").classList.remove("open");
+  if (ghConfig.token) pushToGitHub();
+});
+document.getElementById("btn-gh-push").addEventListener("click", pushToGitHub);
+document.getElementById("btn-gh-pull").addEventListener("click", () => { readGhForm(); pullFromGitHub(); });
+document.getElementById("btn-gh-usage").addEventListener("click", () => { readGhForm(); checkGhUsage(); });
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11] JSON 파일 백업 & 복원 (☰ 메뉴)
+   - 백업 파일 = 암호화 봉투 (data_YYYYMMDD.json, 저장소 업로드 시 data.json으로 변경)
+   - 복원: 암호화 백업은 현재 비밀번호로 복호화, 구버전 평문 백업도 수용
+   - 복원 시 구조 검증(normalizeState) 실패하면 기존 데이터 유지
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById("btn-export").addEventListener("click", async () => {
+  const blob = new Blob([JSON.stringify(await buildEnvelope(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `data_${TODAY.replace(/-/g, "")}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+document.getElementById("in-import").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (isEnvelope(parsed)) {
+        try { state = await openEnvelope(parsed, sessionPw); }
+        catch (e2) { throw new Error("백업 파일의 비밀번호가 현재 비밀번호와 다릅니다."); }
+      } else {
+        state = normalizeState(parsed);
+      }
+      saveState();
+      rerenderAll();
+    } catch (err) {
+      alert("유효한 백업 파일이 아닙니다: " + err.message);
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-1] 표준 타임테이블 직접 편집
+   - 막대 가운데 드래그 : 기간 길이 유지한 채 이동
+   - 막대 양 끝(핸들) 드래그 : 시작 / 종료 영업일 조정
+   - 막대·업무명·구분 클릭 : 편집 팝업 (카테고리·업무명·영업일·진행 형태·완료 액션·설명·삭제·복제)
+   - 빈 칸 클릭 : 그 영업일로 새 업무 추가 · 그룹 제목의 [+ 업무 추가]
+   - 터치 : 0.35초 길게 누른 뒤 드래그 / 바로 밀면 타임라인 스크롤
+   ══════════════════════════════════════════════════════════════════════ */
+const ganttEl = document.getElementById("gantt");
+const tlWrap = ganttEl.closest(".tl-wrap");
+let gdrag = null;
+
+/* 화면 x좌표 → 영업일(1~24): 상단 영업일 머리칸 위치 기준 */
+function bdFromX(x) {
+  const days = ganttEl.querySelectorAll(".day");
+  for (let i = 0; i < days.length; i++) {
+    if (x < days[i].getBoundingClientRect().right) return i + 1;
+  }
+  return MAX_BD;
+}
+
+ganttEl.addEventListener("pointerdown", e => {
+  if (e.button !== 0) return;
+  const bar = e.target.closest(".bar-wrap[data-id]");
+  if (!bar) return;
+  const t = state.tasks.find(x => x.id === bar.dataset.id);
+  if (!t) return;
+  const hd = e.target.closest(".gh");
+  gdrag = { id: t.id, mode: hd ? hd.dataset.h : "move", x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY,
+            bd0: bdFromX(e.clientX), s0: t.start, e0: t.end, active: false, scrolling: false,
+            touch: e.pointerType !== "mouse", timer: null };
+  if (gdrag.touch) gdrag.timer = setTimeout(() => { if (gdrag && !gdrag.scrolling) { gdrag.active = true; document.body.classList.add("gdragging"); } }, 350);
+  e.preventDefault();
+});
+
+document.addEventListener("pointermove", e => {
+  if (!gdrag) return;
+  const g = gdrag;
+  if (!g.active) {
+    const dist = Math.hypot(e.clientX - g.x0, e.clientY - g.y0);
+    if (g.touch) {
+      if (dist > 8) { clearTimeout(g.timer); g.scrolling = true; }
+      if (g.scrolling) {
+        tlWrap.scrollLeft -= e.clientX - g.lx;
+        window.scrollBy(0, -(e.clientY - g.ly));
+        g.lx = e.clientX; g.ly = e.clientY;
+      }
+      return;
+    }
+    if (dist < 4) return;
+    g.active = true;
+    document.body.classList.add("gdragging");
+  }
+  const t = state.tasks.find(x => x.id === g.id);
+  if (!t) return;
+  const d = bdFromX(e.clientX) - g.bd0;
+  let s = g.s0, en = g.e0;
+  if (g.mode === "move") {
+    const len = g.e0 - g.s0;
+    s = Math.max(1, Math.min(MAX_BD - len, g.s0 + d));
+    en = s + len;
+  } else if (g.mode === "start") {
+    s = Math.max(1, Math.min(g.e0, g.s0 + d));
+  } else {
+    en = Math.max(g.s0, Math.min(MAX_BD, g.e0 + d));
+  }
+  if (s !== t.start || en !== t.end) {
+    t.start = s; t.end = en;
+    renderGantt();
+    showToast(`${t.name} · ${s === en ? s : s + "~" + en}영업일`);
+  }
+});
+
+function endGanttDrag(cancel) {
+  if (!gdrag) return;
+  const g = gdrag;
+  gdrag = null;
+  clearTimeout(g.timer);
+  document.body.classList.remove("gdragging");
+  const t = state.tasks.find(x => x.id === g.id);
+  if (!t || g.scrolling) return;
+  if (cancel) { t.start = g.s0; t.end = g.e0; renderGantt(); return; }
+  if (!g.active) { openTaskDialog(g.id); return; }
+  if (t.start !== g.s0 || t.end !== g.e0) {
+    saveState();
+    rerenderAll();
+  }
+}
+document.addEventListener("pointerup", () => endGanttDrag(false));
+document.addEventListener("pointercancel", () => endGanttDrag(true));
+
+/* 업무명·구분 클릭 → 편집, 빈 칸 클릭 → 새 업무, 그룹 [+ 업무 추가] */
+ganttEl.addEventListener("click", e => {
+  if (e.target.closest(".bar-wrap")) return;
+  const add = e.target.closest("[data-add-cat]");
+  if (add) { openTaskDialog(null, { cat: add.dataset.addCat }); return; }
+  const nm = e.target.closest(".cell-nm[data-id], .cell-cat[data-id]");
+  if (nm) { openTaskDialog(nm.dataset.id); return; }
+  const cell = e.target.closest(".grid-bg[data-bd]");
+  if (cell) { const bd = Number(cell.dataset.bd); openTaskDialog(null, { cat: cell.dataset.cat, start: bd, end: bd }); }
+});
+
+/* 편집 팝업 */
+let tmEditId = null;
+function syncTaskLabelRow() {
+  document.getElementById("tm-label").disabled = document.getElementById("tm-mode").value !== "prep_rep";
+}
+function openTaskDialog(id, preset = {}) {
+  const t = id ? state.tasks.find(x => x.id === id) : null;
+  tmEditId = t ? t.id : null;
+  const v = t || { cat: "실적", name: "", start: 1, end: 1, mode: "work", endLabel: "", desc: "", ...preset };
+  document.getElementById("tm-title").textContent = t ? "정례 업무 편집" : "새 정례 업무";
+  document.getElementById("tm-cat").value = CAT_ORDER.includes(v.cat) ? v.cat : "실적";
+  document.getElementById("tm-name").value = v.name || "";
+  document.getElementById("tm-start").value = v.start;
+  document.getElementById("tm-end").value = v.end;
+  document.getElementById("tm-mode").value = v.mode || "work";
+  document.getElementById("tm-label").value = v.endLabel || "";
+  document.getElementById("tm-desc").value = v.desc || "";
+  document.getElementById("tm-msg").textContent = "";
+  document.getElementById("btn-tm-del").hidden = !t;
+  document.getElementById("btn-tm-dup").hidden = !t;
+  syncTaskLabelRow();
+  document.getElementById("task-modal").classList.add("open");
+  setTimeout(() => document.getElementById("tm-name").focus(), 0);
+}
+function closeTaskDialog() {
+  document.getElementById("task-modal").classList.remove("open");
+  tmEditId = null;
+}
+function readTaskForm() {
+  const name = document.getElementById("tm-name").value.trim();
+  if (!name) throw new Error("업무명을 입력해 주세요.");
+  const start = clampBD(document.getElementById("tm-start").value, 1);
+  const end = Math.max(start, clampBD(document.getElementById("tm-end").value, start));
+  const mode = document.getElementById("tm-mode").value;
+  return { cat: document.getElementById("tm-cat").value, name, start, end, mode,
+           endLabel: mode === "prep_rep" ? document.getElementById("tm-label").value.trim() : "",
+           desc: document.getElementById("tm-desc").value.trim() };
+}
+document.getElementById("tm-mode").addEventListener("change", syncTaskLabelRow);
+document.getElementById("btn-tm-cancel").addEventListener("click", closeTaskDialog);
+document.getElementById("task-form").addEventListener("submit", e => {
+  e.preventDefault();
+  let v;
+  try { v = readTaskForm(); } catch (err) { document.getElementById("tm-msg").textContent = err.message; return; }
+  if (tmEditId) Object.assign(state.tasks.find(x => x.id === tmEditId), v);
+  else state.tasks.push({ id: "T_" + Date.now(), ...v });
+  const isNew = !tmEditId;
+  closeTaskDialog();
+  saveState();
+  rerenderAll();
+  showToast(isNew ? `'${v.name}' 추가` : `'${v.name}' 수정`);
+});
+document.getElementById("btn-tm-del").addEventListener("click", () => {
+  const idx = state.tasks.findIndex(x => x.id === tmEditId);
+  closeTaskDialog();
+  if (idx >= 0) removeManualTask(idx);
+});
+document.getElementById("btn-tm-dup").addEventListener("click", () => {
+  let v;
+  try { v = readTaskForm(); } catch (err) { document.getElementById("tm-msg").textContent = err.message; return; }
+  const idx = state.tasks.findIndex(x => x.id === tmEditId);
+  const copy = { id: "T_" + Date.now(), ...v, name: v.name + " (복사)" };
+  state.tasks.splice(idx + 1, 0, copy);
+  closeTaskDialog();
+  saveState();
+  rerenderAll();
+  openTaskDialog(copy.id);
+  showToast("복제했습니다. 이름과 일정을 수정하세요.");
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-2] ☰ 메뉴 · 되돌리기/다시 실행 버튼 · 단축키 · 저장 알림 닫기
+   ══════════════════════════════════════════════════════════════════════ */
+const menuBtn = document.getElementById("btn-menu");
+const menuPop = document.getElementById("menu-pop");
+function setMenu(open) {
+  menuPop.hidden = !open;
+  menuBtn.setAttribute("aria-expanded", String(open));
+}
+menuBtn.addEventListener("click", e => { e.stopPropagation(); setMenu(menuPop.hidden); });
+menuPop.addEventListener("click", e => { if (e.target.closest("button")) setMenu(false); });
+document.getElementById("in-import").addEventListener("change", () => setMenu(false));
+document.addEventListener("click", e => { if (!e.target.closest(".menu-wrap")) setMenu(false); });
+
+document.getElementById("btn-undo").addEventListener("click", undo);
+document.getElementById("btn-redo").addEventListener("click", redo);
+document.getElementById("save-msg").addEventListener("click", e => { e.currentTarget.hidden = true; });
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    setMenu(false);
+    ["task-modal", "day-modal", "memo-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
+    return;
+  }
+  if (!(e.ctrlKey || e.metaKey)) return;
+  if (document.getElementById("lock-modal").classList.contains("open")) return;
+  const tg = e.target;
+  // 글자 입력칸에서는 브라우저 기본 되돌리기 (체크박스·버튼에 포커스가 있을 때는 앱 되돌리기)
+  if (tg.matches && tg.matches('textarea, [contenteditable=true], input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button])')) return;
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [11-3] PDF 출력 (브라우저 인쇄 → 'PDF로 저장')
+   - 글자가 이미지가 아닌 텍스트로 저장되어 선명·검색 가능
+   - printSection(mode, size, name)
+       mode : body에 붙일 클래스 (print-tl 표준 타임테이블 / print-cal 이달의 일정 달력)
+       size : 용지 방향 → 출력 직전에 @page 규칙을 주입하고 출력 후 제거
+       name : 인쇄 창 기본 파일명 접두어 → C-{name}_YYMMDD_HHMM (KST)
+   - 표준 타임테이블 : A4 세로 · 요약 KPI · 타임라인 · SPOT · 분기 · 연간 (편집기 제외)
+   - 이달의 일정     : A4 가로 · 달력 패널만 (체크리스트·SPOT 목록·상단 요약 제외)
+   ══════════════════════════════════════════════════════════════════════ */
+function printSection(mode, size, name) {
+  const k = new Date(Date.now() + 9 * 3600 * 1000).toISOString(); // KST
+  const stamp = `${k.slice(2, 4)}${k.slice(5, 7)}${k.slice(8, 10)}_${k.slice(11, 13)}${k.slice(14, 16)}`;
+  document.querySelectorAll(".print-date").forEach(el => { el.textContent = `출력 ${k.slice(0, 10)} ${k.slice(11, 16)}`; });
+  const pageStyle = document.createElement("style");
+  pageStyle.id = "print-page-size";
+  pageStyle.textContent = `@page { size: A4 ${size}; margin: 8mm; }`;
+  document.head.appendChild(pageStyle);
+  const prevTitle = document.title;
+  document.title = `C-${name}_${stamp}`;
+  document.body.classList.add(mode);
+  const restore = () => { document.body.classList.remove(mode); document.title = prevTitle; pageStyle.remove(); };
+  window.addEventListener("afterprint", restore, { once: true });
+  window.print();
+}
+document.getElementById("btn-pdf").addEventListener("click", () => printSection("print-tl", "portrait", "표준타임테이블"));
+document.getElementById("btn-pdf-cal").addEventListener("click", () => {
+  const [y, m] = curYM.split("-");
+  document.getElementById("print-cal-ym").textContent = `${y}년 ${Number(m)}월 달력`;
+  printSection("print-cal", "landscape", `${Number(m)}월달력`);
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   [12] 초기 실행
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById("lock-form").addEventListener("submit", submitLock);
+document.getElementById("btn-lock-cancel").addEventListener("click", () => document.getElementById("lock-modal").classList.remove("open"));
+document.getElementById("btn-chpw").addEventListener("click", () => showLock("change"));
+document.getElementById("btn-lock").addEventListener("click", () => { sessionPw = null; keyCache.clear(); location.reload(); });
+
+document.getElementById("in-spot-date").value = TODAY;
+refreshGhButtonUI();
+startApp();
+</script>
+
+</body>
+</html>

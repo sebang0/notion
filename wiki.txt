@@ -1,0 +1,20 @@
+[결과물 저장 이력] (시간 KST)
+
+2026-10-26 19:55 | rawdata/gemini_gdrive/ | 원천데이터: 구글드라이브 제미나이 작업물 (github_pages_배포패키지.zip, index.html, data.json, README.md 원본)
+2026-10-26 19:55 | co-schedule/index.html (→ 22:52 docs/로 이동) | 개선 웹앱 본체 (GitHub Pages 파일명 고정으로 C-·일시 규칙 제외)
+2026-10-26 19:55 | co-schedule/data.json (→ docs/로 이동) | 공유 데이터 (meta.updatedAt 추가)
+2026-10-26 19:55 | co-schedule/README.md (→ docs/로 이동) | 배포·동기화·공휴일 관리 안내
+2026-10-26 19:55 | C-업무대시보드_평가보고서_261026_1955.html | 대시보드 평가·개선 보고서
+2026-10-26 22:52 | docs/ (index.html, data.json, README.md) | co-schedule/ 폴더를 docs/로 이동 · notion 저장소 GitHub Pages(/docs) 배포용 · 동기화 대상 자동 감지 추가
+2026-10-26 23:23 | docs/index.html, docs/data.json, docs/README.md | 데이터 암호화 적용 (AES-256-GCM · 잠금화면 · 비밀번호 변경 · 토큰 암호화 · 코드 내 업무 원문 제거) · data.json 암호문으로 교체
+2026-10-27 13:16 | docs/index.html | [⬆️ GitHub에 즉시 저장] 버튼 상시 표시 (토큰 미설정 시 흐리게, 클릭 시 설정창)
+2026-10-27 13:20 | docs/index.html | GitHub 저장 충돌(409) 수정: API 캐시 미사용 + 충돌 시 sha 재조회 자동 재시도 · 오류 메시지 상태코드별 구분
+2026-10-27 13:31 | docs/index.html, docs/README.md | 캘린더 드래그 일자 이동 · 빈칸 클릭 등록(업무/연차/회사휴무) · 휴무·연차 배경 표시 및 연차일 마감 경고 · 영업일 배지 제거(토요일 배경 추가)
+2026-10-27 13:42 | docs/index.html | 달력 넓게 배치(일·토 최소 폭, 체크리스트·SPOT 달력 아래 2열) · 제목 'M월 달력' · 메뉴명 '이달의 일정'/'표준 타임테이블'
+2026-10-27 14:10 | docs/index.html, docs/README.md | 타임테이블 직접 편집(드래그 이동·양끝 조정·클릭 팝업·빈칸 추가·복제·삭제) · 되돌리기/다시 실행 · 헤더 정리(저장·☰메뉴·전체비우기 삭제) · 저장 알림 플로팅 · 제목/페이지명(Notion)/노트 아이콘 · 세방고딕 글꼴 지정
+2026-10-27 14:16 | rawdata/fonts/세방고딕2.0_Regular.ttf, 세방고딕2.0_Bold.ttf | 원천데이터: 사용자 첨부 세방고딕 2.0 원본 글꼴
+2026-10-27 14:16 | docs/fonts/SebangGothic-Regular.woff2, SebangGothic-Bold.woff2 | 세방고딕 웹폰트 변환본 (TTF → woff2)
+2026-10-27 14:16 | docs/index.html, docs/README.md | 표준 타임테이블 PDF 출력(A4 가로 2쪽, 편집기 제외, 파일명 C-표준타임테이블_YYMMDD_HHMM) · 세방고딕 실제 글꼴명 반영
+2026-10-27 14:29 | docs/index.html, docs/README.md | PDF 출력: 표준 타임테이블 A4 세로 · 이달의 일정 달력 전용 출력 추가(A4 가로, 파일명 C-M월달력_YYMMDD_HHMM)
+2026-10-27 14:42 | docs/index.html | 표준 타임테이블 섹션명 'SPOT 업무 매뉴얼' → 'SPOT 업무'
+2026-10-28 09:38 | docs/index.html, docs/README.md | 이달의 일정 수정·메모 팝업: SPOT 업무명·카테고리·날짜·메모 수정/삭제 · 정례 이달 메모·이전 메모 조회 · 여는 방법 ✎(PC)·길게 눌렀다 떼기(모바일)·체크리스트 업무명 클릭
