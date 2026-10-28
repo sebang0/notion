@@ -73,8 +73,8 @@ body {
 h1, h2, .btn, .tab-btn, .badge, .kpi .l, .kpi .n, .c-day, .ym-title, b, strong, th { font-weight: 700; }
 .wrap {
   max-width: 1440px; margin: 0 auto;
-  padding: 22px 20px 60px;
-  display: grid; gap: 18px;
+  padding: 16px 20px 48px;
+  display: grid; gap: 14px;
 }
 
 /* 상단 헤더 & 네비게이션 탭 */
@@ -104,7 +104,7 @@ h2 { font-size: 15.5px; margin: 0; font-weight: 700; display: flex; align-items:
   display: flex; gap: 8px; border-bottom: 2px solid var(--line); padding-bottom: 0;
 }
 .tab-btn {
-  padding: 11px 22px; font: inherit; font-size: 14px; font-weight: 700;
+  padding: 7px 18px; font: inherit; font-size: 14px; font-weight: 700;
   border: 1px solid transparent; border-bottom: none;
   border-radius: 8px 8px 0 0; background: transparent; color: var(--mut);
   cursor: pointer; transition: all .12s; margin-bottom: -2px;
@@ -115,17 +115,16 @@ h2 { font-size: 15.5px; margin: 0; font-weight: 700; display: flex; align-items:
   border-color: var(--line); border-bottom: 2px solid var(--panel);
 }
 
-.view-sec { display: none; gap: 18px; }
+.view-sec { display: none; gap: 14px; }
 .view-sec.active { display: grid; }
 
 .panel {
   background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: 18px 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  border-radius: 10px; padding: 14px;   /* 그림자 없이 1px 테두리로만 영역 구분 */
 }
 .head-bar {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 /* 버튼 & 인풋 공통 */
@@ -185,13 +184,13 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
   padding: 6px 12px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;
 }
 .prog-bar-wrap {
-  width: 110px; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
+  width: 110px; height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
 }
 .prog-bar-fill { height: 100%; background: var(--c-std); transition: width .2s; }
 
 /* 달력은 전체 폭, 정례 체크리스트·SPOT 관리는 달력 아래 2열 (좁은 화면은 1열) */
-.cal-layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
-.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.cal-layout { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
+.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
 @media (max-width: 1100px) {
   .cal-below { grid-template-columns: 1fr; }
 }
@@ -298,12 +297,12 @@ button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underl
 
 /* ━━━━ [탭 2] 표준 타임테이블 (24영업일 간트 & 매뉴얼 에디터) ━━━━ */
 .kpis {
-  display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 14px;
+  display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px;
 }
 @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
 .kpi {
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  padding: 14px 18px; display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
   border-left: 4px solid var(--line);
 }
 .kpi.k-perf { border-left-color: var(--c-perf); }
@@ -394,9 +393,10 @@ button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underl
 .sw-solid { background: var(--c-perf); }
 
 /* SPOT / 분기 / 연간 카드 (편집 가능) */
-.card-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 14px; }
+/* auto-fill: 카드가 1~2개여도 폭을 늘리지 않고 일정 규격 유지 (남는 칸은 빈 공간) */
+.card-grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
 .info-card {
-  border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
   background: #fafbfc; display: flex; flex-direction: column; gap: 6px;
 }
 .info-card.spot-card { background: #fffdf9; border-color: #fde68a; border-left: 4px solid var(--c-spot); }
@@ -412,7 +412,7 @@ button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underl
   outline: 2px solid var(--c-perf); border-radius: 4px; background: #fff;
 }
 
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 14px; }
 
 /* 매뉴얼 편집 테이블 */
 .tbl-wrap { overflow-x: auto; }
@@ -432,7 +432,7 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
 .modal-backdrop.open { display: flex; }
 .modal-box {
   background: #fff; border-radius: 12px; max-width: 520px; width: 100%;
-  padding: 22px 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+  padding: 20px 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.10);
   display: flex; flex-direction: column; gap: 14px;
 }
 .form-row { display: flex; flex-direction: column; gap: 4px; }
@@ -446,7 +446,7 @@ td input, td select { width: 100%; padding: 4px 6px; font-size: 12.5px; }
 .btn:disabled { opacity: .35; cursor: default; }
 .menu-wrap { position: relative; }
 .menu-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; min-width: 170px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.10);
   padding: 4px; display: flex; flex-direction: column; }
 .menu-pop[hidden] { display: none; }
 .menu-pop > button, .menu-pop > label { font: inherit; font-size: 13px; text-align: left; background: none; border: 0; border-radius: 6px;
@@ -623,7 +623,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
     <div class="header-actions">
       <button class="btn icon-btn" type="button" id="btn-undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button>
       <button class="btn icon-btn" type="button" id="btn-redo" title="다시 실행 (Ctrl+Y 또는 Ctrl+Shift+Z)" aria-label="다시 실행" disabled>↷</button>
-      <button class="btn btn-dark" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
+      <button class="btn" type="button" id="btn-gh-modal" title="GitHub 저장소와 데이터를 직접 동기화합니다">☁️ GitHub 동기화 설정</button>
       <div class="menu-wrap">
         <button class="btn" type="button" id="btn-menu" aria-haspopup="true" aria-expanded="false" aria-controls="menu-pop">☰ 메뉴</button>
         <div class="menu-pop" id="menu-pop" role="menu" hidden>
@@ -647,7 +647,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
        [탭 1] 이달의 일정 (달력 · 체크리스트 · SPOT 관리)
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <div id="view-cal" class="view-sec active">
-    <section class="panel" style="padding: 14px 20px;">
+    <section class="panel" style="padding: 12px 14px;">
       <div class="cal-toolbar">
         <div class="ym-nav">
           <button class="btn" type="button" id="btn-prev-m">◀ 이전 달</button>
@@ -678,7 +678,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
             <label style="font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:4px">
               <input type="checkbox" id="chk-show-span" checked> 진행 기간(빗금 업무) 모든 영업일에 표시
             </label>
-            <button class="btn btn-dark" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
+            <button class="btn" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
           </div>
         </div>
 
@@ -741,7 +741,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   <div id="view-man" class="view-sec">
     <div class="man-toolbar no-print">
       <span style="font-size:12px;color:var(--mut)">편집기를 제외한 요약·타임라인·SPOT·분기·연간 업무를 A4 세로로 출력합니다.</span>
-      <button class="btn btn-dark" type="button" id="btn-pdf" title="인쇄 창에서 대상: 'PDF로 저장' 선택">📄 PDF 출력</button>
+      <button class="btn" type="button" id="btn-pdf" title="인쇄 창에서 대상: 'PDF로 저장' 선택">📄 PDF 출력</button>
     </div>
     <div class="print-head">
       <span>실적·손익·원가관리 업무 일정표 · 표준 타임테이블 (1~24 영업일)</span>
