@@ -274,6 +274,26 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 .chk-row.done .chk-title { text-decoration: line-through; color: var(--mut); }
 .chk-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; cursor: pointer; }
 .chk-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+button.chk-title { font: inherit; font-weight: 500; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; min-width: 0; }
+button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underline; color: var(--c-perf); outline: none; }
+.memo-prev { font-size: 11px; color: var(--mut); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+/* 달력 칩: 업무명 말줄임 · 메모 표시 · ✎ 수정 버튼(마우스를 올렸을 때만) */
+.c-ev .ev-lb { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.c-ev .ev-memo { font-size: 9px; flex-shrink: 0; }
+.c-ev .ev-edit { display: none; flex-shrink: 0; margin-left: 2px; border: 0; border-radius: 3px; padding: 0 4px; font-size: 10px; line-height: 14px;
+  background: rgba(255,255,255,0.92); color: #1f2937; cursor: pointer; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+@media (hover: hover) { .c-ev:hover .ev-edit { display: inline-block; } }
+.c-ev .ev-edit:hover { background: #fff; color: var(--c-perf); }
+/* 수정·메모 팝업 */
+.mm-info { font-size: 12.5px; color: #374151; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 3px; }
+.mm-info .mm-desc { color: var(--mut); font-size: 12px; }
+.mm-done { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.mm-h-head { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+.mm-history { max-height: 180px; overflow-y: auto; display: grid; gap: 6px; }
+.mm-h-item { border-left: 3px solid var(--c-perf-bd); background: var(--c-perf-bg); border-radius: 0 6px 6px 0; padding: 5px 8px; font-size: 12px; }
+.mm-h-item b { display: block; font-size: 11px; color: var(--c-perf); }
+.mm-h-item div { white-space: pre-wrap; word-break: break-word; }
+.mm-h-empty { font-size: 12px; color: var(--mut); }
 .chk-meta { font-family: var(--f-mono); font-size: 11px; color: var(--mut); white-space: nowrap; }
 
 /* ━━━━ [탭 2] 표준 타임테이블 (24영업일 간트 & 매뉴얼 에디터) ━━━━ */
@@ -515,6 +535,8 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
   body.print-cal .cal-cell.today-ring { box-shadow: none; }
   body.print-cal .c-day { font-size: 11px; }
   body.print-cal .c-ev { font-size: 8.5px; line-height: 1.25; padding: 1px 3px; white-space: normal; overflow: visible; }  /* 업무명 줄바꿈해서 전부 표시 */
+  body.print-cal .c-ev .ev-lb { white-space: normal; overflow: visible; }
+  body.print-cal .c-ev .ev-edit { display: none !important; }
   body.print-cal .c-ev.late, body.print-cal .c-ev.leave-hit { outline-width: 1px; }
 }
 .off-pill { font-size: 10px; color: #374151; font-weight: 600; background: #e5e7eb; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
@@ -860,6 +882,43 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       <button class="btn btn-primary" type="submit" id="btn-lock-ok">열기</button>
     </div>
     <div style="font-size:11px;color:var(--mut)">AES-256-GCM 암호화 · 비밀번호는 어디에도 저장되지 않으며 분실 시 데이터 복구 불가</div>
+  </form>
+</div>
+
+<!-- ━━━━ 업무 수정·메모 팝업 (이달의 일정) ━━━━
+     SPOT : 업무명·카테고리·날짜·완료·메모 수정 / 삭제
+     정례 : 업무명 읽기 전용 · 완료 · 이달 메모 · 이전 달 메모 조회 -->
+<div class="modal-backdrop" id="memo-modal">
+  <form class="modal-box" id="memo-form" autocomplete="off">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <h2 style="font-size:17px" id="mm-title">업무</h2>
+      <span class="chk-meta" id="mm-sub"></span>
+    </div>
+    <div id="mm-spot-fields" style="display:grid;gap:8px">
+      <div class="form-row"><label for="mm-name">업무명</label><input type="text" id="mm-name"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="form-row" style="flex:1;min-width:120px"><label for="mm-cat">카테고리</label>
+          <select id="mm-cat"><option>SPOT</option><option>실적</option><option>표준원가</option><option>회의체</option><option>분기</option><option>연간</option></select></div>
+        <div class="form-row" style="flex:1;min-width:140px"><label for="mm-date">날짜</label><input type="date" id="mm-date"></div>
+      </div>
+    </div>
+    <div class="mm-info" id="mm-reg-info"></div>
+    <label class="mm-done"><input type="checkbox" id="mm-done"> 완료</label>
+    <div class="form-row">
+      <label for="mm-memo" id="mm-memo-lbl">메모</label>
+      <textarea id="mm-memo" rows="4" placeholder="진행 상황, 특이사항, 다음 달 참고사항 등"></textarea>
+    </div>
+    <div id="mm-history-wrap">
+      <div class="mm-h-head">이전 메모</div>
+      <div class="mm-history" id="mm-history"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div><button class="btn btn-danger" type="button" id="btn-mm-del">삭제</button></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" type="button" id="btn-mm-cancel">취소</button>
+        <button class="btn btn-primary" type="submit">저장</button>
+      </div>
+    </div>
   </form>
 </div>
 
@@ -1532,6 +1591,7 @@ function ensureMonthLog(ym) {
   m.doneRegIds = m.doneRegIds || [];
   m.spotTasks = m.spotTasks || [];
   m.overrides = m.overrides || {};     // 드래그 일정 조정 { taskId: { s: 시작일, e: 종료일 } } (이번 달만)
+  m.memos = m.memos || {};             // 정례 업무 이달 메모 { taskId: "메모" } (SPOT 메모는 각 항목의 memo 필드)
   return m;
 }
 
@@ -1700,9 +1760,10 @@ function renderCalendarTab() {
     if (c.leave && c.isWorkday) badges += `<span class="leave-pill">${esc(c.leave)}</span>`;
 
     const evs = (evByDate[c.dateStr] || []).map(ev => {
-      const tip = esc(ev.label) + (ev.late ? " · 지연" : "") + (ev.leave ? ` · 내 ${ev.leave}일 마감` : "") + " (클릭: 완료 토글 · 드래그: 일자 이동)";
+      const memo = ev.type === "reg" ? mLog.memos[ev.id] : (mLog.spotTasks.find(s => s.id === ev.id) || {}).memo;
+      const tip = esc(ev.label) + (ev.late ? " · 지연" : "") + (ev.leave ? ` · 내 ${ev.leave}일 마감` : "") + (memo ? ` · 메모: ${esc(memo).slice(0, 60)}` : "") + " (클릭: 완료 토글 · 드래그: 일자 이동 · ✎: 수정·메모)";
       return `<div class="c-ev ${ev.cls} ${ev.done ? "done" : ""} ${ev.late ? "late" : ""} ${ev.leave ? "leave-hit" : ""}" data-type="${ev.type}" data-id="${esc(ev.id)}" title="${tip}">
-        <span>${ev.done ? "✓" : (ev.late ? "!" : (ev.leave ? "🌴" : "•"))}</span><span>${esc(ev.label)}</span>
+        <span>${ev.done ? "✓" : (ev.late ? "!" : (ev.leave ? "🌴" : "•"))}</span><span class="ev-lb">${esc(ev.label)}</span>${memo ? `<span class="ev-memo" aria-label="메모 있음">📝</span>` : ""}<button class="ev-edit" type="button" tabindex="-1" aria-label="수정·메모">✎</button>
       </div>`;
     }).join("");
 
@@ -1734,12 +1795,14 @@ function renderCalendarTab() {
     if (info.adjusted) flags += `<span class="adj-pill" title="이달 총 영업일(${totalBD}일) 초과 → 말일 영업일로 조정">말일조정</span>`;
     if (info.moved) flags += `<span class="adj-pill" title="매뉴얼 기준: ${t.start}~${t.end}영업일">일정조정</span><button class="btn mini-btn" type="button" onclick="resetOverride('${esc(t.id)}')" title="매뉴얼 기준 일정으로 되돌리기">↺</button>`;
 
+    const memo = mLog.memos[t.id];
     return `<div class="chk-row ${isDone ? "done" : ""} ${info.late ? "late" : ""}">
-      <label class="chk-left">
-        <input type="checkbox" ${isDone ? "checked" : ""} onchange="toggleTaskFromCal('reg','${esc(t.id)}')">
+      <div class="chk-left">
+        <input type="checkbox" ${isDone ? "checked" : ""} onchange="toggleTaskFromCal('reg','${esc(t.id)}')" aria-label="${esc(t.name)} 완료">
         <span class="badge bg-${ck}">${esc(t.cat)}</span>
-        <span class="chk-title" title="${esc(t.desc)}">${esc(t.name)}</span>
-      </label>
+        <button class="chk-title" type="button" data-open="reg" data-id="${esc(t.id)}" title="클릭: 이달 메모 · 이전 메모 보기">${esc(t.name)}</button>
+        ${memo ? `<span class="memo-prev" title="${esc(memo)}">📝 ${esc(memo.split("\n")[0])}</span>` : ""}
+      </div>
       <span class="chk-flags">${flags}</span>
       <span class="chk-meta">${bdRange} (${dateRange})${actTxt}</span>
     </div>`;
@@ -1755,11 +1818,12 @@ function renderCalendarTab() {
       const late = !sp.done && sp.date < TODAY;
       const lv = (state.myLeave || {})[sp.date];
       return `<div class="chk-row ${sp.done ? "done" : ""} ${late ? "late" : ""}">
-        <label class="chk-left">
-          <input type="checkbox" ${sp.done ? "checked" : ""} onchange="toggleTaskFromCal('spot','${esc(sp.id)}')">
+        <div class="chk-left">
+          <input type="checkbox" ${sp.done ? "checked" : ""} onchange="toggleTaskFromCal('spot','${esc(sp.id)}')" aria-label="${esc(sp.name)} 완료">
           <span class="badge bg-${ck}">${esc(sp.cat)}</span>
-          <span class="chk-title">${esc(sp.name)}</span>
-        </label>
+          <button class="chk-title" type="button" data-open="spot" data-id="${esc(sp.id)}" title="클릭: 업무명 수정 · 메모">${esc(sp.name)}</button>
+          ${sp.memo ? `<span class="memo-prev" title="${esc(sp.memo)}">📝 ${esc(sp.memo.split("\n")[0])}</span>` : ""}
+        </div>
         <span class="chk-flags">${late ? `<span class="late-pill">지연</span>` : ""}${lv && !sp.done ? `<span class="leave-warn-pill">${esc(lv)}일</span>` : ""}</span>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="chk-meta">${md(sp.date)}</span>
@@ -1893,6 +1957,7 @@ function movePress(x, y, e) {
     activateDrag(x, y);
   }
   if (e && e.cancelable) e.preventDefault();
+  if (Math.hypot(x - press.x0, y - press.y0) > 10) press.moved = true;
   moveGhost(x, y);
 }
 function endPress(x, y) {
@@ -1906,6 +1971,7 @@ function endPress(x, y) {
   document.body.classList.remove("dragging");
   if (!p.active) { toggleTaskFromCal(p.type, p.id); return; }
   suppressClickUntil = Date.now() + 400;
+  if (p.isTouch && !p.moved) { openMemoDialog(p.type, p.id); return; }   // 모바일: 길게 눌렀다 그대로 떼면 수정·메모
   const c = cellAt(x, y);
   if (c) moveTaskToDate(p.type, p.id, p.from, c.dataset.date);
 }
@@ -1939,6 +2005,7 @@ function moveTaskToDate(type, id, from, to) {
 
 calGrid.addEventListener("mousedown", e => {
   if (e.button !== 0 || Date.now() - lastTouchAt < 800) return;
+  if (e.target.closest(".ev-edit")) return;   // ✎ 버튼은 드래그·토글 대상 아님 (click에서 팝업)
   const evEl = e.target.closest(".c-ev");
   if (!evEl) return;
   e.preventDefault();
@@ -1948,6 +2015,7 @@ document.addEventListener("mousemove", e => { if (press && !press.isTouch) moveP
 document.addEventListener("mouseup", e => { if (press && !press.isTouch) endPress(e.clientX, e.clientY); });
 calGrid.addEventListener("touchstart", e => {
   lastTouchAt = Date.now();
+  if (e.target.closest(".ev-edit")) return;
   const evEl = e.target.closest(".c-ev");
   if (!evEl || e.touches.length !== 1) return;
   beginPress(evEl, e.touches[0].clientX, e.touches[0].clientY, true);
@@ -1960,10 +2028,129 @@ document.addEventListener("touchend", e => {
 document.addEventListener("touchcancel", () => { if (press) { press.active = false; press = null; document.querySelectorAll(".drag-ghost").forEach(g => g.remove()); document.body.classList.remove("dragging"); } });
 
 /* ══════════════════════════════════════════════════════════════════════
+   [7-1b] 업무 수정·메모 팝업 (이달의 일정)
+   - 여는 방법 : 달력 칩의 ✎ (PC, 마우스를 올리면 표시) · 모바일은 길게 눌렀다 그대로 떼기
+                 · 체크리스트의 업무명 클릭 (PC·모바일 공통)
+   - SPOT : 업무명·카테고리·날짜·완료·메모 수정, 삭제 (날짜를 다른 달로 바꾸면 그 달로 이동)
+   - 정례 : 업무명 수정 불가 · 이달 일정·매뉴얼 설명 표시 · 완료 · 이달 메모 · 이전 달 메모 조회
+   ══════════════════════════════════════════════════════════════════════ */
+let memoCtx = null;   // { type, id, ym }
+
+function ymLabel(ym) { const [y, m] = ym.split("-"); return `${y}년 ${Number(m)}월`; }
+
+function openMemoDialog(type, id) {
+  const ym = curYM;
+  const mLog = ensureMonthLog(ym);
+  const $ = x => document.getElementById(x);
+  memoCtx = { type, id, ym };
+  const isSpot = type === "spot";
+  $("mm-spot-fields").hidden = !isSpot;
+  $("mm-reg-info").hidden = isSpot;
+  $("mm-history-wrap").hidden = isSpot;
+  $("btn-mm-del").hidden = !isSpot;
+
+  if (isSpot) {
+    const sp = mLog.spotTasks.find(s => s.id === id);
+    if (!sp) return;
+    $("mm-title").textContent = "SPOT·추가 업무";
+    $("mm-sub").textContent = ymLabel(ym);
+    $("mm-name").value = sp.name;
+    $("mm-cat").value = sp.cat;
+    $("mm-date").value = sp.date;
+    $("mm-done").checked = Boolean(sp.done);
+    $("mm-memo").value = sp.memo || "";
+    $("mm-memo-lbl").textContent = "메모";
+  } else {
+    const t = state.tasks.find(x => x.id === id);
+    if (!t) return;
+    const cal = buildMonthCalendarData(ym);
+    const info = mapTaskToMonth(t, cal, false, mLog);
+    const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
+    const ck = CAT_KEY[t.cat] || "perf";
+    $("mm-title").textContent = t.name;
+    $("mm-sub").textContent = `${ymLabel(ym)} · 정례`;
+    $("mm-reg-info").innerHTML = `
+      <div><span class="badge bg-${ck}">${esc(t.cat)}</span>
+        <b>${info.rs === info.re ? info.rs : info.rs + "~" + info.re}영업일</b>
+        (${info.sDate === info.eDate ? md(info.sDate) : md(info.sDate) + "~" + md(info.eDate)})${t.endLabel ? ` · 완료 액션 <b>${esc(t.endLabel)}</b>` : ""}
+        ${info.moved ? `<span class="adj-pill">일정조정</span>` : ""}</div>
+      ${t.desc ? `<div class="mm-desc">${esc(t.desc)}</div>` : ""}
+      <div class="mm-desc">업무명·기본 일정은 [표준 타임테이블]에서 수정합니다.</div>`;
+    $("mm-done").checked = mLog.doneRegIds.includes(id);
+    $("mm-memo").value = mLog.memos[id] || "";
+    $("mm-memo-lbl").textContent = `${ymLabel(ym)} 메모`;
+    // 이전 메모: 다른 달 기록 중 이 업무의 메모 (최신 달부터)
+    const past = Object.keys(state.monthlyLogs)
+      .filter(k => k !== ym && state.monthlyLogs[k].memos && state.monthlyLogs[k].memos[id])
+      .sort((a, b) => b.localeCompare(a));
+    $("mm-history").innerHTML = past.length
+      ? past.map(k => `<div class="mm-h-item"><b>${ymLabel(k)}</b><div>${esc(state.monthlyLogs[k].memos[id])}</div></div>`).join("")
+      : `<div class="mm-h-empty">이전 달에 작성한 메모가 없습니다.</div>`;
+  }
+  $("memo-modal").classList.add("open");
+  setTimeout(() => $(isSpot ? "mm-name" : "mm-memo").focus(), 0);
+}
+
+function closeMemoDialog() {
+  document.getElementById("memo-modal").classList.remove("open");
+  memoCtx = null;
+}
+
+document.getElementById("memo-form").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!memoCtx) return;
+  const $ = x => document.getElementById(x);
+  const { type, id, ym } = memoCtx;
+  const mLog = ensureMonthLog(ym);
+  const memo = $("mm-memo").value.trim();
+  if (type === "spot") {
+    const sp = mLog.spotTasks.find(s => s.id === id);
+    const name = $("mm-name").value.trim();
+    if (!name) { $("mm-name").focus(); showToast("업무명을 입력해 주세요."); return; }
+    const date = $("mm-date").value || sp.date;
+    Object.assign(sp, { name, cat: $("mm-cat").value, date, done: $("mm-done").checked });
+    if (memo) sp.memo = memo; else delete sp.memo;
+    // 다른 달로 날짜를 바꾸면 그 달 기록으로 이동
+    if (date.slice(0, 7) !== ym) {
+      mLog.spotTasks = mLog.spotTasks.filter(s => s.id !== id);
+      ensureMonthLog(date.slice(0, 7)).spotTasks.push(sp);
+    }
+  } else {
+    const done = $("mm-done").checked;
+    const i = mLog.doneRegIds.indexOf(id);
+    if (done && i < 0) mLog.doneRegIds.push(id);
+    if (!done && i >= 0) mLog.doneRegIds.splice(i, 1);
+    if (memo) mLog.memos[id] = memo; else delete mLog.memos[id];
+  }
+  closeMemoDialog();
+  saveState();
+  renderCalendarTab();
+  showToast("저장했습니다.");
+});
+document.getElementById("btn-mm-cancel").addEventListener("click", closeMemoDialog);
+document.getElementById("btn-mm-del").addEventListener("click", () => {
+  if (!memoCtx) return;
+  const { id, ym } = memoCtx;
+  const sp = ensureMonthLog(ym).spotTasks.find(s => s.id === id);
+  closeMemoDialog();
+  deleteSpotTask(id);
+  showToast(`'${sp ? sp.name : "업무"}' 삭제 · ↶ 또는 Ctrl+Z로 되돌리기`);
+});
+/* 체크리스트 업무명 클릭 → 팝업 */
+["list-reg-tasks", "list-spot-tasks"].forEach(lid => {
+  document.getElementById(lid).addEventListener("click", e => {
+    const b = e.target.closest("[data-open]");
+    if (b) openMemoDialog(b.dataset.open, b.dataset.id);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    [7-2] 빈 곳 클릭 → 날짜 상세 창 (업무 추가 · 내 연차 · 회사 휴무 등록/삭제)
    ══════════════════════════════════════════════════════════════════════ */
 let dayDate = "";
 calGrid.addEventListener("click", e => {
+  const ed = e.target.closest(".ev-edit");
+  if (ed) { const ev = ed.closest(".c-ev"); openMemoDialog(ev.dataset.type, ev.dataset.id); return; }
   if (e.target.closest(".c-ev") || Date.now() < suppressClickUntil) return;
   const cell = e.target.closest(".cal-cell[data-date]");
   if (cell) openDayDialog(cell.dataset.date);
@@ -2553,7 +2740,7 @@ document.getElementById("save-msg").addEventListener("click", e => { e.currentTa
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     setMenu(false);
-    ["task-modal", "day-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
+    ["task-modal", "day-modal", "memo-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
     return;
   }
   if (!(e.ctrlKey || e.metaKey)) return;

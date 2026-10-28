@@ -17,3 +17,4 @@
 2026-10-27 14:16 | docs/index.html, docs/README.md | 표준 타임테이블 PDF 출력(A4 가로 2쪽, 편집기 제외, 파일명 C-표준타임테이블_YYMMDD_HHMM) · 세방고딕 실제 글꼴명 반영
 2026-10-27 14:29 | docs/index.html, docs/README.md | PDF 출력: 표준 타임테이블 A4 세로 · 이달의 일정 달력 전용 출력 추가(A4 가로, 파일명 C-M월달력_YYMMDD_HHMM)
 2026-10-27 14:42 | docs/index.html | 표준 타임테이블 섹션명 'SPOT 업무 매뉴얼' → 'SPOT 업무'
+2026-10-28 09:38 | docs/index.html, docs/README.md | 이달의 일정 수정·메모 팝업: SPOT 업무명·카테고리·날짜·메모 수정/삭제 · 정례 이달 메모·이전 메모 조회 · 여는 방법 ✎(PC)·길게 눌렀다 떼기(모바일)·체크리스트 업무명 클릭
