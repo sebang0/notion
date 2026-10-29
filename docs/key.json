@@ -1,0 +1,15 @@
+{
+  "format": "sebang-co-key",
+  "v": 1,
+  "owner": "sebang0",
+  "repo": "notion",
+  "dataBranch": "data",
+  "dataPath": "data.json",
+  "tokenEnc": {
+    "salt": "JKMjfTR10xz6s9gPgRt6Zw==",
+    "iter": 600000,
+    "iv": "3xEEhhQbEPr2vl/O",
+    "ct": "US1FTjevia5WWE1eizGbMK/o6ww6GeBx2odwLeGHP04QChw96sjO1RyXJbfkXrayevhwfjqIsqcJIYdgCPx1xZmg26MnW1P440LtjLoqO279bRZsluwlrPQcwzABuN69tN3USQ6WAoLhj9S7NA=="
+  },
+  "updatedAt": "2026-10-29T06:53:40.440Z"
+}
