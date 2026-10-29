@@ -293,6 +293,18 @@ button.chk-title:hover, button.chk-title:focus-visible { text-decoration: underl
 .mm-h-item b { display: block; font-size: 11px; color: var(--c-perf); }
 .mm-h-item div { white-space: pre-wrap; word-break: break-word; }
 .mm-h-empty { font-size: 12px; color: var(--mut); }
+/* 저장본 복구 창 · 미저장 표시 */
+.rec-box { max-width: 680px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.rec-cur { font-size: 12px; color: #374151; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.rec-list { display: grid; gap: 6px; }
+.rec-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.rec-lb { font-size: 13px; font-weight: 700; }
+.rec-detail-head { font-size: 13px; font-weight: 700; margin: 4px 0 6px; }
+.rec-sum { font-size: 12.5px; margin-bottom: 6px; }
+.rec-tbl { min-width: 0; font-size: 12px; }
+.rec-tbl td, .rec-tbl th { padding: 4px 8px; text-align: right; }
+.rec-tbl td:first-child, .rec-tbl th:first-child { text-align: left; }
+#btn-gh-push.unsynced { background: var(--c-spot); border-color: var(--c-spot); }
 .chk-meta { font-family: var(--f-mono); font-size: 11px; color: var(--mut); white-space: nowrap; }
 
 /* ━━━━ [탭 2] 표준 타임테이블 (24영업일 간트 & 매뉴얼 에디터) ━━━━ */
@@ -630,6 +642,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
           <button type="button" role="menuitem" id="btn-export" title="암호화된 JSON 파일로 백업">💾 백업</button>
           <label role="menuitem" title="백업한 JSON 파일을 불러옵니다">📂 불러오기<input type="file" id="in-import" accept=".json" hidden></label>
           <button type="button" role="menuitem" id="btn-chpw">🔑 비밀번호 변경</button>
+          <button type="button" role="menuitem" id="btn-recover">🛟 저장본 복구</button>
           <button type="button" role="menuitem" id="btn-lock">🔒 잠금</button>
         </div>
       </div>
@@ -878,6 +891,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
     </div>
     <div class="lock-msg" id="lock-msg"></div>
     <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" type="button" id="btn-lock-older" hidden>예전 데이터로 열기</button>
       <button class="btn" type="button" id="btn-lock-cancel" hidden>취소</button>
       <button class="btn btn-primary" type="submit" id="btn-lock-ok">열기</button>
     </div>
@@ -920,6 +934,23 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       </div>
     </div>
   </form>
+</div>
+
+<!-- ━━━━ 저장본 복구 창 (☰ 메뉴) ━━━━ -->
+<div class="modal-backdrop" id="rec-modal">
+  <div class="modal-box rec-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 style="font-size:17px">🛟 저장본 복구</h2>
+      <button class="btn" type="button" id="btn-rec-close">닫기</button>
+    </div>
+    <div class="rec-cur" id="rec-cur"></div>
+    <div class="form-row">
+      <label for="rec-pw">비밀번호 (현재 비밀번호로 열리지 않는 저장본일 때만 입력)</label>
+      <input type="password" id="rec-pw" autocomplete="off" placeholder="비워두면 현재 비밀번호 사용">
+    </div>
+    <div class="rec-list" id="rec-list"></div>
+    <div id="rec-detail"></div>
+  </div>
 </div>
 
 <!-- ━━━━ 날짜 상세 창: 업무 추가 · 내 연차 · 회사 휴무 ━━━━ -->
@@ -1158,6 +1189,7 @@ function saveState() {
   state.meta = state.meta || {};
   state.meta.updatedAt = new Date().toISOString();
   persistLocal();
+  refreshUnsyncedUI();
   const now = new Date();
   const tStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
   setSaveMsg(`🔐 암호화 저장됨 (${tStr})`);
@@ -1405,15 +1437,21 @@ async function submitLock(ev) {
       if (!pw) throw new Error("비밀번호를 입력해 주세요.");
       const cands = [lockCtx.local, lockCtx.remote].filter(Boolean)
         .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
-      let opened = null, used = null;
+      let opened = null, used = null, skipped = null;
       for (const env of cands) {
-        try { opened = await openEnvelope(env, pw); used = env; break; } catch (e) { /* 다음 후보 */ }
+        try { opened = await openEnvelope(env, pw); used = env; break; } catch (e) { if (!skipped) skipped = env; }
       }
       if (!opened) throw new Error("비밀번호가 틀렸습니다.");
+      // 더 최신 저장본이 이 비밀번호로 안 열리면, 사용자가 선택하기 전까지 예전 데이터를 열지 않음
+      if (skipped && (skipped.updatedAt || "") > (used.updatedAt || "") && !lockCtx.allowOlder) {
+        document.getElementById("btn-lock-older").hidden = false;
+        throw new Error(`⚠ 더 최신 저장본(${fmtTime(skipped.updatedAt)})이 이 비밀번호로 열리지 않습니다. 그 저장본을 만들 때의 비밀번호를 입력하세요. 예전 데이터(${fmtTime(used.updatedAt)})로 열려면 [예전 데이터로 열기]를 누르세요. 최신 저장본은 백업으로 보관됩니다.`);
+      }
       state = opened;
       sessionPw = pw;
       curSalt = used.salt;
-      if (used === lockCtx.remote && lockCtx.local) note = "서버(data.json)의 최신 데이터로 열었습니다.";
+      if (used === lockCtx.remote) setSyncedAt(lockCtx.remote.updatedAt);
+      if (used === lockCtx.remote && lockCtx.local) note = "서버(data.json)의 데이터로 열었습니다. 이 브라우저의 이전 저장본은 ☰ 메뉴 > 저장본 복구에 보관되어 있습니다.";
     } else {
       if (pw !== sessionPw) throw new Error("현재 비밀번호가 틀렸습니다.");
       sessionPw = readNewPw();
@@ -1429,6 +1467,10 @@ async function submitLock(ev) {
     refreshGhButtonUI();
     rerenderAll();
     if (lockCtx.mode !== "change") resetHistory();
+    if (!getSyncedAt() && lockCtx.remote) setSyncedAt(lockCtx.remote.updatedAt);   // 최초 1회: 서버본 시각을 동기화 기준으로
+    document.getElementById("btn-lock-older").hidden = true;
+    lockCtx.allowOlder = false;
+    refreshUnsyncedUI();
     setSaveMsg("🔓 잠금 해제됨");
     if (note) alert(note);
   } catch (err) {
@@ -1443,8 +1485,135 @@ async function startApp() {
   const [remote] = await Promise.all([fetchRemoteEnvelope()]);
   lockCtx.local = readLocalEnvelope();
   lockCtx.remote = remote;
+  backupLocal("앱 시작");
   lockCtx.legacy = readLegacyPlain();
   showLock(lockCtx.local || lockCtx.remote ? "unlock" : "setup");
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [4-1] 저장본 보호 · 복구 · 미저장 표시
+   - 자동 백업(BAK_KEY): 앱 시작·서버 데이터로 바꾸기·파일 불러오기·복원 직전의 브라우저 저장본을
+     최근 10개까지 보관 (내용이 같으면 중복 보관 안 함, 암호문 그대로 보관)
+   - 동기화 기준(SYNC_KEY): GitHub과 마지막으로 일치한 저장 시각
+     → 현재 데이터가 그보다 새로우면 [저장] 버튼에 미저장 표시 · 창 닫을 때 경고
+   - 저장본 복구 창(☰ 메뉴): 브라우저 저장본·자동 백업·GitHub 서버본의 저장 일시와
+     월별 내용(메모·SPOT·완료·일정조정)을 비교하고 선택한 저장본으로 복원 (↶로 되돌리기 가능)
+   ══════════════════════════════════════════════════════════════════════ */
+const BAK_KEY  = "SEBANG_CO_ENC_BAK";
+const SYNC_KEY = "SEBANG_CO_SYNCED_AT";
+const BAK_MAX  = 10;
+
+function fmtTime(iso) {
+  if (!iso) return "기록 없음";
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function readBackups() {
+  try {
+    const a = JSON.parse(localStorage.getItem(BAK_KEY) || "[]");
+    return Array.isArray(a) ? a.filter(x => x && isEnvelope(x.env)) : [];
+  } catch (e) { return []; }
+}
+function backupLocal(reason) {
+  const env = readLocalEnvelope();
+  if (!env) return;
+  const list = readBackups();
+  if (list.some(x => x.env.ct === env.ct)) return;
+  list.unshift({ at: new Date().toISOString(), reason, env });
+  try { localStorage.setItem(BAK_KEY, JSON.stringify(list.slice(0, BAK_MAX))); } catch (e) { /* 저장 공간 부족 등 */ }
+}
+function getSyncedAt() {
+  try { return localStorage.getItem(SYNC_KEY) || ""; } catch (e) { return ""; }
+}
+function setSyncedAt(t) {
+  try { if (t) localStorage.setItem(SYNC_KEY, t); } catch (e) { /* 무시 */ }
+  refreshUnsyncedUI();
+}
+function isUnsynced() {
+  const u = (state.meta && state.meta.updatedAt) || "";
+  return Boolean(sessionPw && u && u > getSyncedAt());
+}
+function refreshUnsyncedUI() {
+  const b = document.getElementById("btn-gh-push");
+  if (!b) return;
+  const on = isUnsynced();
+  b.classList.toggle("unsynced", on);
+  b.textContent = on ? "⬆️ 저장 •" : "⬆️ 저장";
+  if (on) b.title = "GitHub에 저장하지 않은 변경이 있습니다. 저장하지 않으면 다른 PC·브라우저에서는 보이지 않습니다.";
+}
+window.addEventListener("beforeunload", e => {
+  if (ghConfig.token && isUnsynced()) { e.preventDefault(); e.returnValue = ""; }
+});
+
+/* 데이터 요약: 정례 업무 수 · 연차/휴무 · 월별 메모·SPOT·완료·일정조정 건수 */
+function summarizeState(s) {
+  const months = Object.keys(s.monthlyLogs || {}).sort((a, b) => b.localeCompare(a)).map(ym => {
+    const m = s.monthlyLogs[ym] || {};
+    const spots = m.spotTasks || [];
+    return { ym, memo: Object.keys(m.memos || {}).length + spots.filter(x => x.memo).length,
+             spot: spots.length, done: (m.doneRegIds || []).length + spots.filter(x => x.done).length,
+             moved: Object.keys(m.overrides || {}).length };
+  }).filter(r => r.memo || r.spot || r.done || r.moved);
+  return { tasks: (s.tasks || []).length, leave: Object.keys(s.myLeave || {}).length,
+           off: Object.keys(s.companyOff || {}).length, months };
+}
+function summaryHtml(sum) {
+  const rows = sum.months.map(r => `<tr><td>${ymLabel(r.ym)}</td><td>${r.memo}</td><td>${r.spot}</td><td>${r.done}</td><td>${r.moved}</td></tr>`).join("");
+  return `<div class="rec-sum">정례 업무 <b>${sum.tasks}</b>건 · 내 연차 <b>${sum.leave}</b>일 · 회사 휴무 <b>${sum.off}</b>일</div>
+    <div class="tbl-wrap"><table class="rec-tbl"><thead><tr><th>월</th><th>메모</th><th>SPOT</th><th>완료</th><th>일정조정</th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="5">월별 기록 없음</td></tr>`}</tbody></table></div>`;
+}
+
+let recItems = [];
+let recOpened = null;
+async function openRecoverDialog() {
+  const $ = x => document.getElementById(x);
+  setMenu(false);
+  $("rec-detail").innerHTML = "";
+  recOpened = null;
+  const cur = summarizeState(state);
+  $("rec-cur").innerHTML = `현재 화면: 저장 시각 <b>${fmtTime(state.meta && state.meta.updatedAt)}</b> · 메모 ${cur.months.reduce((n, r) => n + r.memo, 0)}건 · SPOT ${cur.months.reduce((n, r) => n + r.spot, 0)}건 · GitHub 마지막 일치 ${fmtTime(getSyncedAt())}`;
+  $("rec-list").innerHTML = `<div class="mm-h-empty">저장본을 찾는 중...</div>`;
+  $("rec-modal").classList.add("open");
+  const remote = await fetchRemoteEnvelope();
+  recItems = [];
+  const local = readLocalEnvelope();
+  if (local) recItems.push({ label: "이 브라우저 현재 저장본", env: local });
+  readBackups().forEach(b => recItems.push({ label: `자동 백업 · ${b.reason} (${fmtTime(b.at)})`, env: b.env }));
+  if (remote) recItems.push({ label: "GitHub 서버 저장본 (data.json)", env: remote });
+  $("rec-list").innerHTML = recItems.length ? recItems.map((it, i) => `
+    <div class="rec-row">
+      <div><div class="rec-lb">${esc(it.label)}</div><div class="chk-meta">데이터 저장 시각 ${fmtTime(it.env.updatedAt)}</div></div>
+      <button class="btn" type="button" data-rec="${i}">내용 보기</button>
+    </div>`).join("") : `<div class="mm-h-empty">보관된 저장본이 없습니다.</div>`;
+}
+async function viewRecoverItem(i) {
+  const $ = x => document.getElementById(x);
+  const it = recItems[i];
+  const pw = $("rec-pw").value || sessionPw;
+  $("rec-detail").innerHTML = `<div class="mm-h-empty">복호화 중...</div>`;
+  try {
+    recOpened = await openEnvelope(it.env, pw);
+  } catch (e) {
+    recOpened = null;
+    $("rec-detail").innerHTML = `<div class="lock-msg">이 저장본은 ${$("rec-pw").value ? "입력한" : "현재"} 비밀번호로 열리지 않습니다. 위 칸에 이 저장본을 만들 때의 비밀번호를 입력한 뒤 다시 [내용 보기]를 누르세요.</div>`;
+    return;
+  }
+  $("rec-detail").innerHTML = `<div class="rec-detail-head">${esc(it.label)} · 저장 시각 ${fmtTime(it.env.updatedAt)}</div>
+    ${summaryHtml(summarizeState(recOpened))}
+    <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" type="button" id="btn-rec-apply">이 저장본으로 복원</button></div>`;
+}
+function applyRecover() {
+  if (!recOpened) return;
+  backupLocal("복원 전");
+  state = recOpened;
+  recOpened = null;
+  saveState();               // 현재 비밀번호로 다시 암호화해 저장 · 되돌리기 이력 기록
+  rerenderAll();
+  document.getElementById("rec-modal").classList.remove("open");
+  showToast("복원했습니다. 확인 후 [⬆️ 저장]으로 GitHub에도 반영하세요. (↶로 되돌리기 가능)");
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1548,6 +1717,7 @@ async function pushToGitHub() {
     if (putRes.status === 401 || putRes.status === 403) throw new Error(`권한 오류(${putRes.status}): 토큰 만료·권한 부족(Contents: Read and write) 또는 API 한도 초과`);
     if (putRes.status === 404) throw new Error(`저장소 또는 브랜치(${branch})를 찾을 수 없습니다. 저장소명과 토큰의 저장소 선택을 확인해 주세요.`);
     if (!putRes.ok) throw new Error("GitHub API 응답 오류: " + putRes.status);
+    setSyncedAt(state.meta.updatedAt);
     setSaveMsg("☁️ 저장 완료 (Pages 반영 1~2분 소요)");
   } catch (err) {
     setSaveMsg("⚠️ 저장 실패", "err");
@@ -1567,6 +1737,7 @@ async function pullFromGitHub() {
     if (!res.ok) throw new Error("파일을 찾을 수 없거나 접근 권한이 없습니다. (" + res.status + ")");
     const data = await res.json();
     const parsed = JSON.parse(base64ToUtf8(data.content));
+    backupLocal("GitHub에서 가져오기 전");
     if (isEnvelope(parsed)) {
       try { state = await openEnvelope(parsed, sessionPw); }
       catch (e) { throw new Error("서버 데이터의 비밀번호가 현재 비밀번호와 다릅니다. 다른 PC에서 비밀번호를 바꿨다면 [🔒 잠금] 후 새 비밀번호로 여세요."); }
@@ -1575,8 +1746,9 @@ async function pullFromGitHub() {
     }
     recordHistory();
     await persistLocal();
+    setSyncedAt(state.meta.updatedAt);
     rerenderAll();
-    alert("GitHub 저장소의 최신 data.json 데이터를 불러왔습니다.");
+    alert("GitHub 저장소의 최신 data.json 데이터를 불러왔습니다. 이전 저장본은 ☰ 메뉴 > 저장본 복구에 보관되어 있습니다.");
     document.getElementById("gh-modal").classList.remove("open");
   } catch (err) {
     alert("불러오기 실패: " + err.message);
@@ -2475,6 +2647,7 @@ function refreshGhButtonUI() {
   pushBtn.style.opacity = ready ? "1" : "0.55";
   pushBtn.title = ready ? "현재 변경사항을 GitHub data.json에 암호화하여 즉시 커밋합니다"
                         : "GitHub 토큰 설정이 필요합니다 (클릭 시 설정창 열림)";
+  refreshUnsyncedUI();
 }
 function readGhForm() {
   ghConfig = {
@@ -2530,6 +2703,7 @@ document.getElementById("in-import").addEventListener("change", e => {
   reader.onload = async ev => {
     try {
       const parsed = JSON.parse(ev.target.result);
+      backupLocal("파일 불러오기 전");
       if (isEnvelope(parsed)) {
         try { state = await openEnvelope(parsed, sessionPw); }
         catch (e2) { throw new Error("백업 파일의 비밀번호가 현재 비밀번호와 다릅니다."); }
@@ -2740,7 +2914,7 @@ document.getElementById("save-msg").addEventListener("click", e => { e.currentTa
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     setMenu(false);
-    ["task-modal", "day-modal", "memo-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
+    ["task-modal", "day-modal", "memo-modal", "rec-modal"].forEach(id => document.getElementById(id).classList.remove("open"));
     return;
   }
   if (!(e.ctrlKey || e.metaKey)) return;
@@ -2792,6 +2966,11 @@ document.getElementById("lock-form").addEventListener("submit", submitLock);
 document.getElementById("btn-lock-cancel").addEventListener("click", () => document.getElementById("lock-modal").classList.remove("open"));
 document.getElementById("btn-chpw").addEventListener("click", () => showLock("change"));
 document.getElementById("btn-lock").addEventListener("click", () => { sessionPw = null; keyCache.clear(); location.reload(); });
+document.getElementById("btn-lock-older").addEventListener("click", () => { lockCtx.allowOlder = true; document.getElementById("lock-form").requestSubmit(); });
+document.getElementById("btn-recover").addEventListener("click", openRecoverDialog);
+document.getElementById("btn-rec-close").addEventListener("click", () => document.getElementById("rec-modal").classList.remove("open"));
+document.getElementById("rec-list").addEventListener("click", e => { const b = e.target.closest("[data-rec]"); if (b) viewRecoverItem(Number(b.dataset.rec)); });
+document.getElementById("rec-detail").addEventListener("click", e => { if (e.target.closest("#btn-rec-apply")) applyRecover(); });
 
 document.getElementById("in-spot-date").value = TODAY;
 refreshGhButtonUI();
