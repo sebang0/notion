@@ -188,12 +188,45 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 }
 .prog-bar-fill { height: 100%; background: var(--c-std); transition: width .2s; }
 
-/* 달력은 전체 폭, 정례 체크리스트·SPOT 관리는 달력 아래 2열 (좁은 화면은 1열) */
+/* 달력은 전체 폭 · 달력 아래 2열: 왼쪽(SPOT 관리 → 정례 체크리스트) / 오른쪽(화이트보드) · 좁은 화면은 1열 */
 .cal-layout { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
-.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.cal-below { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+.cal-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 @media (max-width: 1100px) {
   .cal-below { grid-template-columns: 1fr; }
 }
+
+/* 화이트보드: 왼쪽 열 높이만큼 늘어남 · 메모는 보드 기준 절대 위치(x: %, y: px) */
+.wb-panel { display: flex; flex-direction: column; min-width: 0; }
+.wb-board {
+  position: relative; flex: 1; min-height: 520px; overflow: auto; cursor: crosshair;
+  border: 1px solid var(--line-soft); border-radius: 8px;
+  background-color: #fbfcfd;
+  background-image: radial-gradient(#dfe3e8 1px, transparent 1px); background-size: 18px 18px;
+}
+.wb-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--mut); font-size: 12px; pointer-events: none; }
+.wb-note {
+  position: absolute; width: 180px; min-height: 90px; display: flex; flex-direction: column;
+  border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); cursor: text;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.wb-note.dragging { opacity: 0.85; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 5; }
+.wb-note.c-yellow { background: #fef9c3; } .wb-note.c-blue { background: #dbeafe; }
+.wb-note.c-green { background: #dcfce7; } .wb-note.c-pink { background: #fce7f3; }
+.wb-note.c-gray { background: #f1f5f9; }
+.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 4px;
+  height: 20px; padding: 0 4px; cursor: grab; touch-action: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.wb-head:active { cursor: grabbing; }
+.wb-date { font-size: 10px; color: rgba(0,0,0,0.45); font-family: var(--f-mono); }
+.wb-tools { display: flex; gap: 2px; }
+.wb-tools button { border: 0; background: none; cursor: pointer; font-size: 11px; line-height: 16px; padding: 0 3px;
+  border-radius: 3px; color: rgba(0,0,0,0.55); }
+.wb-tools button:hover { background: rgba(0,0,0,0.08); color: #111; }
+.wb-body { flex: 1; padding: 6px 8px; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.wb-body.placeholder { color: rgba(0,0,0,0.35); }
+.wb-edit { flex: 1; min-height: 70px; width: 100%; resize: vertical; border: 0; outline: none; background: transparent;
+  padding: 6px 8px; font: inherit; font-size: 12.5px; line-height: 1.45; box-sizing: border-box; }
 
 /* 한국 달력 7열 그리드: 일·토 최소 폭(56px), 평일 5열이 나머지 공간을 균등 사용 */
 .cal-grid {
@@ -715,41 +748,54 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
         <div class="cal-grid" id="kr-cal-grid"></div>
       </section>
 
-      <!-- 달력 아래: 이달의 체크리스트 & SPOT/추가 업무 등록 -->
+      <!-- 달력 아래: [왼쪽] SPOT/추가 업무 관리 → 정례 체크리스트 · [오른쪽] 화이트보드 -->
       <div class="cal-below">
-        <section class="panel">
+        <div class="cal-left">
+          <section class="panel">
+            <div class="head-bar" style="margin-bottom:8px">
+              <div>
+                <h2>➕ 이달의 추가 / SPOT 업무 관리</h2>
+                <div style="font-size:11.5px;color:var(--mut)">이번 달에 수시로 발생한 수지분석, CO 점검, 대관청 회신 등을 날짜별로 추가하세요.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+              <input type="date" id="in-spot-date" style="width:132px">
+              <select id="in-spot-cat" style="width:92px">
+                <option value="SPOT">SPOT</option>
+                <option value="실적">실적</option>
+                <option value="표준원가">표준원가</option>
+                <option value="회의체">회의체</option>
+                <option value="분기">분기</option>
+                <option value="연간">연간</option>
+              </select>
+              <input type="text" id="in-spot-name" placeholder="추가할 업무명 입력 (예: OO 화주 수지분석 검토)" style="flex:1;min-width:160px">
+              <button class="btn btn-amber" type="button" id="btn-add-spot">+ 등록</button>
+            </div>
+
+            <div class="chk-list" id="list-spot-tasks" style="max-height:240px"></div>
+          </section>
+          <section class="panel">
+            <div class="head-bar" style="margin-bottom:8px">
+              <div>
+                <h2>✅ 이달의 정례 업무 체크리스트</h2>
+                <div style="font-size:11.5px;color:var(--mut)">영업일 기준 일정이 이번 달 실제 한국 달력 날짜로 자동 변환된 목록입니다.</div>
+              </div>
+            </div>
+            <div class="chk-list" id="list-reg-tasks"></div>
+          </section>
+
+        </div>
+
+        <!-- 화이트보드: 빈 곳 클릭 → 메모 생성 · 메모 클릭 → 편집 · 상단 막대 드래그 → 이동 -->
+        <section class="panel wb-panel">
           <div class="head-bar" style="margin-bottom:8px">
             <div>
-              <h2>✅ 이달의 정례 업무 체크리스트</h2>
-              <div style="font-size:11.5px;color:var(--mut)">영업일 기준 일정이 이번 달 실제 한국 달력 날짜로 자동 변환된 목록입니다.</div>
+              <h2>🗒️ 화이트보드</h2>
+              <div style="font-size:11.5px;color:var(--mut)"><b>빈 곳 클릭</b> 메모 생성 · <b>메모 클릭</b> 편집 · <b>상단 막대 드래그</b> 이동 · 내용을 모두 지우면 삭제</div>
             </div>
           </div>
-          <div class="chk-list" id="list-reg-tasks"></div>
-        </section>
-
-        <section class="panel">
-          <div class="head-bar" style="margin-bottom:8px">
-            <div>
-              <h2>➕ 이달의 추가 / SPOT 업무 관리</h2>
-              <div style="font-size:11.5px;color:var(--mut)">이번 달에 수시로 발생한 수지분석, CO 점검, 대관청 회신 등을 날짜별로 추가하세요.</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-            <input type="date" id="in-spot-date" style="width:132px">
-            <select id="in-spot-cat" style="width:92px">
-              <option value="SPOT">SPOT</option>
-              <option value="실적">실적</option>
-              <option value="표준원가">표준원가</option>
-              <option value="회의체">회의체</option>
-              <option value="분기">분기</option>
-              <option value="연간">연간</option>
-            </select>
-            <input type="text" id="in-spot-name" placeholder="추가할 업무명 입력 (예: OO 화주 수지분석 검토)" style="flex:1;min-width:160px">
-            <button class="btn btn-amber" type="button" id="btn-add-spot">+ 등록</button>
-          </div>
-
-          <div class="chk-list" id="list-spot-tasks" style="max-height:240px"></div>
+          <div class="wb-board" id="wb-board" aria-label="화이트보드"></div>
         </section>
       </div>
     </div>
@@ -1159,6 +1205,7 @@ function normalizeState(s) {
   s.monthlyLogs = s.monthlyLogs || {};
   s.companyOff = s.companyOff || {};   // { "YYYY-MM-DD": "휴무 명칭" } → 영업일에서 제외
   s.myLeave = s.myLeave || {};         // { "YYYY-MM-DD": "연차" | "오전반차" | "오후반차" } → 표시·경고만
+  s.whiteboard = Array.isArray(s.whiteboard) ? s.whiteboard : [];   // 화이트보드 메모 [{ id, x(%), y(px), text, color, at }] (월 구분 없음)
   s.meta = s.meta || { updatedAt: "" };
   s.tasks.forEach(t => {
     t.start = clampBD(t.start, 1);
@@ -2178,6 +2225,8 @@ function renderCalendarTab() {
       <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
     </div>
   `;
+
+  renderWhiteboard();
 }
 
 window.toggleTaskFromCal = function(type, id) {
@@ -2209,6 +2258,151 @@ window.resetOverride = function(id) {
   renderCalendarTab();
   showToast("매뉴얼 기준 일정으로 되돌렸습니다.");
 };
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7-W] 화이트보드 (이달의 일정 탭 · 달력 아래 오른쪽)
+   - 저장 위치 : state.whiteboard (GitHub 자동 저장 · 되돌리기 대상 · 월 구분 없음)
+   - 빈 곳 클릭     : 클릭 지점에 새 메모 생성 → 바로 입력 상태
+   - 메모 클릭      : 해당 메모 편집 (입력칸 밖을 누르면 저장 · Esc 저장 후 종료)
+   - 상단 막대 드래그: 메모 위치 이동 (마우스·터치 공통, Pointer Events)
+   - 🎨 색상 변경 / ✕ 삭제 · 내용을 모두 지우고 나가면 자동 삭제
+   - 위치 : x는 보드 폭 대비 %(화면 폭이 달라도 비율 유지), y는 px
+   ══════════════════════════════════════════════════════════════════════ */
+const WB_COLORS = ["yellow", "blue", "green", "pink", "gray"];
+const WB_NOTE_W = 180;
+const wbBoard = document.getElementById("wb-board");
+let wbEditId = null;      // 현재 편집 중인 메모 id (편집 중에는 다시 그리지 않음)
+let wbDrag = null;        // 드래그 상태 { id, el, dx, dy, moved }
+
+function wbNote(id) { return state.whiteboard.find(n => n.id === id); }
+function wbStamp(iso) { const d = new Date(iso); return isNaN(d) ? "" : `${d.getMonth() + 1}/${d.getDate()}`; }
+
+/* 메모 목록 그리기 (편집 중이면 입력 내용 보호를 위해 건너뜀) */
+function renderWhiteboard() {
+  if (!wbBoard || wbEditId) return;
+  const notes = state.whiteboard;
+  if (!notes.length) {
+    wbBoard.innerHTML = `<div class="wb-empty">빈 곳을 클릭해 메모를 추가하세요.</div>`;
+    return;
+  }
+  wbBoard.innerHTML = notes.map(n => `
+    <div class="wb-note c-${esc(n.color || "yellow")}" data-wb="${esc(n.id)}" style="left:${Number(n.x) || 0}%;top:${Number(n.y) || 0}px">
+      <div class="wb-head" data-wb-drag title="드래그: 이동">
+        <span class="wb-date">${esc(wbStamp(n.at))}</span>
+        <span class="wb-tools">
+          <button type="button" data-wb-color title="색상 변경">🎨</button>
+          <button type="button" data-wb-del title="삭제">✕</button>
+        </span>
+      </div>
+      <div class="wb-body ${n.text ? "" : "placeholder"}" data-wb-body title="클릭: 편집">${n.text ? esc(n.text) : "(내용 없음)"}</div>
+    </div>`).join("");
+}
+
+/* 클릭 지점(보드 기준 좌표) → 메모 위치 계산 (보드 밖으로 나가지 않게 보정) */
+function wbPos(clientX, clientY) {
+  const r = wbBoard.getBoundingClientRect();
+  const w = wbBoard.clientWidth || 1;
+  const px = Math.max(0, Math.min(clientX - r.left + wbBoard.scrollLeft, w - WB_NOTE_W - 4));
+  const py = Math.max(0, clientY - r.top + wbBoard.scrollTop);
+  return { x: Math.round(px / w * 1000) / 10, y: Math.round(py) };
+}
+
+/* 메모 편집 시작: 본문 자리에 입력칸을 띄움 */
+function wbStartEdit(id) {
+  const el = wbBoard.querySelector(`[data-wb="${CSS.escape(id)}"]`);
+  const n = wbNote(id);
+  if (!el || !n) return;
+  wbEditId = id;
+  const body = el.querySelector("[data-wb-body]");
+  const ta = document.createElement("textarea");
+  ta.className = "wb-edit";
+  ta.value = n.text || "";
+  ta.placeholder = "메모 입력";
+  body.replaceWith(ta);
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+  ta.addEventListener("keydown", e => { if (e.key === "Escape") { e.preventDefault(); ta.blur(); } });
+  ta.addEventListener("blur", () => wbEndEdit(id, ta.value), { once: true });
+}
+
+/* 메모 편집 종료: 내용 저장 · 빈 내용이면 삭제 */
+function wbEndEdit(id, text) {
+  wbEditId = null;
+  const n = wbNote(id);
+  if (n) {
+    const t = text.replace(/\s+$/, "");
+    if (!t.trim()) state.whiteboard = state.whiteboard.filter(x => x.id !== id);
+    else if (t !== n.text) { n.text = t; n.at = new Date().toISOString(); }
+    saveState();
+  }
+  renderWhiteboard();
+}
+
+/* 보드 클릭: 도구 버튼 → 메모 본문(편집) → 빈 곳(새 메모) 순으로 판단 */
+wbBoard.addEventListener("click", e => {
+  if (wbDrag && wbDrag.moved) return;
+  const noteEl = e.target.closest("[data-wb]");
+  if (noteEl) {
+    const id = noteEl.dataset.wb;
+    const n = wbNote(id);
+    if (!n) return;
+    if (e.target.closest("[data-wb-del]")) {
+      state.whiteboard = state.whiteboard.filter(x => x.id !== id);
+      saveState(); renderWhiteboard(); showToast("메모를 삭제했습니다. (↶로 되돌리기 가능)");
+      return;
+    }
+    if (e.target.closest("[data-wb-color]")) {
+      n.color = WB_COLORS[(WB_COLORS.indexOf(n.color) + 1) % WB_COLORS.length];
+      saveState(); renderWhiteboard();
+      return;
+    }
+    if (e.target.closest("[data-wb-drag]")) return;
+    if (!e.target.closest(".wb-edit")) wbStartEdit(id);
+    return;
+  }
+  if (wbEditId || wbWasEditing) { wbWasEditing = false; return; }   // 편집 중 빈 곳 클릭 → 편집 종료만 (blur에서 저장)
+  const pos = wbPos(e.clientX, e.clientY);
+  const id = "wb_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  state.whiteboard.push({ id, x: pos.x, y: pos.y, text: "", color: "yellow", at: new Date().toISOString() });
+  renderWhiteboard();
+  wbStartEdit(id);         // 빈 메모는 저장하지 않음 (내용 입력 후 저장, 비워두면 삭제)
+});
+
+/* 상단 막대 드래그 → 이동 (Pointer Events: 마우스·터치·펜 공통)
+   pointerdown 시점에 편집 중이었는지 기록 → 편집 종료 클릭으로 새 메모가 생기지 않게 함 */
+let wbWasEditing = false;
+wbBoard.addEventListener("pointerdown", e => {
+  wbWasEditing = !!wbEditId;
+  const head = e.target.closest("[data-wb-drag]");
+  if (!head || e.target.closest("button")) return;
+  const el = head.closest("[data-wb]");
+  const r = el.getBoundingClientRect();
+  wbDrag = { id: el.dataset.wb, el, dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, sx: e.clientX, sy: e.clientY };
+  head.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+wbBoard.addEventListener("pointermove", e => {
+  if (!wbDrag) return;
+  if (!wbDrag.moved && Math.hypot(e.clientX - wbDrag.sx, e.clientY - wbDrag.sy) < 4) return;
+  wbDrag.moved = true;
+  wbDrag.el.classList.add("dragging");
+  const pos = wbPos(e.clientX - wbDrag.dx, e.clientY - wbDrag.dy);
+  wbDrag.el.style.left = pos.x + "%";
+  wbDrag.el.style.top = pos.y + "px";
+  wbDrag.pos = pos;
+});
+function wbDragEnd() {
+  if (!wbDrag) return;
+  const d = wbDrag;
+  d.el.classList.remove("dragging");
+  if (d.moved && d.pos) {
+    const n = wbNote(d.id);
+    if (n) { n.x = d.pos.x; n.y = d.pos.y; saveState(); }
+  }
+  setTimeout(() => { wbDrag = null; }, 0);   // 드래그 직후 click 이벤트로 새 메모가 생기지 않도록
+}
+wbBoard.addEventListener("pointerup", wbDragEnd);
+wbBoard.addEventListener("pointercancel", wbDragEnd);
 
 /* 하단 알림 메시지 (2.5초 후 사라짐) */
 let toastTimer = null;
