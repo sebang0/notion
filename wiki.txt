@@ -25,3 +25,4 @@
 2026-10-29 12:39 | docs/index.html, docs/README.md, data 브랜치/data.json, docs/data.json(삭제) | 저장 구조 전환: GitHub 단일 저장(변경 즉시 자동 커밋·전체 이력) · 비밀번호만으로 열기(key.json) · 브라우저 업무 데이터 미보관 · 데이터 유실 방지 자체 테스트 34건 통과
 2026-11-03 11:22 | docs/index.html, docs/README.md | 이달의 일정 하단 재배치: 왼쪽(SPOT 업무 관리 → 정례 체크리스트) · 오른쪽 화이트보드 신설(빈 곳 클릭 메모 생성 · 메모 클릭 편집 · 드래그 이동 · 색상/삭제 · GitHub 자동 저장)
 2026-11-03 12:30 | main 브랜치 | PR #5 병합 (claude/great-keller-vp5252 → main · 화이트보드·하단 재배치)
+2026-11-03 12:55 | docs/index.html, docs/README.md | 화이트보드 메모 크기 조정: 오른쪽 아래 모서리 드래그 (폭 120~600px · 높이 70~800px · 저장·되돌리기 대상)

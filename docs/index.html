@@ -211,6 +211,12 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
   border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); cursor: text;
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
+.wb-note.sized .wb-body { overflow: auto; }
+/* 오른쪽 아래 모서리 크기 조정 손잡이 */
+.wb-resize { position: absolute; right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; touch-action: none;
+  border-radius: 0 0 6px 0;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.22) 50%, rgba(0,0,0,0.22) 60%, transparent 60%, transparent 72%, rgba(0,0,0,0.22) 72%, rgba(0,0,0,0.22) 82%, transparent 82%); }
+.wb-note.resizing { z-index: 5; box-shadow: 0 0 0 2px var(--c-perf-bd); }
 .wb-note.dragging { opacity: 0.85; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 5; }
 .wb-note.c-yellow { background: #fef9c3; } .wb-note.c-blue { background: #dbeafe; }
 .wb-note.c-green { background: #dcfce7; } .wb-note.c-pink { background: #fce7f3; }
@@ -225,7 +231,7 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 .wb-tools button:hover { background: rgba(0,0,0,0.08); color: #111; }
 .wb-body { flex: 1; padding: 6px 8px; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
 .wb-body.placeholder { color: rgba(0,0,0,0.35); }
-.wb-edit { flex: 1; min-height: 70px; width: 100%; resize: vertical; border: 0; outline: none; background: transparent;
+.wb-edit { flex: 1; min-height: 40px; width: 100%; resize: none; border: 0; outline: none; background: transparent;
   padding: 6px 8px; font: inherit; font-size: 12.5px; line-height: 1.45; box-sizing: border-box; }
 
 /* 한국 달력 7열 그리드: 일·토 최소 폭(56px), 평일 5열이 나머지 공간을 균등 사용 */
@@ -787,12 +793,12 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
         </div>
 
-        <!-- 화이트보드: 빈 곳 클릭 → 메모 생성 · 메모 클릭 → 편집 · 상단 막대 드래그 → 이동 -->
+        <!-- 화이트보드: 빈 곳 클릭 → 메모 생성 · 메모 클릭 → 편집 · 상단 막대 드래그 → 이동 · 모서리 드래그 → 크기 조정 -->
         <section class="panel wb-panel">
           <div class="head-bar" style="margin-bottom:8px">
             <div>
               <h2>🗒️ 화이트보드</h2>
-              <div style="font-size:11.5px;color:var(--mut)"><b>빈 곳 클릭</b> 메모 생성 · <b>메모 클릭</b> 편집 · <b>상단 막대 드래그</b> 이동 · 내용을 모두 지우면 삭제</div>
+              <div style="font-size:11.5px;color:var(--mut)"><b>빈 곳 클릭</b> 메모 생성 · <b>메모 클릭</b> 편집 · <b>상단 막대 드래그</b> 이동 · <b>오른쪽 아래 모서리 드래그</b> 크기 조정 · 내용을 모두 지우면 삭제</div>
             </div>
           </div>
           <div class="wb-board" id="wb-board" aria-label="화이트보드"></div>
@@ -2266,10 +2272,13 @@ window.resetOverride = function(id) {
    - 메모 클릭      : 해당 메모 편집 (입력칸 밖을 누르면 저장 · Esc 저장 후 종료)
    - 상단 막대 드래그: 메모 위치 이동 (마우스·터치 공통, Pointer Events)
    - 🎨 색상 변경 / ✕ 삭제 · 내용을 모두 지우고 나가면 자동 삭제
+   - 오른쪽 아래 모서리 드래그: 메모 크기 조정 (폭 120~600px · 높이 70~800px, w·h 저장)
    - 위치 : x는 보드 폭 대비 %(화면 폭이 달라도 비율 유지), y는 px
    ══════════════════════════════════════════════════════════════════════ */
 const WB_COLORS = ["yellow", "blue", "green", "pink", "gray"];
-const WB_NOTE_W = 180;
+const WB_NOTE_W = 180;                        // 기본 크기 (크기 조정 전)
+const WB_MIN_W = 120, WB_MAX_W = 600, WB_MIN_H = 70, WB_MAX_H = 800;
+let wbResize = null;      // 크기 조정 상태 { id, el, sx, sy, w0, h0, moved }
 const wbBoard = document.getElementById("wb-board");
 let wbEditId = null;      // 현재 편집 중인 메모 id (편집 중에는 다시 그리지 않음)
 let wbDrag = null;        // 드래그 상태 { id, el, dx, dy, moved }
@@ -2285,8 +2294,10 @@ function renderWhiteboard() {
     wbBoard.innerHTML = `<div class="wb-empty">빈 곳을 클릭해 메모를 추가하세요.</div>`;
     return;
   }
-  wbBoard.innerHTML = notes.map(n => `
-    <div class="wb-note c-${esc(n.color || "yellow")}" data-wb="${esc(n.id)}" style="left:${Number(n.x) || 0}%;top:${Number(n.y) || 0}px">
+  wbBoard.innerHTML = notes.map(n => {
+    const size = (n.w ? `width:${Number(n.w)}px;` : "") + (n.h ? `height:${Number(n.h)}px;` : "");
+    return `
+    <div class="wb-note c-${esc(n.color || "yellow")} ${n.h ? "sized" : ""}" data-wb="${esc(n.id)}" style="left:${Number(n.x) || 0}%;top:${Number(n.y) || 0}px;${size}">
       <div class="wb-head" data-wb-drag title="드래그: 이동">
         <span class="wb-date">${esc(wbStamp(n.at))}</span>
         <span class="wb-tools">
@@ -2295,14 +2306,16 @@ function renderWhiteboard() {
         </span>
       </div>
       <div class="wb-body ${n.text ? "" : "placeholder"}" data-wb-body title="클릭: 편집">${n.text ? esc(n.text) : "(내용 없음)"}</div>
-    </div>`).join("");
+      <span class="wb-resize" data-wb-resize title="드래그: 크기 조정"></span>
+    </div>`;
+  }).join("");
 }
 
 /* 클릭 지점(보드 기준 좌표) → 메모 위치 계산 (보드 밖으로 나가지 않게 보정) */
-function wbPos(clientX, clientY) {
+function wbPos(clientX, clientY, noteW) {
   const r = wbBoard.getBoundingClientRect();
   const w = wbBoard.clientWidth || 1;
-  const px = Math.max(0, Math.min(clientX - r.left + wbBoard.scrollLeft, w - WB_NOTE_W - 4));
+  const px = Math.max(0, Math.min(clientX - r.left + wbBoard.scrollLeft, Math.max(0, w - (noteW || WB_NOTE_W) - 4)));
   const py = Math.max(0, clientY - r.top + wbBoard.scrollTop);
   return { x: Math.round(px / w * 1000) / 10, y: Math.round(py) };
 }
@@ -2340,7 +2353,7 @@ function wbEndEdit(id, text) {
 
 /* 보드 클릭: 도구 버튼 → 메모 본문(편집) → 빈 곳(새 메모) 순으로 판단 */
 wbBoard.addEventListener("click", e => {
-  if (wbDrag && wbDrag.moved) return;
+  if ((wbDrag && wbDrag.moved) || wbResize || e.target.closest("[data-wb-resize]")) return;
   const noteEl = e.target.closest("[data-wb]");
   if (noteEl) {
     const id = noteEl.dataset.wb;
@@ -2373,6 +2386,14 @@ wbBoard.addEventListener("click", e => {
 let wbWasEditing = false;
 wbBoard.addEventListener("pointerdown", e => {
   wbWasEditing = !!wbEditId;
+  const grip = e.target.closest("[data-wb-resize]");
+  if (grip) {                                   // 모서리 → 크기 조정 (편집 중이어도 입력 상태 유지)
+    const el = grip.closest("[data-wb]");
+    wbResize = { id: el.dataset.wb, el, sx: e.clientX, sy: e.clientY, w0: el.offsetWidth, h0: el.offsetHeight, moved: false };
+    grip.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    return;
+  }
   const head = e.target.closest("[data-wb-drag]");
   if (!head || e.target.closest("button")) return;
   const el = head.closest("[data-wb]");
@@ -2382,16 +2403,34 @@ wbBoard.addEventListener("pointerdown", e => {
   e.preventDefault();
 });
 wbBoard.addEventListener("pointermove", e => {
+  if (wbResize) {                               // 크기 조정: 시작 크기 + 이동량 (최소·최대 제한)
+    const z = wbResize;
+    z.moved = true;
+    z.el.classList.add("resizing", "sized");
+    z.w = Math.round(Math.max(WB_MIN_W, Math.min(WB_MAX_W, z.w0 + e.clientX - z.sx)));
+    z.h = Math.round(Math.max(WB_MIN_H, Math.min(WB_MAX_H, z.h0 + e.clientY - z.sy)));
+    z.el.style.width = z.w + "px";
+    z.el.style.height = z.h + "px";
+    return;
+  }
   if (!wbDrag) return;
   if (!wbDrag.moved && Math.hypot(e.clientX - wbDrag.sx, e.clientY - wbDrag.sy) < 4) return;
   wbDrag.moved = true;
   wbDrag.el.classList.add("dragging");
-  const pos = wbPos(e.clientX - wbDrag.dx, e.clientY - wbDrag.dy);
+  const pos = wbPos(e.clientX - wbDrag.dx, e.clientY - wbDrag.dy, wbDrag.el.offsetWidth);
   wbDrag.el.style.left = pos.x + "%";
   wbDrag.el.style.top = pos.y + "px";
   wbDrag.pos = pos;
 });
 function wbDragEnd() {
+  if (wbResize) {                               // 크기 조정 종료 → w·h 저장
+    const z = wbResize;
+    z.el.classList.remove("resizing");
+    const n = wbNote(z.id);
+    if (z.moved && n && z.w) { n.w = z.w; n.h = z.h; saveState(); }
+    setTimeout(() => { wbResize = null; }, 0);  // 직후 click으로 편집·새 메모가 열리지 않도록
+    return;
+  }
   if (!wbDrag) return;
   const d = wbDrag;
   d.el.classList.remove("dragging");
