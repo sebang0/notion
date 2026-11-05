@@ -173,11 +173,13 @@ input:focus, select:focus { outline: 2px solid var(--c-perf); outline-offset: 1p
 .ym-nav { display: flex; align-items: center; gap: 8px; }
 .ym-title { font-size: 19px; font-weight: 700; min-width: 130px; text-align: center; font-family: var(--f-mono); margin: 0; }
 
-/* 달력 패널 헤더(월 선택 통합): 왼쪽 = 월 이동 + 안내 / 오른쪽 = 표시 옵션 · PDF 출력 · SPOT 표시 토글(세로 정렬) */
-.cal-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 10px; }
-.cal-hint { font-size: 12px; color: var(--mut); margin-top: 4px; }
-.cal-ctrl { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.cal-ctrl-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+/* 달력 패널 헤더(월 선택 통합)
+   1행: 왼쪽 = 월 이동 / 오른쪽 = [진행 기간 토글][SPOT 토글][PDF 출력]
+   2행: 왼쪽 = 사용법 안내 / 오른쪽 = 배경 범례 */
+.cal-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.cal-head-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+.cal-hint { font-size: 12px; color: var(--mut); }
+.cal-ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .btn-toggle[aria-pressed="false"] { color: var(--mut); background: #f1f5f9; border-style: dashed; }
 
 /* 달력은 전체 폭 · 달력 아래 2열: 왼쪽(SPOT 관리 → 정례 체크리스트) / 오른쪽(화이트보드) · 좁은 화면은 1열 */
@@ -578,7 +580,7 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
   body.print-cal .print-date { font-size: 10px; font-weight: 400; color: var(--mut); }
   body.print-cal #cal-title { display: none; }  /* 출력 시 월 표시는 print-head 제목으로 대체 */
   body.print-cal .cal-head { margin-bottom: 4px; }
-  body.print-cal .cal-legend { font-size: 9.5px; margin-bottom: 4px; }
+  body.print-cal .cal-legend { font-size: 9.5px; margin-left: auto; }
   body.print-cal .cal-grid { grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 40px; }
   body.print-cal .cal-th { padding: 3px 2px; font-size: 10.5px; }
   body.print-cal .cal-cell { min-height: 92px; padding: 3px; gap: 2px; break-inside: avoid; }
@@ -599,7 +601,7 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
 body.dragging, body.dragging * { cursor: grabbing !important; }
 .chk-flags { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .mini-btn { padding: 0 6px; font-size: 11px; line-height: 18px; }
-.cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--mut); margin-bottom: 8px; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--mut); }
 .cal-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .lg { display: inline-block; width: 14px; height: 12px; border-radius: 3px; border: 1px solid var(--line); }
 .lg-work { background: #fff; } .lg-hol { background: #fdecee; } .lg-sat { background: #eef2f8; }
@@ -649,8 +651,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .chk-row { flex-wrap: wrap; }
   .chk-meta, .chk-title { white-space: normal; }
   .chk-left { flex-wrap: wrap; }
-  .cal-ctrl { align-items: flex-start; }
-  .cal-ctrl-row { justify-content: flex-start; }
+  .cal-ctrl { justify-content: flex-start; }
   .wrap { padding: 14px 12px 40px; }
   h1 { font-size: 18px; }
   .nav-tabs { overflow-x: auto; }
@@ -706,41 +707,39 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
           <span>실적·손익·원가관리 업무 일정표 · <span id="print-cal-ym"></span></span>
           <span class="print-date"></span>
         </div>
-        <!-- 달력 헤더: 월 선택(이전/다음/직접 선택)과 달력 제목을 한 줄로 통합 -->
+        <!-- 달력 헤더: 월 선택과 달력 제목 통합 · 1행 = 월 이동 | 표시 토글·PDF / 2행 = 사용법 안내 | 범례 -->
         <div class="cal-head">
-          <div>
+          <div class="cal-head-row">
             <div class="ym-nav">
               <button class="btn no-print" type="button" id="btn-prev-m">◀ 이전 달</button>
               <h2 class="ym-title" id="cal-title">2026년 10월</h2>
               <button class="btn no-print" type="button" id="btn-next-m">다음 달 ▶</button>
               <input class="no-print" type="month" id="in-ym-picker" value="2026-10" aria-label="월 직접 선택">
             </div>
+            <!-- 표시 토글 2개(눌림 = 표시 / 점선 = 숨김) → PDF 출력 -->
+            <div class="cal-ctrl no-print">
+              <button class="btn btn-toggle" type="button" id="btn-toggle-span" aria-pressed="true" title="진행 기간(빗금 업무)을 모든 영업일에 표시 · 끄면 착수일·마감일만 표시">▤ 진행 기간 전체 표시</button>
+              <button class="btn btn-toggle" type="button" id="btn-toggle-spot" aria-pressed="true" title="달력에서 SPOT/추가 업무 보이기·숨기기 (PDF 출력에도 적용)">⚡ SPOT 업무 표시</button>
+              <button class="btn" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
+            </div>
+          </div>
+          <div class="cal-head-row">
             <div class="cal-hint no-print">
               업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록
             </div>
-          </div>
-          <!-- 오른쪽 컨트롤: 1행 = 진행 기간 표시 · PDF 출력 / 2행(PDF 출력 아래) = SPOT 업무 표시 토글 -->
-          <div class="cal-ctrl no-print">
-            <div class="cal-ctrl-row">
-              <label style="font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:4px">
-                <input type="checkbox" id="chk-show-span" checked> 진행 기간(빗금 업무) 모든 영업일에 표시
-              </label>
-              <button class="btn" type="button" id="btn-pdf-cal" title="달력만 A4 가로로 출력 · 인쇄 창 대상: 'PDF로 저장'">📄 PDF 출력</button>
+            <div class="cal-legend" aria-label="달력 배경 범례">
+              <span><i class="lg lg-work"></i>영업일</span>
+              <span><i class="lg lg-hol"></i>일요일·공휴일</span>
+              <span><i class="lg lg-sat"></i>토요일</span>
+              <span><i class="lg lg-off"></i>회사 휴무 (영업일 제외)</span>
+              <span><i class="lg lg-leave"></i>내 연차</span>
+              <span><i class="lg lg-half"></i>내 반차</span>
+              <span><i class="lg lg-today"></i>오늘</span>
             </div>
-            <button class="btn btn-toggle" type="button" id="btn-toggle-spot" aria-pressed="true" title="달력에서 SPOT/추가 업무 보이기·숨기기 (PDF 출력에도 적용)">⚡ SPOT 업무 표시</button>
           </div>
         </div>
 
         <div class="warn-box" id="cal-warn" style="display:none"></div>
-        <div class="cal-legend" aria-label="달력 배경 범례">
-          <span><i class="lg lg-work"></i>영업일</span>
-          <span><i class="lg lg-hol"></i>일요일·공휴일</span>
-          <span><i class="lg lg-sat"></i>토요일</span>
-          <span><i class="lg lg-off"></i>회사 휴무 (영업일 제외)</span>
-          <span><i class="lg lg-leave"></i>내 연차</span>
-          <span><i class="lg lg-half"></i>내 반차</span>
-          <span><i class="lg lg-today"></i>오늘</span>
-        </div>
         <div class="cal-grid" id="kr-cal-grid"></div>
       </section>
 
@@ -1193,6 +1192,7 @@ const TODAY = kstToday();
 let state = normalizeState(JSON.parse(JSON.stringify(EMPTY_STATE)));
 let curYM = TODAY.slice(0, 7);
 let showSpotOnCal = lsGet("cal-show-spot") !== "0";  // 달력 SPOT 업무 표시 여부 (기본: 표시)
+let showSpanOnCal = lsGet("cal-show-span") !== "0";  // 진행 기간(빗금 업무) 모든 영업일 표시 여부 (기본: 표시)
 let ganttMode = "cat";
 
 function normalizeState(s) {
@@ -2041,7 +2041,7 @@ function renderCalendarTab() {
   const cal = buildMonthCalendarData(curYM);
   const { year, month, cells, bdToDate, totalBD } = cal;
   const mLog = ensureMonthLog(curYM);
-  const showSpan = document.getElementById("chk-show-span").checked;
+  const showSpan = showSpanOnCal;
 
   document.getElementById("cal-title").textContent = `${year}년 ${month}월`;
   document.getElementById("in-ym-picker").value = curYM;
@@ -2946,23 +2946,30 @@ document.getElementById("in-ym-picker").addEventListener("change", e => {
     renderCalendarTab();
   }
 });
-document.getElementById("chk-show-span").addEventListener("change", renderCalendarTab);
-
-/* SPOT 업무 표시 토글 (PDF 출력 버튼 아래)
-   - 클릭할 때마다 달력의 SPOT/추가 업무 보이기 ↔ 숨기기 전환 후 달력 다시 그림
+/* 달력 표시 토글 버튼 (진행 기간 전체 표시 · SPOT 업무 표시)
+   - 클릭할 때마다 켜짐 ↔ 꺼짐 전환 후 달력 다시 그림 (PDF 출력에도 그대로 적용)
    - 화면 설정이므로 이 브라우저에만 기억(localStorage) · 업무 데이터에는 영향 없음 */
-function applySpotToggleUI() {
-  const b = document.getElementById("btn-toggle-spot");
-  b.setAttribute("aria-pressed", String(showSpotOnCal));
-  b.textContent = showSpotOnCal ? "⚡ SPOT 업무 표시" : "⚡ SPOT 업무 숨김";
+function applyCalToggleUI() {
+  const sp = document.getElementById("btn-toggle-spot");
+  sp.setAttribute("aria-pressed", String(showSpotOnCal));
+  sp.textContent = showSpotOnCal ? "⚡ SPOT 업무 표시" : "⚡ SPOT 업무 숨김";
+  const pd = document.getElementById("btn-toggle-span");
+  pd.setAttribute("aria-pressed", String(showSpanOnCal));
+  pd.textContent = showSpanOnCal ? "▤ 진행 기간 전체 표시" : "▤ 진행 기간 착수·마감만";
 }
 document.getElementById("btn-toggle-spot").addEventListener("click", () => {
   showSpotOnCal = !showSpotOnCal;
   lsSet("cal-show-spot", showSpotOnCal ? "1" : "0");
-  applySpotToggleUI();
+  applyCalToggleUI();
   renderCalendarTab();
 });
-applySpotToggleUI();
+document.getElementById("btn-toggle-span").addEventListener("click", () => {
+  showSpanOnCal = !showSpanOnCal;
+  lsSet("cal-show-span", showSpanOnCal ? "1" : "0");
+  applyCalToggleUI();
+  renderCalendarTab();
+});
+applyCalToggleUI();
 
 /* SPOT 등록: 입력한 날짜가 속한 달의 기록에 저장하고, 그 달로 화면 이동 */
 document.getElementById("btn-add-spot").addEventListener("click", () => {
