@@ -33,3 +33,4 @@
 2026-11-09 21:21 | .github/workflows/android.yml | APK 자동 빌드 → Actions Artifacts · Releases(android-v1.0.N) 등록
 2026-11-09 21:22 | GitHub Releases android-v1.0.1 (SebangSchedule_v1.0.1.apk, 시험판) | 첫 APK 빌드 성공 (임시 서명 키)
 2026-11-09 21:21 | 세션 임시폴더 C-안드로이드서명키_Secrets_261109_2121.txt (저장소 미포함) | 고정 서명 키 Secrets 등록값
+2026-11-09 21:58 | C-메모앱동기화비교_261109_2158.html (게시: https://claude.ai/artifact/5Q7bAfa3qMC4ttFvcWPYuA) | 대중 메모 앱 8종 동기화·충돌 처리 비교 보고서 (병합 단위 4단계, 개선안: 항목 단위 3방향 병합)

@@ -1,0 +1,199 @@
+<title>메모 앱 동기화 비교</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 단일 열 보고서 · 상단 결론 → 단계 사다리 → 앱별 비교표 → 우리 앱 위치 → 개선안 */
+:root{
+  --bg:#f7f8fb; --panel:#ffffff; --fg:#1b2333; --muted:#5d6779; --line:#dde2ec;
+  --accent:#2563eb; --accent-soft:#e3ecfd;
+  --good:#167a4a; --good-soft:#e2f4ea; --warn:#a1620a; --warn-soft:#fbf0dc; --bad:#b4282f; --bad-soft:#fbe5e6;
+  --l1:#c9d3e6; --l2:#93add9; --l3:#5b85cf; --l4:#2563eb;
+  --f-body:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151d; --panel:#181e29; --fg:#e6eaf2; --muted:#9aa4b6; --line:#2a3344;
+  --accent:#6f9bff; --accent-soft:#1d2a47;
+  --good:#5fd39a; --good-soft:#163326; --warn:#f0b25a; --warn-soft:#3a2c14; --bad:#ff8088; --bad-soft:#3d1c20;
+  --l1:#2c3850; --l2:#3b5384; --l3:#4f74c2; --l4:#6f9bff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151d; --panel:#181e29; --fg:#e6eaf2; --muted:#9aa4b6; --line:#2a3344;
+  --accent:#6f9bff; --accent-soft:#1d2a47;
+  --good:#5fd39a; --good-soft:#163326; --warn:#f0b25a; --warn-soft:#3a2c14; --bad:#ff8088; --bad-soft:#3d1c20;
+  --l1:#2c3850; --l2:#3b5384; --l3:#4f74c2; --l4:#6f9bff; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+main{max-width:980px;margin:0 auto;display:grid;gap:28px}
+h1{font-size:1.6rem;margin:0;text-wrap:balance}
+h2{font-size:1.1rem;margin:0 0 12px;text-wrap:balance}
+.meta{color:var(--muted);font-size:.85rem;margin-top:4px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.85rem;background:var(--accent-soft);color:var(--fg);white-space:nowrap}
+.chip b{color:var(--accent)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.vbox{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.vbox h3{margin:0 0 6px;font-size:.95rem}
+.vbox ul{margin:0;padding-left:18px}
+.v-good{background:var(--good-soft)} .v-good h3{color:var(--good)}
+.v-warn{background:var(--warn-soft)} .v-warn h3{color:var(--warn)}
+.v-plan{background:var(--accent-soft)} .v-plan h3{color:var(--accent)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:760px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.8rem;letter-spacing:.02em;background:var(--bg)}
+tr.ours td{background:var(--accent-soft);font-weight:600}
+.lv{display:inline-block;min-width:26px;text-align:center;border-radius:4px;padding:1px 6px;font-family:var(--f-mono);font-size:.8rem;color:#fff}
+.lv1{background:var(--l1);color:var(--fg)} .lv2{background:var(--l2)} .lv3{background:var(--l3)} .lv4{background:var(--l4)}
+.ok{color:var(--good);font-weight:700} .no{color:var(--bad);font-weight:700} .mid{color:var(--warn);font-weight:700}
+.src{font-size:.75rem;color:var(--muted)}
+svg text{fill:var(--fg);font-family:var(--f-body)}
+svg .sub{fill:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;counter-reset:s}
+.step{border:1px solid var(--line);border-radius:8px;padding:12px}
+.step h3{margin:0 0 6px;font-size:.92rem}
+.step h3::before{counter-increment:s;content:counter(s) ". ";color:var(--accent)}
+.step ul{margin:0;padding-left:18px;font-size:.88rem}
+ol.srcs{font-size:.8rem;color:var(--muted);padding-left:20px;margin:0}
+ol.srcs a{color:var(--accent);word-break:break-all}
+code{font-family:var(--f-mono);font-size:.85em;background:var(--bg);padding:1px 4px;border-radius:3px}
+</style>
+
+<main>
+<header>
+  <h1>메모 앱 동기화 비교: 웹과 앱 동시 사용</h1>
+  <div class="meta">작성 2026-11-09 21:58 KST · 대상: 업무 일정표(웹 + 안드로이드) · 방법: 공개 문서와 엔지니어링 자료 기반 역추적</div>
+</header>
+
+<!-- ── 결론 키워드 ── -->
+<section>
+  <h2>결론</h2>
+  <div class="verdict">
+    <div class="vbox v-good"><h3>강점 (대중 앱과 동급 이상)</h3><ul>
+      <li>조용한 덮어쓰기 차단 (버전 sha 검사)</li>
+      <li>충돌 시 두 내용 모두 이력 보존</li>
+      <li>전체 변경 이력 복원</li><li>종단간 암호화</li></ul></div>
+    <div class="vbox v-warn"><h3>약점</h3><ul>
+      <li>병합 단위 = 데이터 전체 1개</li>
+      <li>서로 다른 업무 수정도 충돌 처리</li>
+      <li>실시간 반영 없음 (창 복귀 시 확인)</li></ul></div>
+    <div class="vbox v-plan"><h3>권장</h3><ul>
+      <li>2단계 도입: 항목 단위 3방향 병합</li>
+      <li>같은 항목 같은 필드만 선택 창</li>
+      <li>CRDT(4단계)는 과잉</li></ul></div>
+  </div>
+</section>
+
+<!-- ── 병합 단위 사다리 ── -->
+<section>
+  <h2>동기화 방식 4단계 (병합 단위가 작을수록 충돌 감소)</h2>
+  <div class="scroll">
+  <svg viewBox="0 0 900 250" width="100%" style="min-width:640px" role="img" aria-label="동기화 방식 4단계">
+    <rect x="10"  y="170" width="205" height="60"  rx="6" fill="var(--l1)"/>
+    <rect x="235" y="120" width="205" height="110" rx="6" fill="var(--l2)"/>
+    <rect x="460" y="70"  width="205" height="160" rx="6" fill="var(--l3)"/>
+    <rect x="685" y="20"  width="205" height="210" rx="6" fill="var(--l4)"/>
+    <text x="22"  y="195" font-weight="700" font-size="15">1 문서 단위</text>
+    <text x="22"  y="217" font-size="12" class="sub">사본 생성 / 선택 창</text>
+    <text x="247" y="145" font-weight="700" font-size="15" style="fill:#fff">2 항목(레코드) 단위</text>
+    <text x="247" y="167" font-size="12" style="fill:#fff">항목별 병합 · 필드 최신 우선</text>
+    <text x="472" y="95"  font-weight="700" font-size="15" style="fill:#fff">3 텍스트 3방향 병합</text>
+    <text x="472" y="117" font-size="12" style="fill:#fff">diff-match-patch</text>
+    <text x="697" y="45"  font-weight="700" font-size="15" style="fill:#fff">4 CRDT / OT</text>
+    <text x="697" y="67"  font-size="12" style="fill:#fff">글자 단위 자동 병합</text>
+    <text x="22"  y="160" font-size="12" class="sub">Evernote · OneNote · Keep · 삼성노트 · 현재 앱</text>
+    <text x="247" y="110" font-size="12" class="sub">Notion 속성 · 권장안</text>
+    <text x="472" y="60"  font-size="12" class="sub">Obsidian Sync · Simplenote</text>
+    <text x="697" y="245" font-size="12" class="sub" text-anchor="start">Apple 메모 · Notion 텍스트 · Google Docs</text>
+  </svg>
+  </div>
+  <div class="kw" style="margin-top:10px">
+    <span class="chip">구현 난이도 <b>1 → 4 증가</b></span>
+    <span class="chip">서버 요건 <b>1~3: 파일 저장소로 가능</b></span>
+    <span class="chip">4단계 <b>전용 동기화 서버 필요</b></span>
+  </div>
+</section>
+
+<!-- ── 앱별 비교 ── -->
+<section>
+  <h2>앱별 비교</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>앱</th><th>단계</th><th>병합 단위</th><th>동시 수정 시 동작</th><th>조용한 유실</th><th>이력 복원</th><th>실시간</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>Apple 메모</td><td><span class="lv lv4">4</span></td><td>글자</td><td>자동 병합, 충돌 창 없음</td><td class="ok">없음</td><td class="no">없음</td><td class="ok">O</td><td class="src">역공학 자료 [2]</td></tr>
+      <tr><td>Notion</td><td><span class="lv lv4">4</span>/<span class="lv lv2">2</span></td><td>텍스트=글자, 속성=필드</td><td>텍스트 자동 병합, 속성은 한쪽만 남음</td><td class="mid">속성 일부</td><td class="ok">O</td><td class="ok">O</td><td class="src">공식 도움말 [1]</td></tr>
+      <tr><td>Obsidian Sync</td><td><span class="lv lv3">3</span></td><td>텍스트 줄</td><td>diff-match-patch 자동 병합 또는 충돌 파일 (설정)</td><td class="mid">중복 문장 가능</td><td class="ok">O</td><td class="mid">수 초</td><td class="src">공식 도움말 [6]</td></tr>
+      <tr><td>Simplenote</td><td><span class="lv lv3">3</span></td><td>텍스트 diff</td><td>diff 적용 병합</td><td class="mid">버그 보고 있음</td><td class="ok">O</td><td class="ok">O</td><td class="src">GitHub 이슈 [7]</td></tr>
+      <tr><td>OneNote</td><td><span class="lv lv1">1</span></td><td>페이지</td><td>충돌 페이지 사본 + 노란 안내줄, 수동 복사</td><td class="ok">없음</td><td class="ok">O</td><td class="mid">수 초~분</td><td class="src">MS 지원 [4]</td></tr>
+      <tr><td>Evernote</td><td><span class="lv lv1">1</span></td><td>노트</td><td>"Conflicting changes" 사본 노트</td><td class="ok">없음</td><td class="mid">유료</td><td class="mid">수 초~분</td><td class="src">제3자 자료 [3]</td></tr>
+      <tr><td>Google Keep</td><td><span class="lv lv1">1</span></td><td>메모</td><td>"Conflicting edits found" 선택 (둘 다 유지 / 하나 선택)</td><td class="ok">없음</td><td class="no">없음</td><td class="ok">O</td><td class="src">구글 도움말 [5]</td></tr>
+      <tr><td>삼성 노트</td><td><span class="lv lv1">1</span></td><td>노트</td><td>파일 충돌 창: 비교 / 이쪽 / 저쪽 / 둘 다</td><td class="ok">없음</td><td class="no">없음</td><td class="mid">수동 동기화 사례</td><td class="src">커뮤니티 [8]</td></tr>
+      <tr class="ours"><td>업무 일정표 (현재)</td><td><span class="lv lv1">1</span></td><td>데이터 전체</td><td>선택 창: 이 화면 / 서버, 둘 다 이력 보존</td><td class="ok">없음</td><td class="ok">O (전체)</td><td class="no">창 복귀 시</td><td class="src">코드 확인</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="src" style="margin:8px 0 0">근거 등급: Notion, OneNote, Keep, Obsidian = 공식 문서 · Apple 메모 = 역공학 자료 · Evernote, 삼성 노트, Simplenote = 제3자/커뮤니티 (세부 동작은 버전별 차이 가능)</p>
+</section>
+
+<!-- ── 우리 앱 위치 ── -->
+<section>
+  <h2>현재 앱 상세 (코드 역추적)</h2>
+  <div class="scroll">
+  <svg viewBox="0 0 900 200" width="100%" style="min-width:640px" role="img" aria-label="현재 저장 흐름">
+    <rect x="10" y="20" width="170" height="56" rx="6" fill="var(--accent-soft)" stroke="var(--line)"/>
+    <text x="95" y="44" text-anchor="middle" font-weight="700" font-size="13">변경</text>
+    <text x="95" y="63" text-anchor="middle" font-size="11" class="sub">1.2초 모아 저장</text>
+    <rect x="230" y="20" width="190" height="56" rx="6" fill="var(--accent-soft)" stroke="var(--line)"/>
+    <text x="325" y="44" text-anchor="middle" font-weight="700" font-size="13">GitHub PUT + sha</text>
+    <text x="325" y="63" text-anchor="middle" font-size="11" class="sub">data.json 전체 1개</text>
+    <rect x="480" y="0" width="180" height="46" rx="6" fill="var(--good-soft)" stroke="var(--line)"/>
+    <text x="570" y="28" text-anchor="middle" font-size="13" font-weight="700">sha 일치 → 저장</text>
+    <rect x="480" y="56" width="180" height="46" rx="6" fill="var(--warn-soft)" stroke="var(--line)"/>
+    <text x="570" y="84" text-anchor="middle" font-size="13" font-weight="700">불일치(409) → 충돌</text>
+    <rect x="710" y="56" width="180" height="46" rx="6" fill="var(--bad-soft)" stroke="var(--line)"/>
+    <text x="800" y="76" text-anchor="middle" font-size="12" font-weight="700">선택 창 (둘 중 하나)</text>
+    <text x="800" y="93" text-anchor="middle" font-size="11" class="sub">다른 쪽은 이력에만</text>
+    <path d="M180 48 H230 M420 48 H450 V23 H480 M450 48 V79 H480 M660 79 H710" stroke="var(--muted)" fill="none" stroke-width="1.5"/>
+    <text x="10" y="140" font-size="13" font-weight="700">문제 예시</text>
+    <text x="10" y="162" font-size="12" class="sub">웹: 3일 업무 완료 체크  +  앱: 화이트보드 메모 추가  →  서로 다른 항목인데도 충돌 창 → 한쪽은 다시 입력</text>
+    <text x="10" y="184" font-size="12" class="sub">2단계 적용 시: 두 변경 자동 합침, 충돌 창 없음</text>
+  </svg>
+  </div>
+</section>
+
+<!-- ── 개선안 ── -->
+<section>
+  <h2>권장 개선안: 2단계 (항목 단위 3방향 병합)</h2>
+  <div class="steps">
+    <div class="step"><h3>기준본 보관</h3><ul><li>마지막으로 받은 서버본 = base</li><li>메모리 보관 (추가 저장 없음)</li></ul></div>
+    <div class="step"><h3>충돌 시 3방향 비교</h3><ul><li>base vs 내 화면 vs 서버</li><li>tasks, whiteboard: id 기준</li><li>monthlyLogs, 휴무, 연차: 키 기준</li></ul></div>
+    <div class="step"><h3>자동 합침</h3><ul><li>한쪽만 바뀐 항목 → 그쪽 채택</li><li>추가/삭제도 항목별 반영</li></ul></div>
+    <div class="step"><h3>진짜 충돌만 질문</h3><ul><li>같은 항목 같은 필드 양쪽 수정</li><li>해당 항목만 선택 창 표시</li><li>기존 이력 보존 유지</li></ul></div>
+  </div>
+  <div class="kw" style="margin-top:12px">
+    <span class="chip">충돌 창 빈도 <b>대폭 감소</b></span>
+    <span class="chip">서버 변경 <b>없음 (GitHub 그대로)</b></span>
+    <span class="chip">API 호출 <b>변화 없음</b></span>
+    <span class="chip">수정 범위 <b>index.html 저장 엔진</b></span>
+    <span class="chip">앱 반영 <b>재빌드 자동</b></span>
+  </div>
+  <div class="kw" style="margin-top:8px">
+    <span class="chip">제외: CRDT <b>전용 서버, 대규모 재작성</b></span>
+    <span class="chip">제외: 실시간 push <b>GitHub 미지원, 주기 확인은 API 한도 소모</b></span>
+  </div>
+</section>
+
+<section>
+  <h2>출처</h2>
+  <ol class="srcs">
+    <li><a href="https://www.notion.com/help/use-pages-offline">Notion: Use pages offline</a> · <a href="https://www.notion.com/en-gb/blog/how-we-made-notion-available-offline">How we made Notion available offline</a></li>
+    <li><a href="https://feeds.simonwillison.net/2021/Dec/9/notes-on-notesapp/">Simon Willison: notes on notesapp (Apple Notes CRDT 역공학)</a></li>
+    <li><a href="https://www.multcloud.com/tutorials/evernote-sync-failed-1003.html">Evernote sync failed (제3자)</a> · <a href="https://help.evernote.com/hc/en-us/articles/217930798">Evernote 도움말</a></li>
+    <li><a href="https://support.microsoft.com/help/3d7fd4e9-0fb9-4983-9853-b61b263b0f78">Microsoft: Fix issues when you can't sync OneNote</a></li>
+    <li><a href="https://support.google.com/keep/answer/6102239?hl=en">Google: Fix problems with Google Keep</a> · <a href="https://www.androidpolice.com/2014/04/04/neat-as-of-the-latest-update-google-keep-will-let-you-resolve-conflicting-edits/">Android Police (2014)</a></li>
+    <li><a href="https://obsidian.md/help/sync/troubleshoot">Obsidian: Troubleshoot Sync</a></li>
+    <li><a href="https://www.github.com/Simperium/simperium-android/issues/201">Simperium Android issue #201</a></li>
+    <li><a href="https://us.community.samsung.com/t5/Global-Content/Samsung-Notes-Synchronization/m-p/3440086">Samsung Community: Samsung Notes Synchronization</a></li>
+  </ol>
+</section>
+</main>
