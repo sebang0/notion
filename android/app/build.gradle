@@ -1,0 +1,63 @@
+/* ══════════════════════════════════════════════════════════════════════
+   [앱 빌드 설정]
+   - 웹앱 원본(저장소 docs/ 폴더: index.html · key.json · fonts)을 그대로 앱에 포함
+     → 웹 버전을 고치면 다음 빌드에 자동 반영 (별도 복사 작업 없음)
+   - 서명: GitHub Actions 비밀값(Secrets)으로 받은 고정 키 → 새 버전을 덮어 설치 가능
+       ANDROID_KEYSTORE_FILE / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS (환경변수)
+       미설정 시 디버그 키로 서명 (설치는 가능, 업데이트 시 재설치 필요)
+   - 버전 번호: GitHub Actions 실행 번호(GITHUB_RUN_NUMBER) 사용
+   ══════════════════════════════════════════════════════════════════════ */
+plugins {
+    id "com.android.application"
+}
+
+def runNo = (System.getenv("GITHUB_RUN_NUMBER") ?: "1") as Integer
+
+android {
+    namespace "com.sebang.notion"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.sebang.notion"
+        minSdk 26
+        targetSdk 35
+        versionCode runNo
+        versionName "1.0.${runNo}"
+    }
+
+    // ── 고정 서명 키 (업데이트 설치 시 같은 키 필요) ──
+    def ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
+    def hasKey = ksFile != null && file(ksFile).exists()
+    signingConfigs {
+        if (hasKey) {
+            release {
+                storeFile file(ksFile)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: "app"
+                keyPassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig hasKey ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    // ── 웹앱 원본 포함: 저장소 docs/ → 앱 assets/ ──
+    sourceSets {
+        main.assets.srcDirs = ["../../docs"]
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // WebViewAssetLoader: 포함된 웹앱을 https 주소로 제공 (Web Crypto·fetch 동작 조건)
+    implementation "androidx.webkit:webkit:1.12.1"
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 웹앱 파비콘과 같은 파란 문서 아이콘 (64 단위 원본을 108dp 안전 영역 중앙에 배치) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="26" android:translateY="26" android:scaleX="0.875" android:scaleY="0.875">
+        <path android:fillColor="#2563EB" android:pathData="M14,4h28l12,12v40a4,4 0,0 1,-4 4H14a4,4 0,0 1,-4 -4V8a4,4 0,0 1,4 -4z"/>
+        <path android:fillColor="#93C5FD" android:pathData="M42,4v8a4,4 0,0 0,4 4h8z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M20,26h24a2,2 0,0 1,0 4h-24a2,2 0,0 1,0 -4z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M20,36h24a2,2 0,0 1,0 4h-24a2,2 0,0 1,0 -4z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M20,46h14a2,2 0,0 1,0 4h-14a2,2 0,0 1,0 -4z"/>
+    </group>
+</vector>
