@@ -5,6 +5,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
+import android.os.Build;
+import android.os.SystemClock;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +31,8 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,6 +57,8 @@ import java.util.Map;
        [5] 백업 파일 불러오기     : <input type=file> → 파일 선택 창
        [6] 알림·확인 창           : alert / confirm → 안드로이드 대화상자
        [7] 뒤로 가기              : 앱 종료 대신 백그라운드 이동 (화면 상태 유지)
+       [8] 패턴/지문·얼굴 잠금 해제 : 비밀번호를 휴대폰 키저장소에 보관 (QuickLock.java)
+       [9] 자동 잠금              : 백그라운드 5분 경과 후 복귀 시 웹앱 잠금
    ══════════════════════════════════════════════════════════════════════ */
 public class MainActivity extends Activity {
 
@@ -69,6 +77,11 @@ public class MainActivity extends Activity {
     private byte[] pendingSaveBytes;               // 저장 위치 선택 후 기록할 내용
     private final Handler ui = new Handler(Looper.getMainLooper());
 
+    /* ── [8][9] 빠른 잠금 해제 · 자동 잠금 ── */
+    private static final long AUTO_LOCK_MS = 5 * 60 * 1000L;   // 백그라운드 5분
+    private QuickLock quick;
+    private long backgroundAt = 0;                 // 백그라운드 전환 시각 (0 = 앱 사용 중)
+
     /* ──────────────────────────────────────────────────────────────
        [0] 화면 생성: WebView 설정 → 웹앱 열기
        ────────────────────────────────────────────────────────────── */
@@ -83,6 +96,7 @@ public class MainActivity extends Activity {
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                 .build();
 
+        quick = new QuickLock(this);
         webView = new WebView(this);
         setContentView(webView);
 
@@ -101,6 +115,7 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(true);
 
         webView.addJavascriptInterface(new Bridge(), "SebangApp");
+        webView.addJavascriptInterface(new QuickBridge(), "SebangQuick");   // [8] 빠른 잠금 해제
         webView.setWebViewClient(new AppWebViewClient());
         webView.setWebChromeClient(new AppChromeClient());
 
@@ -204,6 +219,121 @@ public class MainActivity extends Activity {
         }
     }
 
+    /* ──────────────────────────────────────────────────────────────
+       [8] 패턴/지문·얼굴 잠금 해제 창구 (웹앱 → SebangApp.quickXxx)
+       - 상태·패턴 확인은 바로 JSON 문자열 반환
+       - 지문/얼굴 인증은 휴대폰 인증 창 결과를 window.__appQuick(json) 으로 전달
+       ────────────────────────────────────────────────────────────── */
+    private class QuickBridge {
+        /** 현재 설정: 패턴·생체 사용 여부, 생체 가능 여부, 실패 횟수 */
+        @JavascriptInterface
+        public String quickStatus() {
+            return json("pattern", quick.patternOn(), "bio", quick.bioOn(), "bioAvail", bioAvailable(),
+                        "fails", quick.fails(), "maxFails", QuickLock.MAX_FAILS, "minPoints", QuickLock.MIN_POINTS);
+        }
+
+        /** 패턴 등록 (pattern 예: "0-1-2-5-8") */
+        @JavascriptInterface
+        public String quickSetPattern(String pw, String pattern) {
+            try { quick.setPattern(pw, pattern); return json("ok", true); }
+            catch (Exception e) { return json("ok", false, "msg", e.getMessage()); }
+        }
+
+        @JavascriptInterface
+        public void quickDisablePattern() { quick.disablePattern(); }
+
+        /** 생체 켜기: 휴대폰 인증 창으로 본인 확인 후 저장 · 끄기: 바로 해제 */
+        @JavascriptInterface
+        public void quickSetBio(String pw, boolean on) {
+            if (!on) {
+                try { quick.setBio(pw, false); } catch (Exception ignored) { /* 끄기는 실패 없음 */ }
+                sendQuick(json("type", "bioSet", "ok", true));
+                return;
+            }
+            ui.post(() -> askBio("지문/얼굴 잠금 등록", ok -> {
+                if (!ok) { sendQuick(json("type", "bioSet", "ok", false, "msg", "인증이 취소되었습니다.")); return; }
+                try { quick.setBio(pw, true); sendQuick(json("type", "bioSet", "ok", true)); }
+                catch (Exception e) { sendQuick(json("type", "bioSet", "ok", false, "msg", e.getMessage())); }
+            }));
+        }
+
+        /** 비밀번호로 열거나 변경한 뒤 보관 비밀번호 갱신 */
+        @JavascriptInterface
+        public void quickUpdatePassword(String pw) {
+            try { quick.updatePassword(pw); } catch (Exception ignored) { /* 다음 등록 때 다시 저장 */ }
+        }
+
+        /** 패턴 확인: 맞으면 비밀번호 · 틀리면 남은 횟수 (0이면 설정 삭제됨) */
+        @JavascriptInterface
+        public String quickUnlockPattern(String pattern) {
+            try {
+                String pw = quick.unlockPattern(pattern);
+                if (pw != null) return json("ok", true, "pw", pw);
+                boolean off = !quick.patternOn();
+                return json("ok", false, "left", off ? 0 : QuickLock.MAX_FAILS - quick.fails(), "disabled", off);
+            } catch (Exception e) {
+                return json("ok", false, "left", 0, "disabled", true, "msg", "보관된 정보가 손상되어 패턴을 해제했습니다.");
+            }
+        }
+
+        /** 지문/얼굴로 열기 → 결과는 window.__appQuick({type:"bio", ok, pw}) */
+        @JavascriptInterface
+        public void quickUnlockBio() {
+            ui.post(() -> askBio("잠금 해제", ok -> {
+                if (!ok) { sendQuick(json("type", "bio", "ok", false)); return; }
+                try {
+                    String pw = quick.unlockBio();
+                    sendQuick(pw != null ? json("type", "bio", "ok", true, "pw", pw)
+                                         : json("type", "bio", "ok", false, "msg", "지문/얼굴 잠금이 해제된 상태입니다."));
+                } catch (Exception e) {
+                    sendQuick(json("type", "bio", "ok", false, "msg", "보관된 정보가 손상되어 지문/얼굴 잠금을 해제했습니다."));
+                }
+            }));
+        }
+    }
+
+    /** 휴대폰에 지문/얼굴이 등록되어 있는지 (안드로이드 10 이상) */
+    private boolean bioAvailable() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;
+        BiometricManager bm = getSystemService(BiometricManager.class);
+        if (bm == null) return false;
+        int r = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                ? bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                : bm.canAuthenticate();
+        return r == BiometricManager.BIOMETRIC_SUCCESS;
+    }
+
+    private interface BioResult { void done(boolean ok); }
+
+    /** 휴대폰 기본 지문/얼굴 인증 창 표시 */
+    private void askBio(String title, BioResult cb) {
+        if (!bioAvailable()) { toast("휴대폰에 등록된 지문/얼굴이 없습니다."); cb.done(false); return; }
+        BiometricPrompt.Builder b = new BiometricPrompt.Builder(this)
+                .setTitle(title)
+                .setSubtitle("업무 일정표")
+                .setNegativeButton("취소", getMainExecutor(), (d, w) -> cb.done(false));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            b.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.BIOMETRIC_WEAK);
+        b.build().authenticate(new CancellationSignal(), getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
+            @Override public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult r) { cb.done(true); }
+            @Override public void onAuthenticationError(int code, CharSequence msg) { cb.done(false); }
+            // onAuthenticationFailed: 한 번 인식 실패 → 인증 창이 계속 재시도하므로 처리 없음
+        });
+    }
+
+    /** 웹앱으로 결과 전달 */
+    private void sendQuick(String jsonText) {
+        ui.post(() -> webView.evaluateJavascript("window.__appQuick&&window.__appQuick(" + JSONObject.quote(jsonText) + ")", null));
+    }
+
+    /** key, value 쌍 → JSON 문자열 */
+    private static String json(Object... kv) {
+        JSONObject o = new JSONObject();
+        try { for (int i = 0; i < kv.length; i += 2) o.put((String) kv[i], kv[i + 1]); }
+        catch (Exception ignored) { /* 키는 모두 문자열 */ }
+        return o.toString();
+    }
+
     /** [3] 안드로이드 인쇄 창 열기 (대상: PDF로 저장) · 끝나면 웹앱에 afterprint 알림 → 화면 원상 복구 */
     private void startPrint(String title, boolean landscape) {
         PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
@@ -291,6 +421,14 @@ public class MainActivity extends Activity {
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); webView.saveState(out); }
     @Override protected void onResume()  { super.onResume();  webView.onResume(); }   // 복귀 시 웹앱이 서버 최신 내용 반영
     @Override protected void onPause()   { webView.onPause(); super.onPause(); }
+    /* [9] 자동 잠금: 화면에서 사라진 시각 기록 → 5분 이상 지나 돌아오면 웹앱에 잠금 요청 */
+    @Override protected void onStop()  { backgroundAt = SystemClock.elapsedRealtime(); super.onStop(); }
+    @Override protected void onStart() {
+        super.onStart();
+        if (backgroundAt > 0 && SystemClock.elapsedRealtime() - backgroundAt >= AUTO_LOCK_MS && webView != null)
+            webView.evaluateJavascript("window.appAutoLock&&window.appAutoLock()", null);
+        backgroundAt = 0;
+    }
     @Override protected void onDestroy() { webView.destroy(); super.onDestroy(); }
 
     /* ── 공통 도구 ── */

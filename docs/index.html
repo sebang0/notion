@@ -639,6 +639,26 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   background: #1f2937; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.2); max-width: calc(100vw - 32px); }
 .lock-backdrop { background: var(--bg); }
 .lock-msg { font-size: 12px; font-weight: 600; color: #dc2626; min-height: 18px; }
+/* 앱 전용: 패턴/생체 잠금 (안드로이드 앱에서만 표시) */
+.lock-tabs { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lock-tabs[hidden] { display: none; }
+.lock-tabs button { flex: 1; border: 0; background: transparent; color: var(--mut); font: inherit; font-size: 13px; font-weight: 700; padding: 8px; cursor: pointer; }
+.lock-tabs button.on { background: var(--c-perf); color: #fff; }
+.pat-pad { width: 220px; height: 220px; margin: 0 auto; display: block; touch-action: none; user-select: none; }
+.pat-pad .pd { fill: var(--line); }
+.pat-pad .pd.hit { fill: var(--c-perf); }
+.pat-pad .pl { stroke: var(--c-perf); stroke-width: 5; stroke-linecap: round; opacity: .7; }
+.pat-pad.bad .pd.hit { fill: #dc2626; }
+.pat-pad.bad .pl { stroke: #dc2626; }
+.pat-fails { display: flex; gap: 5px; justify-content: center; min-height: 8px; }
+.pat-fails i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.pat-fails i.x { background: #dc2626; }
+.qk-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.qk-tg { width: 40px; height: 22px; border-radius: 11px; border: 0; background: var(--line); position: relative; cursor: pointer; flex: none; }
+.qk-tg::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+.qk-tg[aria-pressed="true"] { background: var(--c-perf); }
+.qk-tg[aria-pressed="true"]::after { left: 21px; }
+.qk-tg:disabled { opacity: .4; cursor: default; }
 [hidden] { display: none !important; }
 
 /* 지연·오늘·말일조정 표시 */
@@ -714,6 +734,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
           <button type="button" role="menuitem" id="btn-export" title="암호화된 JSON 파일로 백업">💾 백업</button>
           <label role="menuitem" title="백업한 JSON 파일을 불러옵니다">📂 불러오기<input type="file" id="in-import" accept=".json" hidden></label>
           <button type="button" role="menuitem" id="btn-chpw">🔑 비밀번호 변경</button>
+          <button type="button" role="menuitem" id="btn-quick" hidden>🔢 패턴/생체 잠금</button>
           <button type="button" role="menuitem" id="btn-recover">🕘 변경 이력</button>
           <button type="button" role="menuitem" id="btn-lock">🔒 잠금</button>
         </div>
@@ -960,6 +981,15 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   <form class="modal-box" id="lock-form" autocomplete="off">
     <h2 style="font-size:17px" id="lock-title">🔒 데이터 잠금 해제</h2>
     <div style="font-size:12.5px;color:var(--mut);line-height:1.5" id="lock-desc">업무 데이터는 비밀번호로 암호화되어 있습니다.</div>
+    <div class="lock-tabs" id="lock-tabs" hidden>
+      <button type="button" data-lt="quick" id="lt-quick">패턴</button>
+      <button type="button" data-lt="pw">비밀번호</button>
+    </div>
+    <div id="lock-quick-pane" hidden style="display:none;flex-direction:column;gap:10px">
+      <svg class="pat-pad" id="lock-pat" viewBox="0 0 210 210" aria-label="패턴 입력"></svg>
+      <div class="pat-fails" id="lock-pat-fails"></div>
+      <button class="btn" type="button" id="btn-lock-bio" hidden>🫆 지문/얼굴로 열기</button>
+    </div>
     <div class="form-row" id="row-lock-pw">
       <label for="lock-pw" id="lbl-lock-pw">비밀번호</label>
       <input type="password" id="lock-pw" autocomplete="current-password">
@@ -978,12 +1008,44 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
       <span style="font-size:11px;color:var(--mut)" id="lock-token-hint"></span>
     </div>
     <div class="lock-msg" id="lock-msg"></div>
-    <div style="display:flex;justify-content:flex-end;gap:8px">
+    <div style="display:flex;justify-content:flex-end;gap:8px" id="row-lock-btns">
       <button class="btn" type="button" id="btn-lock-cancel" hidden>취소</button>
       <button class="btn btn-primary" type="submit" id="btn-lock-ok">열기</button>
     </div>
     <div style="font-size:11px;color:var(--mut)">AES-256-GCM 암호화 · 데이터는 GitHub에만 저장 (변경할 때마다 자동) · 비밀번호는 어디에도 저장되지 않으며 분실 시 복구 불가</div>
   </form>
+</div>
+
+<!-- ━━━━ 앱 전용: 패턴/생체 잠금 설정 ━━━━ -->
+<div class="modal-backdrop" id="quick-modal">
+  <div class="modal-box" style="max-width:380px">
+    <h2 style="font-size:17px">🔢 패턴/생체 잠금</h2>
+    <div style="font-size:12px;color:var(--mut);line-height:1.5">비밀번호는 이 휴대폰의 보안 저장소에만 보관 (서버 전송 없음). 패턴 연속 5회 실패 시 자동 해제.</div>
+    <div>
+      <div class="qk-row"><span>패턴으로 열기</span><button class="qk-tg" type="button" id="qk-pat" aria-pressed="false" aria-label="패턴으로 열기"></button></div>
+      <div class="qk-row"><span>지문/얼굴로 열기<br><small style="color:var(--mut)" id="qk-bio-note"></small></span><button class="qk-tg" type="button" id="qk-bio" aria-pressed="false" aria-label="지문/얼굴로 열기"></button></div>
+      <div class="qk-row"><span>자동 잠금</span><span style="color:var(--mut)">백그라운드 5분</span></div>
+    </div>
+    <div class="lock-msg" id="qk-msg"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" type="button" id="btn-qk-repat">패턴 다시 등록</button>
+      <button class="btn btn-primary" type="button" id="btn-qk-close">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━ 앱 전용: 패턴 등록 (2회 일치 확인) ━━━━ -->
+<div class="modal-backdrop" id="patreg-modal">
+  <div class="modal-box" style="max-width:380px">
+    <h2 style="font-size:17px">🔢 패턴 등록</h2>
+    <div style="font-size:12.5px;color:var(--mut)" id="reg-desc">새 패턴을 그려주세요 (점 4개 이상)</div>
+    <svg class="pat-pad" id="reg-pat" viewBox="0 0 210 210" aria-label="패턴 등록"></svg>
+    <div class="lock-msg" id="reg-msg" style="text-align:center"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" type="button" id="btn-reg-reset">다시</button>
+      <button class="btn btn-primary" type="button" id="btn-reg-cancel">취소</button>
+    </div>
+  </div>
 </div>
 
 <!-- ━━━━ 업무 수정·메모 팝업 (이달의 일정) ━━━━
@@ -1763,7 +1825,7 @@ async function reconcileLocal(pw) {
    - token   : 토큰 만료·교체 → 비밀번호 + 새 토큰 → key.json 갱신
    - change  : 비밀번호 변경 → 데이터·열쇠 파일을 새 비밀번호로 다시 암호화해 저장
    ══════════════════════════════════════════════════════════════════════ */
-let lockCtx = { mode: "unlock", keyFile: null, legacyTokenEnc: null };
+let lockCtx = { mode: "unlock", keyFile: null, legacyTokenEnc: null, via: "" };   // via: "quick" = 패턴/생체로 받은 비밀번호
 
 function showLock(mode, msg) {
   lockCtx.mode = mode;
@@ -1788,7 +1850,8 @@ function showLock(mode, msg) {
   if (mode !== "unlock" || !msg) ["lock-pw", "lock-new", "lock-confirm", "lock-token"].forEach(id => { $(id).value = ""; });
   $("lock-msg").textContent = msg || "";
   $("lock-modal").classList.add("open");
-  setTimeout(() => $("lock-pw").focus(), 0);
+  setupLockTabs(mode, msg);
+  setTimeout(() => { if (lockTab === "pw") $("lock-pw").focus(); }, 0);
 }
 function readNewPw() {
   const nw = document.getElementById("lock-new").value;
@@ -1837,7 +1900,7 @@ async function submitLock(ev) {
     if (!pw) throw new Error("비밀번호를 입력해 주세요.");
     if (mode === "unlock") {
       let token;
-      try { token = await decryptText(lockCtx.keyFile.tokenEnc, pw); } catch (e) { throw new Error("비밀번호가 틀렸습니다."); }
+      try { token = await decryptText(lockCtx.keyFile.tokenEnc, pw); } catch (e) { const e2 = new Error("비밀번호가 틀렸습니다."); e2.code = "BADPW"; throw e2; }
       gh = { owner: lockCtx.keyFile.owner || repoFromLocation().owner, repo: lockCtx.keyFile.repo || repoFromLocation().repo, token };
       try { await loadFromServer(pw); }
       catch (e) {
@@ -1887,14 +1950,221 @@ async function submitLock(ev) {
     }
     $("lock-modal").classList.remove("open");
     msgEl.textContent = "";
+    lockCtx.via = "";
+    if (mode !== "token") quickSyncPassword(sessionPw);   // 앱: 패턴/생체용 보관 비밀번호를 최신으로
     rerenderAll();
     updateSaveUI();
     setSaveMsg(mode === "change" ? "🔑 비밀번호를 변경했습니다" : mode === "token" ? "🔑 토큰을 교체했습니다" : "🔓 GitHub 최신 데이터를 불러왔습니다");
   } catch (err) {
     msgEl.textContent = err.message;
+    if (lockCtx.via === "quick") {
+      // 패턴/생체로 꺼낸 비밀번호가 맞지 않음 = 다른 기기에서 비밀번호 변경 → 새 비밀번호 1회 입력
+      lockCtx.via = "";
+      setLockTab("pw");
+      $("lock-pw").value = "";
+      if (err.code === "BADPW") msgEl.textContent = "다른 기기에서 비밀번호가 바뀌었습니다. 새 비밀번호로 한 번 열면 패턴/생체도 자동 갱신됩니다.";
+    }
   } finally {
     btn.disabled = false;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   [4-0] 앱 전용: 패턴/지문·얼굴 잠금 해제 · 자동 잠금 (안드로이드 앱에서만 동작)
+   - 앱 창구 window.SebangQuick (MainActivity.QuickBridge) 이 있을 때만 화면 표시
+   - 흐름: 패턴/생체 확인(앱) → 보관 비밀번호 반환 → 기존 비밀번호 잠금 해제(submitLock) 그대로 실행
+   - 비밀번호로 열거나 변경하면 보관 비밀번호 자동 갱신 (quickSyncPassword)
+   - 5회 실패 판정과 설정 삭제는 앱이 수행 (웹 화면에서 우회 불가)
+   ══════════════════════════════════════════════════════════════════════ */
+const QA = window.SebangQuick || null;
+let lockTab = "pw";                       // 잠금 화면 현재 탭: "quick" | "pw"
+
+function quickStatus() {
+  if (!QA) return null;
+  try { return JSON.parse(QA.quickStatus()); } catch (e) { return null; }
+}
+function quickSyncPassword(pw) {
+  if (QA && pw) try { QA.quickUpdatePassword(pw); } catch (e) { /* 무시 */ }
+}
+
+/* ── 패턴 패드: 3x3 점 · 터치로 연결 · 손을 떼면 onDone(점 번호 배열) ── */
+const PAT_NS = "http://www.w3.org/2000/svg";
+const patPos = i => [35 + (i % 3) * 70, 35 + Math.floor(i / 3) * 70];
+function makePatPad(svg, onDone) {
+  svg.innerHTML = "";
+  for (let i = 0; i < 9; i++) {
+    const c = document.createElementNS(PAT_NS, "circle"), [x, y] = patPos(i);
+    c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 10); c.setAttribute("class", "pd"); c.dataset.i = i;
+    svg.appendChild(c);
+  }
+  let seq = [], on = false, resetTimer = null;
+  const draw = () => {
+    svg.querySelectorAll("line").forEach(l => l.remove());
+    for (let k = 1; k < seq.length; k++) {
+      const l = document.createElementNS(PAT_NS, "line"), [a, b] = patPos(seq[k - 1]), [c, d] = patPos(seq[k]);
+      l.setAttribute("x1", a); l.setAttribute("y1", b); l.setAttribute("x2", c); l.setAttribute("y2", d); l.setAttribute("class", "pl");
+      svg.insertBefore(l, svg.firstChild);
+    }
+    svg.querySelectorAll("circle").forEach(c => c.classList.toggle("hit", seq.includes(+c.dataset.i)));
+  };
+  const hit = e => {
+    const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * 210 / r.width, y = (e.clientY - r.top) * 210 / r.height;
+    for (let i = 0; i < 9; i++) {
+      const [cx, cy] = patPos(i);
+      if (Math.hypot(cx - x, cy - y) < 26 && !seq.includes(i)) { seq.push(i); draw(); }
+    }
+  };
+  const reset = () => { seq = []; svg.classList.remove("bad"); draw(); };
+  // 새로 그리기 시작하면 이전 결과 지우기 예약 취소 (빠르게 다시 그릴 때 입력이 지워지지 않도록)
+  svg.addEventListener("pointerdown", e => { clearTimeout(resetTimer); on = true; reset(); svg.setPointerCapture(e.pointerId); hit(e); e.preventDefault(); });
+  svg.addEventListener("pointermove", e => { if (on) hit(e); });
+  const end = () => {
+    if (!on) return;
+    on = false;
+    onDone(seq.slice(), ok => { if (!ok) svg.classList.add("bad"); resetTimer = setTimeout(reset, ok ? 250 : 700); });
+  };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  return { reset };
+}
+
+/* ── 잠금 화면 탭: 앱 + 잠금 해제 모드 + 패턴/생체 설정 시에만 표시 ── */
+function setupLockTabs(mode, msg) {
+  const st = quickStatus();
+  const usable = !!(st && mode === "unlock" && (st.pattern || st.bio));
+  document.getElementById("lock-tabs").hidden = !usable;
+  if (!usable) { setLockTab("pw"); return; }
+  document.getElementById("lt-quick").textContent = st.pattern ? "패턴" : "지문/얼굴";
+  document.getElementById("lock-pat").style.display = st.pattern ? "" : "none";
+  document.getElementById("btn-lock-bio").hidden = !(st.bio && st.bioAvail);
+  renderPatFails(st.fails, st.maxFails);
+  setLockTab("quick");
+  if (!msg) document.getElementById("lock-msg").textContent = st.pattern ? "패턴을 그려주세요" : "";
+  if (!st.pattern && st.bio && st.bioAvail) QA.quickUnlockBio();   // 생체만 사용 → 인증 창 바로 표시
+}
+function setLockTab(tab) {
+  lockTab = tab;
+  const q = tab === "quick";
+  document.querySelectorAll("#lock-tabs button").forEach(b => b.classList.toggle("on", b.dataset.lt === tab));
+  document.getElementById("lock-quick-pane").hidden = !q;
+  document.getElementById("lock-quick-pane").style.display = q ? "flex" : "none";
+  document.getElementById("row-lock-pw").hidden = q;
+  document.getElementById("row-lock-btns").style.display = q ? "none" : "flex";
+}
+function renderPatFails(n, max) {
+  document.getElementById("lock-pat-fails").innerHTML = n > 0 ? Array.from({ length: max }, (_, i) => `<i class="${i < n ? "x" : ""}"></i>`).join("") : "";
+}
+/* 패턴/생체로 받은 비밀번호로 기존 잠금 해제 실행 */
+function quickUnlockWith(pw) {
+  lockCtx.via = "quick";
+  document.getElementById("lock-pw").value = pw;
+  submitLock({ preventDefault() {} });
+}
+/* 잠금 화면 패턴 입력 결과 */
+function onLockPattern(seq, fin) {
+  const msgEl = document.getElementById("lock-msg");
+  const st = quickStatus();
+  if (seq.length < (st ? st.minPoints : 4)) { msgEl.textContent = "점 4개 이상 연결해 주세요"; fin(false); return; }
+  let r;
+  try { r = JSON.parse(QA.quickUnlockPattern(seq.join("-"))); } catch (e) { r = { ok: false, left: 0, disabled: true }; }
+  if (r.ok) { fin(true); renderPatFails(0, 5); quickUnlockWith(r.pw); return; }
+  fin(false);
+  if (r.disabled) {
+    document.getElementById("lock-tabs").hidden = true;
+    setLockTab("pw");
+    msgEl.textContent = r.msg || "패턴 5회 실패로 패턴/생체 잠금이 해제되었습니다. 비밀번호로 열어주세요.";
+    return;
+  }
+  renderPatFails(st.maxFails - r.left, st.maxFails);
+  msgEl.textContent = `패턴이 틀렸습니다, 남은 횟수 ${r.left}회`;
+}
+
+/* ── 앱 → 웹 결과 수신 (지문/얼굴 인증) ── */
+window.__appQuick = txt => {
+  let r; try { r = JSON.parse(txt); } catch (e) { return; }
+  if (r.type === "bio") {
+    if (r.ok) quickUnlockWith(r.pw);
+    else if (r.msg) document.getElementById("lock-msg").textContent = r.msg;
+  } else if (r.type === "bioSet") {
+    renderQuickModal();
+    document.getElementById("qk-msg").textContent = r.ok ? "" : (r.msg || "");
+    if (r.ok) showToast(quickStatus()?.bio ? "지문/얼굴 잠금을 켰습니다." : "지문/얼굴 잠금을 껐습니다.");
+  }
+};
+
+/* ── 설정 창 (☰ 메뉴 → 패턴/생체 잠금) ── */
+function renderQuickModal() {
+  const st = quickStatus() || {};
+  const pat = document.getElementById("qk-pat"), bio = document.getElementById("qk-bio");
+  pat.setAttribute("aria-pressed", String(!!st.pattern));
+  bio.setAttribute("aria-pressed", String(!!st.bio));
+  bio.disabled = !st.bioAvail && !st.bio;
+  document.getElementById("qk-bio-note").textContent = st.bioAvail ? "" : "휴대폰 설정에서 지문/얼굴 등록 필요 (안드로이드 10 이상)";
+  document.getElementById("btn-qk-repat").hidden = !st.pattern;
+}
+function openQuickModal() {
+  if (!sessionPw) return;
+  document.getElementById("qk-msg").textContent = "";
+  renderQuickModal();
+  document.getElementById("quick-modal").classList.add("open");
+}
+
+/* ── 패턴 등록: 2회 같은 패턴 → 앱에 저장 ── */
+let regFirst = null;
+function openPatReg() {
+  regFirst = null;
+  document.getElementById("reg-desc").textContent = "새 패턴을 그려주세요 (점 4개 이상)";
+  document.getElementById("reg-msg").textContent = "";
+  document.getElementById("patreg-modal").classList.add("open");
+}
+function onRegPattern(seq, fin) {
+  const msgEl = document.getElementById("reg-msg"), desc = document.getElementById("reg-desc");
+  if (seq.length < 4) { msgEl.textContent = "점 4개 이상 연결해 주세요"; fin(false); return; }
+  const code = seq.join("-");
+  if (!regFirst) { regFirst = code; desc.textContent = "같은 패턴을 한 번 더 그려주세요"; msgEl.textContent = ""; fin(true); return; }
+  if (regFirst !== code) { msgEl.textContent = "처음 패턴과 다릅니다. 다시 그려주세요"; fin(false); return; }
+  let r; try { r = JSON.parse(QA.quickSetPattern(sessionPw, code)); } catch (e) { r = { ok: false, msg: e.message }; }
+  if (!r.ok) { msgEl.textContent = r.msg || "등록 실패"; fin(false); return; }
+  fin(true);
+  document.getElementById("patreg-modal").classList.remove("open");
+  renderQuickModal();
+  showToast("패턴을 등록했습니다.");
+}
+
+/* ── 자동 잠금: 앱이 백그라운드 5분 경과 후 복귀 시 호출 ── */
+window.appAutoLock = async () => {
+  if (!sessionPw) return;
+  try { if (changeVer !== savedVer) { await writePending(); await pushNow(); } } catch (e) { /* 임시 보관본으로 다음 잠금 해제 때 복구 */ }
+  if (changeVer !== savedVer) await writePending();
+  sessionPw = null; keyCache.clear(); changeVer = savedVer;
+  location.reload();
+};
+
+/* ── 이벤트 연결 (앱일 때만) ── */
+if (QA) {
+  document.getElementById("btn-quick").hidden = false;
+  document.getElementById("btn-quick").addEventListener("click", openQuickModal);
+  document.getElementById("lock-tabs").addEventListener("click", e => {
+    const b = e.target.closest("[data-lt]");
+    if (!b) return;
+    setLockTab(b.dataset.lt);
+    if (b.dataset.lt === "pw") setTimeout(() => document.getElementById("lock-pw").focus(), 0);
+  });
+  makePatPad(document.getElementById("lock-pat"), onLockPattern);
+  const regPad = makePatPad(document.getElementById("reg-pat"), onRegPattern);
+  document.getElementById("btn-lock-bio").addEventListener("click", () => QA.quickUnlockBio());
+  document.getElementById("qk-pat").addEventListener("click", () => {
+    if (quickStatus()?.pattern) { QA.quickDisablePattern(); renderQuickModal(); showToast("패턴 잠금을 껐습니다."); }
+    else openPatReg();
+  });
+  document.getElementById("qk-bio").addEventListener("click", () => {
+    document.getElementById("qk-msg").textContent = "";
+    QA.quickSetBio(sessionPw, !quickStatus()?.bio);
+  });
+  document.getElementById("btn-qk-repat").addEventListener("click", openPatReg);
+  document.getElementById("btn-qk-close").addEventListener("click", () => document.getElementById("quick-modal").classList.remove("open"));
+  document.getElementById("btn-reg-reset").addEventListener("click", () => { regPad.reset(); openPatReg(); });
+  document.getElementById("btn-reg-cancel").addEventListener("click", () => { document.getElementById("patreg-modal").classList.remove("open"); renderQuickModal(); });
 }
 
 async function startApp() {

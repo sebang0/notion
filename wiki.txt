@@ -44,3 +44,4 @@
 2026-11-23 21:08 | GitHub Secrets ANDROID_KEYSTORE_B64, ANDROID_KEYSTORE_PASSWORD | 사용자 등록 완료 → 고정 서명 키 빌드 적용
 2026-11-23 21:08 | 세션 임시폴더 apk/C-업무일정표_v1.0.3_261123_2108.apk (저장소 미포함, 원본: Releases android-v1.0.3) | 고정 서명 키(CN=Sebang Schedule) 첫 APK 전달
 2026-11-23 22:07 | C-패턴잠금_시안_261123_2207.html | 앱 패턴/생체 잠금 시안 (잠금 해제 패턴, 오류 3/5회, 5회 실패 비밀번호 전환, 메뉴 설정, 패턴 등록 2회, 규칙 표)
+2026-11-23 22:14 | android/app/src/main/java/com/sebang/notion/QuickLock.java(신규), MainActivity.java, AndroidManifest.xml, android/README.md, docs/index.html | 앱 패턴/지문, 얼굴 잠금 해제 (Keystore 보관, 최소 4점, 5회 실패 시 해제, 백그라운드 5분 자동 잠금, 비밀번호 변경 시 자동 갱신) (Gradle 프로젝트 파일명 규칙상 C-, 일시 제외)

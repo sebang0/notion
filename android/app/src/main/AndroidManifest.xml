@@ -4,6 +4,8 @@
     <!-- GitHub 저장소에서 업무 데이터를 불러오고 저장하기 위한 인터넷 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- 지문/얼굴로 잠금 해제 (휴대폰 기본 인증 창) -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:allowBackup="false"
