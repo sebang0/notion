@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 기본 테마: 제목줄 없음 · 웹앱 배경과 같은 흰색 -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:statusBarColor">#2563EB</item>
+        <item name="android:colorAccent">#2563EB</item>
+    </style>
+</resources>

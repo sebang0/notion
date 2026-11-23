@@ -1,0 +1,4 @@
+// ── 루트 빌드: Android Gradle Plugin 버전 지정 ──
+plugins {
+    id "com.android.application" version "8.7.3" apply false
+}

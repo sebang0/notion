@@ -597,6 +597,30 @@ body.gdragging, body.gdragging * { cursor: grabbing !important; user-select: non
 .c-ev { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
 .c-ev.leave-hit { outline: 2px dashed #d97706; outline-offset: -1px; }
 .c-ev.drag-src { opacity: 0.35; }
+/* ── 휴대폰 전용 달력 표시 (폭 640px 이하에서만 보임) ──
+   c-dots   : 칸 안 업무 색 점 (완료 = 흐리게 · 지연 = 빨간 테두리)
+   cal-agenda: 선택한 날짜의 업무 목록 (업무명 전체 · 완료 체크 · 수정·메모) */
+.c-dots { display: none; flex-wrap: wrap; gap: 3px; align-items: center; }
+.c-dots .dot { display: inline-block; width: 8px; height: 8px; padding: 0; border-radius: 50%; box-sizing: border-box; }
+.c-dots .dot.done { opacity: 0.3; }
+.c-dots .dot.late { box-shadow: 0 0 0 1.5px #dc2626; }
+.c-dots b { font-size: 9px; color: var(--mut); font-weight: 700; }
+.m-only { display: none; }
+#cal-agenda { display: none; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; overflow: hidden; }
+.ag-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid var(--line); }
+.ag-title { font-weight: 700; font-size: 14px; }
+.ag-status { font-size: 11.5px; color: var(--mut); margin-top: 1px; }
+.ag-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.ag-item:last-child { border-bottom: 0; }
+.ag-item input[type=checkbox] { width: 20px; height: 20px; margin: 1px 0 0; flex: none; }
+.ag-bar { width: 6px; align-self: stretch; border-radius: 3px; padding: 0; flex: none; }
+.ag-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ag-name { all: unset; cursor: pointer; font-size: 14px; font-weight: 600; line-height: 1.4; word-break: keep-all; overflow-wrap: anywhere; }
+.ag-item.done .ag-name { text-decoration: line-through; opacity: 0.5; }
+.ag-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 11.5px; color: var(--mut); }
+.ag-memo { font-size: 12px; color: var(--mut); white-space: pre-line; }
+.ag-empty { padding: 16px 12px; text-align: center; color: var(--mut); font-size: 12.5px; }
+@media print { #cal-agenda, .c-dots { display: none !important; } .cal-cell .c-ev-list { display: flex !important; } }
 .drag-ghost { position: fixed; z-index: 10000; pointer-events: none; opacity: 0.92; box-shadow: 0 6px 16px rgba(0,0,0,0.25); cursor: grabbing; }
 body.dragging, body.dragging * { cursor: grabbing !important; }
 .chk-flags { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
@@ -663,6 +687,14 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .bd-pill, .hol-pill { font-size: 8.5px; white-space: nowrap; }
   .two-col { grid-template-columns: 1fr; }
   .card-grid-3 { grid-template-columns: 1fr; }
+  /* 휴대폰 달력: 칸에는 업무 색 점만 · 날짜를 탭하면 아래 목록에 업무명 전체 표시 */
+  .cal-cell { min-height: 56px; cursor: pointer; }
+  .cal-cell .c-ev-list { display: none; }
+  .cal-cell .c-dots { display: flex; }
+  .cal-cell.sel-day { box-shadow: inset 0 0 0 2px #f59e0b; }
+  #cal-agenda { display: block; }
+  .d-only { display: none; }
+  .m-only { display: inline; }
 }
 </style>
 </head>
@@ -725,7 +757,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
           </div>
           <div class="cal-head-row">
             <div class="cal-hint no-print">
-              업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록
+              <span class="d-only">업무 <b>클릭</b> 완료 토글 · <b>드래그</b> 일자 이동 (모바일: 길게 눌러 이동) · <b>빈 곳 클릭</b> 업무·연차·회사 휴무 등록</span>
+              <span class="m-only"><b>날짜 탭</b> → 아래에 그날 업무 목록 · 업무명 탭: 수정·메모 · 체크: 완료</span>
             </div>
             <div class="cal-legend" aria-label="달력 배경 범례">
               <span><i class="lg lg-work"></i>영업일</span>
@@ -741,6 +774,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
         <div class="warn-box" id="cal-warn" style="display:none"></div>
         <div class="cal-grid" id="kr-cal-grid"></div>
+        <!-- 휴대폰 전용: 선택한 날짜의 업무 목록 (renderAgenda) -->
+        <div id="cal-agenda" class="no-print" aria-live="polite"></div>
       </section>
 
       <!-- 달력 아래: [왼쪽] SPOT/추가 업무 관리 → 정례 체크리스트 · [오른쪽] 화이트보드 -->
@@ -1191,6 +1226,8 @@ function clampBD(v, fallback) {
 const TODAY = kstToday();
 let state = normalizeState(JSON.parse(JSON.stringify(EMPTY_STATE)));
 let curYM = TODAY.slice(0, 7);
+let calSelDate = "";      // 휴대폰 달력에서 선택한 날짜 (아래 업무 목록 대상)
+let calCtx = null;        // 마지막으로 그린 달력의 날짜별 업무·정례 업무 정보 (업무 목록에서 재사용)
 let showSpotOnCal = lsGet("cal-show-spot") !== "0";  // 달력 SPOT 업무 표시 여부 (기본: 표시)
 let showSpanOnCal = lsGet("cal-show-span") !== "0";  // 진행 기간(빗금 업무) 모든 영업일 표시 여부 (기본: 표시)
 let ganttMode = "cat";
@@ -2129,16 +2166,24 @@ function renderCalendarTab() {
       </div>`;
     }).join("");
 
+    // 휴대폰용 색 점 (최대 8개 + 나머지 개수)
+    const dayEvs = evByDate[c.dateStr] || [];
+    const dots = dayEvs.slice(0, 8).map(ev => `<i class="dot ${ev.cls} ${ev.done ? "done" : ""} ${ev.late ? "late" : ""}"></i>`).join("")
+      + (dayEvs.length > 8 ? `<b>+${dayEvs.length - 8}</b>` : "");
+
     html += `<div class="${cellCls}" data-date="${c.dateStr}" data-workday="${c.isWorkday ? 1 : 0}">
       <div class="c-top">
         <span class="c-day" style="color:${dayCol}">${c.day}</span>
         <div class="c-badges">${badges}</div>
       </div>
       <div class="c-ev-list">${evs}</div>
+      <div class="c-dots" aria-hidden="true">${dots}</div>
     </div>`;
   });
 
   document.getElementById("kr-cal-grid").innerHTML = html;
+  calCtx = { evByDate, taskInfo, cal };
+  renderAgenda();
 
   // 정례 업무 체크리스트 (이번 달 실제 시작일 순)
   const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
@@ -2662,7 +2707,79 @@ document.getElementById("btn-mm-del").addEventListener("click", () => {
    [7-2] 빈 곳 클릭 → 날짜 상세 창 (업무 추가 · 내 연차 · 회사 휴무 등록/삭제)
    ══════════════════════════════════════════════════════════════════════ */
 let dayDate = "";
+const isPhone = () => window.matchMedia("(max-width: 640px)").matches;
+
+/* ══════════════════════════════════════════════════════════════════════
+   [7-3] 휴대폰 달력: 날짜 탭 → 그날 업무 목록 (업무명 전체 표시)
+   - 폭 640px 이하에서만 보임 (PC 화면은 기존 달력 그대로)
+   - 체크: 완료 토글 · 업무명 탭: 수정·메모 창 · [+ 추가] 업무·연차·회사 휴무 등록 창
+   - 선택 날짜: 처음엔 오늘(다른 달이면 1일) · 달을 바꾸면 그 달 기준으로 다시 선택
+   ══════════════════════════════════════════════════════════════════════ */
+function renderAgenda() {
+  const box = document.getElementById("cal-agenda");
+  if (!box || !calCtx) return;
+  const { evByDate, taskInfo, cal } = calCtx;
+  if (!calSelDate || calSelDate.slice(0, 7) !== curYM || !cal.dayMap[calSelDate])
+    calSelDate = TODAY.slice(0, 7) === curYM ? TODAY : `${curYM}-01`;
+  document.querySelectorAll("#kr-cal-grid .sel-day").forEach(el => el.classList.remove("sel-day"));
+  const cellEl = document.querySelector(`#kr-cal-grid [data-date="${calSelDate}"]`);
+  if (cellEl) cellEl.classList.add("sel-day");
+
+  const d = cal.dayMap[calSelDate];
+  const mLog = ensureMonthLog(curYM);
+  const md = ds => ds ? ds.slice(5).replace("-", "/") : "-";
+  const dow = ["일", "월", "화", "수", "목", "금", "토"][d.dow];
+  const status = d.holName ? `공휴일 · ${d.holName}` : d.offName ? `회사 휴무 · ${d.offName}` : (d.dow === 0 || d.dow === 6) ? "주말" : `${d.bd}영업일`;
+  const evs = evByDate[calSelDate] || [];
+
+  const items = evs.map(ev => {
+    const memo = ev.type === "reg" ? mLog.memos[ev.id] : (mLog.spotTasks.find(s => s.id === ev.id) || {}).memo;
+    let meta = "";
+    if (ev.type === "reg") {
+      const info = taskInfo[ev.id];
+      const t = state.tasks.find(x => x.id === ev.id) || {};
+      meta += `<span class="badge bg-${CAT_KEY[t.cat] || "perf"}">${esc(t.cat || "")}</span>`;
+      if (info) meta += `<span>${info.rs === info.re ? `${info.rs}영업일` : `${info.rs}~${info.re}영업일`} (${info.sDate === info.eDate ? md(info.sDate) : `${md(info.sDate)}~${md(info.eDate)}`})</span>`;
+    } else {
+      meta += `<span class="badge bg-spot">SPOT</span>`;
+    }
+    if (ev.late) meta += `<span class="late-pill">지연</span>`;
+    if (ev.leave) meta += `<span class="leave-warn-pill">${esc(ev.leave)}일 마감</span>`;
+    return `<div class="ag-item ${ev.done ? "done" : ""}">
+      <input type="checkbox" ${ev.done ? "checked" : ""} onchange="toggleTaskFromCal('${ev.type}','${esc(ev.id)}')" aria-label="${esc(ev.label)} 완료">
+      <span class="ag-bar ${ev.cls}"></span>
+      <div class="ag-main">
+        <button class="ag-name" type="button" data-ag-type="${ev.type}" data-ag-id="${esc(ev.id)}">${esc(ev.label)}</button>
+        <div class="ag-meta">${meta}</div>
+        ${memo ? `<div class="ag-memo">📝 ${esc(memo)}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+
+  box.innerHTML = `<div class="ag-head">
+      <div><div class="ag-title">${Number(calSelDate.slice(5, 7))}월 ${d.day}일 (${dow}) · 업무 ${evs.length}건</div>
+      <div class="ag-status">${esc(status)}${d.leave ? ` · 내 ${esc(d.leave)}` : ""}</div></div>
+      <button class="btn" type="button" data-ag-add>+ 추가</button>
+    </div>${items || `<div class="ag-empty">이날 업무가 없습니다.</div>`}`;
+}
+document.getElementById("cal-agenda").addEventListener("click", e => {
+  const nm = e.target.closest("[data-ag-id]");
+  if (nm) { openMemoDialog(nm.dataset.agType, nm.dataset.agId); return; }
+  if (e.target.closest("[data-ag-add]")) openDayDialog(calSelDate);
+});
+
 calGrid.addEventListener("click", e => {
+  // 휴대폰: 날짜 칸 탭 → 선택 날짜 변경 · 아래 업무 목록 갱신
+  if (isPhone()) {
+    const pc = e.target.closest(".cal-cell[data-date]");
+    if (pc && Date.now() >= suppressClickUntil) {
+      calSelDate = pc.dataset.date; renderAgenda();
+      // 목록이 화면 아래쪽에 가려 있으면 목록 머리가 화면 중간쯤 오도록 스크롤 (달력 아래쪽은 보이게 유지)
+      const r = document.getElementById("cal-agenda").getBoundingClientRect();
+      if (r.top > window.innerHeight * 0.6) window.scrollBy({ top: r.top - window.innerHeight * 0.4, behavior: "smooth" });
+    }
+    return;
+  }
   const ed = e.target.closest(".ev-edit");
   if (ed) { const ev = ed.closest(".c-ev"); openMemoDialog(ev.dataset.type, ev.dataset.id); return; }
   if (e.target.closest(".c-ev") || Date.now() < suppressClickUntil) return;
